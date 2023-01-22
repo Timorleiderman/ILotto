@@ -4,7 +4,7 @@ from tensorflow.keras.layers import GRU, SpatialDropout1D, Conv1D, GlobalMaxPool
 from tensorflow.keras.layers import AdditiveAttention, Attention
 
 
-class ILotto(tf.keras.Model):
+class ILotto(tf.keras.layers.Layer):
     def __init__(self,
                  numbers = 37, 
                  embed_dim = 30,
@@ -28,7 +28,10 @@ class ILotto(tf.keras.Model):
         self.bidirectional = bidirectional 
         self.attention_style = attention_style
     
-    def call(self, inputs, training=False):
+    def build(self, input_shape):
+        super(ILotto, self).build(input_shape)
+            
+    def call(self, inputs, training=None, mask=None):
         
         inp1 = Lambda(lambda x: x[:, :, 0])(inputs)
         inp1 = Embedding(self.numbers, self.embed_dim)(inp1)
@@ -124,7 +127,12 @@ class ILotto(tf.keras.Model):
         return out
 
 
-model = ILotto()
-sparse_top_k = tf.keras.metrics.SparseTopKCategoricalAccuracy(k = 5, name = 'sparse_top_k')
-model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = [sparse_top_k])
-model.summary()
+if __name__ == "__main__":
+    
+    inputs = Input(shape = (10, 7))
+    output = ILotto()(inputs)
+    model = tf.keras.Model( inputs, output)
+    
+    sparse_top_k = tf.keras.metrics.SparseTopKCategoricalAccuracy(k = 5, name = 'sparse_top_k')
+    model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = [sparse_top_k])
+    model.summary()
