@@ -1,4 +1,6 @@
+import math
 import pandas as pd
+import numpy as np
 
 def get_attr(obj, string):
     return getattr(obj,string)
@@ -41,6 +43,30 @@ class ILottoCSV(object):
                         ].index, inplace=True)
 
         lotto.to_csv(self.out_file)
+
+
+# beam search
+def beam_search_decoder(data, k, replace = True):
+    sequences = [[list(), 0.0]]
+    # walk over each step in sequence
+    for row in data:
+        all_candidates = list()
+        # expand each current candidate
+        for i in range(len(sequences)):
+            seq, score = sequences[i]
+            best_k = np.argsort(row)[-k:]
+            for j in best_k:
+                candidate = [seq + [j], score + math.log(row[j])]
+                if replace:
+                    all_candidates.append(candidate)
+                elif (replace == False) and (len(set(candidate[0])) == len(candidate[0])):
+                    all_candidates.append(candidate)
+        # order all candidates by score
+        ordered = sorted(all_candidates, key = lambda tup:tup[1], reverse = True)
+        # select k best
+        sequences = ordered[:k]
+    return sequences
+
 
 if __name__ == "__main__":
     test = ILottoCSV()

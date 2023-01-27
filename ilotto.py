@@ -1,10 +1,39 @@
+import math
 import tensorflow as tf
+
+from tensorflow.keras import callbacks
+from tensorflow.keras import backend
 from tensorflow.keras.layers import Input, Dense, Activation, LSTM, Dropout, RepeatVector, TimeDistributed, Embedding, Reshape, Dot, Concatenate
 from tensorflow.keras.layers import GRU, SpatialDropout1D, Conv1D, GlobalMaxPooling1D,Multiply, Lambda, Softmax, Flatten, BatchNormalization, Bidirectional, dot, concatenate
 from tensorflow.keras.layers import AdditiveAttention, Attention
 
 
-class ILotto(tf.keras.layers.Layer):
+class CosineAnnealingScheduler(callbacks.Callback):
+    """Cosine annealing scheduler.
+    """
+
+    def __init__(self, T_max, eta_max, eta_min = 0, verbose = 0):
+        super(CosineAnnealingScheduler, self).__init__()
+        self.T_max = T_max
+        self.eta_max = eta_max
+        self.eta_min = eta_min
+        self.verbose = verbose
+
+    def on_epoch_begin(self, epoch, logs = None):
+        if not hasattr(self.model.optimizer, 'lr'):
+            raise ValueError('Optimizer must have a "lr" attribute.')
+        lr = self.eta_min + (self.eta_max - self.eta_min) * (1 + math.cos(math.pi * epoch / self.T_max)) / 2
+        backend.set_value(self.model.optimizer.lr, lr)
+        if self.verbose > 0:
+            print('\nEpoch %05d: CosineAnnealingScheduler setting learning '
+                  'rate to %s.' % (epoch + 1, lr))
+
+    def on_epoch_end(self, epoch, logs = None):
+        logs = logs or {}
+        logs['lr'] = backend.get_value(self.model.optimizer.lr)
+        
+        
+class ILotto(tf.keras.Model):
     def __init__(self,
                  numbers = 37, 
                  embed_dim = 30,
@@ -14,7 +43,8 @@ class ILotto(tf.keras.layers.Layer):
                  steps_after = 7,
                  hidden_neurons = [64, 32],
                  bidirectional = True,
-                 attention_style = 'Bahdanau'
+                 attention_style = 'Bahdanau',
+                 shape = (None, 10, 7),
                  ):
         super(ILotto, self).__init__(name='')
         self.numbers = numbers
@@ -27,41 +57,64 @@ class ILotto(tf.keras.layers.Layer):
         self.hidden_neurons = hidden_neurons 
         self.bidirectional = bidirectional 
         self.attention_style = attention_style
-    
+        self.in_shape = shape
+        self.embedding = []
+        self.spatial_drop = []
+        for i in range(shape[-1]):
+            self.embedding.append(Embedding(self.numbers, self.embed_dim))
+            self.spatial_drop.append(SpatialDropout1D(self.spatial_dropout_rate))
+        
+        
+        self.bidirectional_lstm = []
+        self.lstm = []
+        for i in range(len(self.hidden_neurons)):
+            if self.bidirectional:
+            
+                self.bidirectional_lstm.append(Bidirectional(LSTM(self.hidden_neurons[i],
+                                                                dropout = self.dropout_rate, 
+                                                                    return_state = True, 
+                                                                    return_sequences = True)))
+            
+            else:
+                self.lstm.append(LSTM(self.hidden_neurons[i], 
+                                dropout = self.dropout_rate,
+                                return_state = True, 
+                                return_sequences = True))
+
+                
+        if bidirectional:
+            self.decoder_hidden_neurons = [hn * 2 for hn in hidden_neurons]
+        else:
+            self.decoder_hidden_neurons = hidden_neurons
+        
+        self.lstm_decoder = []
+        for i in range(len(self.hidden_neurons)):
+            self.lstm_decoder.append(LSTM(self.decoder_hidden_neurons[i],
+                dropout = dropout_rate, 
+                return_sequences = True))
+                
+        self.repeat_vec = RepeatVector(self.steps_after)
+        
+        if self.attention_style == 'Bahdanau':
+            self.additive_attention = AdditiveAttention(dropout = self.dropout_rate)
+        else:
+            self.attention = Attention(dropout = self.dropout_rate)
+        self.dense_out = Dense(self.numbers, activation = 'softmax')
+        
+        self.build(shape)
+            
     def build(self, input_shape):
         super(ILotto, self).build(input_shape)
             
     def call(self, inputs, training=None, mask=None):
         
-        inp1 = Lambda(lambda x: x[:, :, 0])(inputs)
-        inp1 = Embedding(self.numbers, self.embed_dim)(inp1)
-        inp1 = SpatialDropout1D(self.spatial_dropout_rate)(inp1)
+        inp = []
+        for i in range(self.in_shape[-1]):
+            inp_d = Lambda(lambda x: x[:, :, i])(inputs)
+            inp_dd = self.embedding[i](inp_d)
+            inp.append(self.spatial_drop[i](inp_dd))
         
-        inp2 = Lambda(lambda x: x[:, :, 1])(inputs)
-        inp2 = Embedding(self.numbers, self.embed_dim)(inp2)
-        inp2 = SpatialDropout1D(self.spatial_dropout_rate)(inp2)
-        
-        inp3 = Lambda(lambda x: x[:, :, 2])(inputs)
-        inp3 = Embedding(self.numbers, self.embed_dim)(inp3)
-        inp3 = SpatialDropout1D(self.spatial_dropout_rate)(inp3)
-        
-        inp4 = Lambda(lambda x: x[:, :, 3])(inputs)
-        inp4 = Embedding(self.numbers, self.embed_dim)(inp4)
-        inp4 = SpatialDropout1D(self.spatial_dropout_rate)(inp4)
-        
-        inp5 = Lambda(lambda x: x[:, :, 4])(inputs)
-        inp5 = Embedding(self.numbers, self.embed_dim)(inp5)
-        inp5 = SpatialDropout1D(self.spatial_dropout_rate)(inp5)    
-        
-        inp6 = Lambda(lambda x: x[:, :, 5])(inputs)
-        inp6 = Embedding(self.numbers, self.embed_dim)(inp6)
-        inp6 = SpatialDropout1D(self.spatial_dropout_rate)(inp6)
-        
-        inp7 = Lambda(lambda x: x[:, :, 6])(inputs)
-        inp7 = Embedding(self.numbers, self.embed_dim)(inp7)
-        inp7 = SpatialDropout1D(self.spatial_dropout_rate)(inp7)
-        
-        inp = Concatenate()([inp1, inp2, inp3, inp4, inp5, inp6, inp7])
+        inp = Concatenate()(inp)
 
         # Seq2Seq model with attention or bidirectional encoder
     
@@ -69,13 +122,10 @@ class ILotto(tf.keras.layers.Layer):
         
         sh_list, h_list, c_list = [inp], [], []
         
-        if self.bidirectional:
-            for i in range(num_layers):
-    
-                sh, fh, fc, bh, bc = Bidirectional(LSTM(self.hidden_neurons[i],
-                                                        dropout = self.dropout_rate, 
-                                                        return_state = True, 
-                                                        return_sequences = True))(sh_list[-1])
+        for i in range(num_layers):
+            if self.bidirectional:
+                
+                sh, fh, fc, bh, bc = self.bidirectional_lstm[i](sh_list[-1])
             
                 h = Concatenate()([fh, bh])
                 c = Concatenate()([fc, bc]) 
@@ -84,55 +134,37 @@ class ILotto(tf.keras.layers.Layer):
                 h_list.append(h)
                 c_list.append(c)
         
-        else:
-            for i in range(num_layers):
-
-                sh, h, c = LSTM(self.hidden_neurons[i], 
-                                dropout = self.dropout_rate,
-                                return_state = True, 
-                                return_sequences = True)(sh_list[-1])
+            else:
+                sh, h, c = self.lstm[i](sh_list[-1])
 
                 sh_list.append(sh)
                 h_list.append(h)
                 c_list.append(c)
         
-        decoder = RepeatVector(self.steps_after)(h_list[-1])
+        decoder = self.repeat_vec(h_list[-1])
     
-        if self.bidirectional:
-            
-            decoder_hidden_neurons = [hn * 2 for hn in self.hidden_neurons]
-            
-        else:
-            
-            decoder_hidden_neurons = self.hidden_neurons
-        
         for i in range(num_layers):
-            decoder = LSTM(decoder_hidden_neurons[i],
-                       dropout = self.dropout_rate, 
-                       return_sequences = True)(decoder, initial_state = [h_list[i], c_list[i]])
+            decoder = self.lstm_decoder[i](decoder, initial_state = [h_list[i], c_list[i]])
        
         if self.attention_style == 'Bahdanau':
             
-            context = AdditiveAttention(dropout = self.dropout_rate)([decoder, sh_list[-1]])
+            context = self.additive_attention([decoder, sh_list[-1]])
             
             decoder = concatenate([context, decoder])
             
         elif self.attention_style == 'Luong':
-            context = Attention(dropout = self.dropout_rate)([decoder, sh_list[-1]])
+            context = self.attention([decoder, sh_list[-1]])
         
         decoder = concatenate([context, decoder])
     
-        out = Dense(self.numbers, activation = 'softmax')(decoder)
+        out = self.dense_out(decoder)
 
         return out
 
 
 if __name__ == "__main__":
     
-    inputs = Input(shape = (10, 7))
-    output = ILotto()(inputs)
-    model = tf.keras.Model( inputs, output)
-    
+    model = ILotto()    
     sparse_top_k = tf.keras.metrics.SparseTopKCategoricalAccuracy(k = 5, name = 'sparse_top_k')
     model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = [sparse_top_k])
     model.summary()
