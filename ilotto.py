@@ -161,10 +161,3 @@ class ILotto(tf.keras.Model):
 
         return out
 
-
-if __name__ == "__main__":
-    
-    model = ILotto()    
-    sparse_top_k = tf.keras.metrics.SparseTopKCategoricalAccuracy(k = 5, name = 'sparse_top_k')
-    model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = [sparse_top_k])
-    model.summary()

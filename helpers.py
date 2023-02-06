@@ -1,4 +1,6 @@
+import os
 import math
+import requests
 import pandas as pd
 import numpy as np
 
@@ -66,6 +68,43 @@ def beam_search_decoder(data, k, replace = True):
         # select k best
         sequences = ordered[:k]
     return sequences
+
+
+def fetch_dataset(orig_lotto_csv="input/Orig_IL_lotto.csv",lotto_csv_file="input/lotto_IL_filtered.csv"):
+    
+    csv_url = "https://pais.co.il/Lotto/lotto_resultsDownload.aspx"
+    base_dir = os.path.dirname(orig_lotto_csv)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
+    r = requests.get(csv_url)
+    with open(orig_lotto_csv,'wb') as f:
+        f.write(r.content)
+    ILottoCSV(orig_lotto_csv, lotto_csv_file)
+    lotto_ds = pd.read_csv(lotto_csv_file, index_col = 'Date')
+    return lotto_ds
+
+
+def train_test_split(lotto_ds, test_size=50, w=10):
+    data = lotto_ds.values - 1
+    train = data[test_size:]
+    test = data[:test_size]
+
+    X_train = []
+    y_train = []
+    for i in range(w, len(train)):
+        X_train.append(train[i - w: i, :])
+        y_train.append(train[i])
+
+    X_train, y_train = np.array(X_train), np.array(y_train)
+    inputs = data[data.shape[0] - test.shape[0] - w:]
+    X_test = []
+    for i in range(w, inputs.shape[0]):
+        X_test.append(inputs[i - w: i, :])
+    X_test = np.array(X_test)
+    y_test = test
+    
+    return X_train, y_train, X_test, y_test
+
 
 
 if __name__ == "__main__":

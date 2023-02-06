@@ -1,0 +1,12 @@
+pandas 
+numba 
+scipy 
+scikit-learn 
+matplotlib 
+tqdm 
+pydot 
+pydotplus 
+ipykernel
+tensorflow
+pyyaml 
+h5py
