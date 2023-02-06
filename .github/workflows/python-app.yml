@@ -37,3 +37,4 @@ jobs:
     - name: Train 
       run: |
         python trin.py
+
