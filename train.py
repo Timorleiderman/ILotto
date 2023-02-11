@@ -45,6 +45,7 @@ def train(X_train, y_train, X_test, y_test, epochs=200, batch_size=32, lr_max=1e
 
     hist = pd.DataFrame(history.history)
     model.save_weights(checkpoint_path.format(epoch=0))
+    model.save('model/Ilotto')
     
     return  hist
 
@@ -54,15 +55,15 @@ if __name__ == "__main__":
     
     lotto_ds = fetch_dataset()
     X_train, y_train, X_test, y_test = train_test_split(lotto_ds)
-    print(lotto_ds.shape)
-    print(X_train.shape)
-    print(y_train.shape)
-    print(X_test.shape)
-    print(y_test.shape)
+    # print(lotto_ds.shape)
+    # print(X_train.shape)
+    # print(y_train.shape)
+    # print(X_test.shape)
+    # print(y_test.shape)
     
     checkpoint_path="training_0/cp-{epoch:04d}.ckpt"
-    hist = train(X_train, y_train, X_test, y_test, epochs=200, batch_size=32, lr_max=1e-4, lr_min=1e-6, checkpoint_path=checkpoint_path)
-    evaluate(checkpoint_path, X_test, y_test)
+    hist = train(X_train, y_train, X_test, y_test, epochs=300, batch_size=32, lr_max=1e-4, lr_min=1e-6, checkpoint_path=checkpoint_path)
+    
     
     
 
