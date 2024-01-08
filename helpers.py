@@ -4,6 +4,7 @@ import requests
 import pandas as pd
 import numpy as np
 
+
 def get_attr(obj, string):
     return getattr(obj,string)
 
@@ -26,23 +27,23 @@ class ILottoCSV(object):
         lotto.drop(curr_names[0], axis=1, inplace=True)
 
         cnt_idx = 0
-        for column_headers in lotto.columns: 
+        for column_headers in lotto.columns:
             if cnt_idx > len(names)-1:
                 lotto.drop(column_headers, axis=1, inplace=True)
             else:
-                lotto.rename(columns = {column_headers:names[cnt_idx]}, inplace = True)
+                lotto.rename(columns={column_headers:names[cnt_idx]}, inplace = True)
                 cnt_idx += 1
 
         lotto = pd.DataFrame(lotto).set_index(names[0])
 
-        lotto.drop(lotto[ (get_attr(lotto, names[1]) > self.ball_numbers) 
-                        | (get_attr(lotto, names[2]) > self.ball_numbers) 
-                        | (get_attr(lotto, names[3]) > self.ball_numbers) 
-                        | (get_attr(lotto, names[4]) > self.ball_numbers) 
-                        | (get_attr(lotto, names[5]) > self.ball_numbers) 
-                        | (get_attr(lotto, names[6]) > self.ball_numbers) 
-                        | (get_attr(lotto, names[7]) > self.strong_numbers) 
-                        ].index, inplace=True)
+        lotto.drop(lotto[(get_attr(lotto, names[1]) > self.ball_numbers)
+                         | (get_attr(lotto, names[2]) > self.ball_numbers)
+                         | (get_attr(lotto, names[3]) > self.ball_numbers)
+                         | (get_attr(lotto, names[4]) > self.ball_numbers)
+                         | (get_attr(lotto, names[5]) > self.ball_numbers)
+                         | (get_attr(lotto, names[6]) > self.ball_numbers)
+                         | (get_attr(lotto, names[7]) > self.strong_numbers)
+                         ].index, inplace=True)
 
         lotto.to_csv(self.out_file)
 
@@ -64,7 +65,7 @@ def beam_search_decoder(data, k, replace = True):
                 elif (replace == False) and (len(set(candidate[0])) == len(candidate[0])):
                     all_candidates.append(candidate)
         # order all candidates by score
-        ordered = sorted(all_candidates, key = lambda tup:tup[1], reverse = True)
+        ordered = sorted(all_candidates, key=lambda tup: tup[1], reverse=True)
         # select k best
         sequences = ordered[:k]
     return sequences
@@ -77,7 +78,7 @@ def fetch_dataset(orig_lotto_csv="input/Orig_IL_lotto.csv",lotto_csv_file="input
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
     r = requests.get(csv_url)
-    with open(orig_lotto_csv,'wb') as f:
+    with open(orig_lotto_csv, 'wb') as f:
         f.write(r.content)
     ILottoCSV(orig_lotto_csv, lotto_csv_file)
     lotto_ds = pd.read_csv(lotto_csv_file, index_col = 'Date')
@@ -102,9 +103,8 @@ def train_test_split(lotto_ds, test_size=50, w=10):
         X_test.append(inputs[i - w: i, :])
     X_test = np.array(X_test)
     y_test = test
-    
-    return X_train, y_train, X_test, y_test
 
+    return X_train, y_train, X_test, y_test
 
 
 if __name__ == "__main__":

@@ -15,7 +15,9 @@
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
 		"streetsidesoftware.code-spell-checker",
-		"donjayamanne.python-extension-pack"]
+		"donjayamanne.python-extension-pack",
+		"ms-toolsai.jupyter"
+	]
     }
 	}
 	// Features to add to the dev container. More info: https://containers.dev/features.
