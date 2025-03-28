@@ -1,9 +1,13 @@
 import os
 import math
+import logging
 import requests
 import pandas as pd
 import numpy as np
 
+from logger import setup_logger
+setup_logger()
+logger = logging.getLogger(__name__)
 
 def get_attr(obj, string):
     return getattr(obj, string)
@@ -64,6 +68,7 @@ class ILottoCSV(object):
 
 # beam search
 def beam_search_decoder(data, k, replace=True):
+    logger.info("Beam search decoder")
     sequences = [[list(), 0.0]]
     # walk over each step in sequence
     for row in data:

@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 from tensorflow.keras import callbacks
 
 from ilotto import ILotto
+from logger import setup_logger
 from helpers import fetch_dataset, train_test_split
 
-
+setup_logger()
 logger = logging.getLogger(__name__)
 
 
