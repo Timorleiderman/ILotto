@@ -29,12 +29,9 @@ jobs:
     - name: Install dependencies with uv
       run: |
           uv venv .venv
-          source .venv/bin/activate
-          if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
     - name: Ruff
       run: |
-        source .venv/bin/activate
-        ruff check .
+        uv run ruff check .
     - name: Eval 
       run: |
-        python evaluate.py
+        .venv/bin/python evaluate.py
