@@ -4,9 +4,8 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.keras import callbacks
 
-from ilotto import ILotto, CosineAnnealingScheduler
+from ilotto import ILotto
 from helpers import fetch_dataset, train_test_split
-from evaluate import evaluate
 
 
 logger = logging.getLogger(__name__)

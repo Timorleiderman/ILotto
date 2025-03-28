@@ -16,8 +16,13 @@ dependencies = [
     "pydot>=3.0.4",
     "pydotplus>=2.0.2",
     "pyyaml>=6.0.2",
+    "ruff>=0.11.2",
     "scikit-learn>=1.6.1",
     "scipy>=1.15.2",
     "tensorflow>=2.19.0",
     "tqdm>=4.67.1",
 ]
+
+
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ["F401"]

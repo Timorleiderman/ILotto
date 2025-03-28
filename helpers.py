@@ -76,7 +76,7 @@ def beam_search_decoder(data, k, replace=True):
                 candidate = [seq + [j], score + math.log(row[j])]
                 if replace:
                     all_candidates.append(candidate)
-                elif (replace == False) and (
+                elif not replace and (
                     len(set(candidate[0])) == len(candidate[0])
                 ):
                     all_candidates.append(candidate)
