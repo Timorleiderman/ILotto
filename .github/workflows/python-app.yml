@@ -31,7 +31,7 @@ jobs:
           uv venv .venv
           source .venv/bin/activate
           if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
-    - name: Lint with flake8
+    - name: Ruff
       run: |
         source .venv/bin/activate
         ruff check .
