@@ -2,6 +2,4 @@
 *.png
 __pycache__/*
 8.pyc
-training_0/*
-
-
+training_*
