@@ -102,8 +102,8 @@ if __name__ == "__main__":
     lotto_ds = fetch_dataset()
     X_train, y_train, X_test, y_test = train_test_split(lotto_ds)
 
-    checkpoint_path = "training_0/cp-{epoch:04d}.weights.h5"
-    epochs = 300
+    checkpoint_path = "model/training_0/cp-{epoch:04d}.weights.h5"
+    epochs = 350
     lr_max = 1e-4
     lr_min = 1e-6
     batch_size = 32

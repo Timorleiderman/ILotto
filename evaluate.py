@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 from mdutils.mdutils import MdUtils
 
+from ilotto import ILotto
 from logger import setup_logger
 from helpers import beam_search_decoder
 from helpers import fetch_dataset, train_test_split
@@ -18,7 +19,9 @@ def evaluate(model_path, X_test, y_test, beam_width=10):
     mdFile.new_paragraph()
     mdFile.new_header(level=1, title="Prediction")
 
-    model = tf.keras.models.load_model(model_path)
+    model = tf.keras.models.load_model(model_path, custom_objects={"ILotto": ILotto})
+
+    
     logger.info("Model loaded successfully")
     
     pred = model.predict(X_test)
@@ -79,5 +82,5 @@ if __name__ == "__main__":
     lotto_ds = fetch_dataset()
     X_train, y_train, X_test, y_test = train_test_split(lotto_ds)
 
-    model_path = "model/Ilotto"
+    model_path = "model/Ilotto.keras"
     evaluate(model_path, X_test, y_test)

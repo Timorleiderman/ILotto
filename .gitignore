@@ -3,3 +3,4 @@
 __pycache__/*
 8.pyc
 training_*
+*.log

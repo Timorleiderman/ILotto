@@ -2,7 +2,7 @@ import math
 import tensorflow as tf
 
 from tensorflow.keras import callbacks
-from tensorflow.keras import backend
+from tensorflow.keras import backend, saving
 from tensorflow.keras.layers import Dense, LSTM, RepeatVector, Embedding, Concatenate
 from tensorflow.keras.layers import SpatialDropout1D, Lambda, Bidirectional, concatenate
 from tensorflow.keras.layers import AdditiveAttention, Attention
@@ -38,7 +38,7 @@ class CosineAnnealingScheduler(callbacks.Callback):
         logs = logs or {}
         logs["learning_rate"] = backend.get_value(self.model.optimizer.learning_rate)
 
-
+@saving.register_keras_serializable(package="ILotto")
 class ILotto(tf.keras.Model):
     def __init__(
         self,
@@ -52,6 +52,8 @@ class ILotto(tf.keras.Model):
         bidirectional=True,
         attention_style="Bahdanau",
         shape=(None, 10, 7),
+        **kwargs,  # Add kwargs to support additional arguments like `trainable`
+
     ):
         super(ILotto, self).__init__(name="")
         self.numbers = numbers
@@ -181,3 +183,23 @@ class ILotto(tf.keras.Model):
         out = self.dense_out(decoder)
 
         return out
+    
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "numbers": self.numbers,
+            "embed_dim": self.embed_dim,
+            "dropout_rate": self.dropout_rate,
+            "spatial_dropout_rate": self.spatial_dropout_rate,
+            "steps_before": self.steps_before,
+            "steps_after": self.steps_after,
+            "hidden_neurons": self.hidden_neurons,
+            "bidirectional": self.bidirectional,
+            "attention_style": self.attention_style,
+            "shape": self.in_shape
+        })
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
