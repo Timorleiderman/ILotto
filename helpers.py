@@ -105,7 +105,7 @@ def fetch_dataset(
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
     res = requests.get(csv_url, headers=headers, timeout=7)
-    res.raise_for_status()  # Raise an error if the request fails
+
     with open(orig_lotto_csv, "wb") as f:
         f.write(res.content)
     ILottoCSV(orig_lotto_csv, lotto_csv_file)
