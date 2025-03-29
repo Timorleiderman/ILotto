@@ -103,11 +103,12 @@ def fetch_dataset(
         os.makedirs(base_dir)
     try:
         res = requests.get(csv_url,timeout=7)
+        res.raise_for_status()
+        with open(orig_lotto_csv, "wb") as f:
+            f.write(res.content)
     except requests.exceptions.Timeout:
         logger.warning("⚠️ Request timed out using the commited csv")
         
-    with open(orig_lotto_csv, "wb") as f:
-        f.write(res.content)
     ILottoCSV(orig_lotto_csv, lotto_csv_file)
     lotto_ds = pd.read_csv(lotto_csv_file, index_col="Date")
     return lotto_ds
