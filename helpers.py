@@ -101,8 +101,11 @@ def fetch_dataset(
     base_dir = os.path.dirname(orig_lotto_csv)
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
-    res = requests.get(csv_url,timeout=7)
-
+    try:
+        res = requests.get(csv_url,timeout=7)
+    except requests.exceptions.Timeout:
+        logger.warning("⚠️ Request timed out using the commited csv")
+        
     with open(orig_lotto_csv, "wb") as f:
         f.write(res.content)
     ILottoCSV(orig_lotto_csv, lotto_csv_file)
