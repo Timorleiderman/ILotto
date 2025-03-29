@@ -151,22 +151,3 @@ class ILotto(tf.keras.Model):
 
         return out
     
-    def get_config(self):
-        config = super().get_config()
-        config.update({
-            "numbers": self.numbers,
-            "embed_dim": self.embed_dim,
-            "dropout_rate": self.dropout_rate,
-            "spatial_dropout_rate": self.spatial_dropout_rate,
-            "steps_before": self.steps_before,
-            "steps_after": self.steps_after,
-            "hidden_neurons": self.hidden_neurons,
-            "bidirectional": self.bidirectional,
-            "attention_style": self.attention_style,
-            "shape": self.in_shape
-        })
-        return config
-
-    @classmethod
-    def from_config(cls, config):
-        return cls(**config)

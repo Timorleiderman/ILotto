@@ -11,6 +11,9 @@ from helpers import fetch_dataset, train_test_split
 setup_logger()
 logger = logging.getLogger(__name__)
 
+EPOCHS = 150
+BATCH_SIZE = 32
+
 
 def plot_results(hist):
     print(hist["val_sparse_top_k"].max())
@@ -25,19 +28,9 @@ def plot_results(hist):
     plt.show()
 
 
-def get_compiled_model(epochs, initial_learning_rate=0.001, lr_max=1e-4, lr_min=1e-6):
+def get_compiled_model():
     # Define your model
     model = ILotto()
-
-    # Define a cosine decay learning rate schedule
-    lr_schedule = tf.keras.optimizers.schedules.CosineDecay(
-        initial_learning_rate=initial_learning_rate,  # Start LR
-        decay_steps=epochs,  # Total epochs
-        alpha=0.0,  # Minimum LR factor (0 means LR reaches 0)
-    )
-
-    # Use the schedule in the optimizer
-    optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
 
     # Define metric
     sparse_top_k = tf.keras.metrics.SparseTopKCategoricalAccuracy(
@@ -46,7 +39,7 @@ def get_compiled_model(epochs, initial_learning_rate=0.001, lr_max=1e-4, lr_min=
 
     # Compile the model
     model.compile(
-        optimizer=optimizer,
+        optimizer="adam",
         loss="sparse_categorical_crossentropy",
         metrics=[sparse_top_k],
     )
@@ -60,10 +53,8 @@ def train(
     y_train,
     X_test,
     y_test,
-    epochs=200,
+    epochs=250,
     batch_size=32,
-    lr_max=1e-4,
-    lr_min=1e-6,
     checkpoint_path="training_2/cp-{epoch:04d}.weights.h5",
 ):
 
@@ -103,20 +94,15 @@ if __name__ == "__main__":
     X_train, y_train, X_test, y_test = train_test_split(lotto_ds)
 
     checkpoint_path = "model/training_0/cp-{epoch:04d}.weights.h5"
-    epochs = 350
-    lr_max = 1e-4
-    lr_min = 1e-6
-    batch_size = 32
-    model = get_compiled_model(epochs, lr_max=lr_max, lr_min=lr_min)
+
+    model = get_compiled_model()
     hist = train(
         model,
         X_train,
         y_train,
         X_test,
         y_test,
-        epochs=epochs,
-        batch_size=batch_size,
-        lr_max=lr_max,
-        lr_min=lr_min,
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
         checkpoint_path=checkpoint_path,
     )

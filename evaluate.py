@@ -5,6 +5,7 @@ from mdutils.mdutils import MdUtils
 
 from ilotto import ILotto
 from logger import setup_logger
+from train import get_compiled_model, EPOCHS, BATCH_SIZE, LR_MAX, LR_MIN
 from helpers import beam_search_decoder
 from helpers import fetch_dataset, train_test_split
 
@@ -18,8 +19,9 @@ def evaluate(model_path, X_test, y_test, beam_width=10):
     mdFile.new_paragraph("Israel Lotto predictor")
     mdFile.new_paragraph()
     mdFile.new_header(level=1, title="Prediction")
-
-    model = tf.keras.models.load_model(model_path, custom_objects={"ILotto": ILotto})
+    
+    model = get_compiled_model()
+    model.load_weights(model_path)
 
     
     logger.info("Model loaded successfully")
