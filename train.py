@@ -11,9 +11,10 @@ from helpers import fetch_dataset, train_test_split
 setup_logger()
 logger = logging.getLogger(__name__)
 
-EPOCHS = 150
+EPOCHS = 60
 BATCH_SIZE = 32
-
+MODEL_CP_PATH = "model/training/cp.weights.h5"
+SAVED_MODEL_PATH = "model/training/ilotto.keras"
 
 def plot_results(hist):
     print(hist["val_sparse_top_k"].max())
@@ -55,7 +56,8 @@ def train(
     y_test,
     epochs=250,
     batch_size=32,
-    checkpoint_path="training_2/cp-{epoch:04d}.weights.h5",
+    checkpoint_path="training/cp.weights.h5",
+    save_model_path="training/model.h5",
 ):
 
     # Define checkpoint callback
@@ -64,6 +66,7 @@ def train(
         monitor="val_sparse_top_k",
         verbose=1,
         save_weights_only=True,
+        save_best_only=False,
         mode="max",
     )
 
@@ -81,19 +84,20 @@ def train(
     # Convert history to DataFrame
     hist = pd.DataFrame(history.history)
 
-    # Save model weights and full model
-    model.save_weights(checkpoint_path.format(epoch=0))
-    model.save("model/Ilotto.keras")
-
+    # Save model weights
+    model.save_weights(checkpoint_path)
+    model.save(save_model_path)
     return hist
 
 
 if __name__ == "__main__":
 
-    lotto_ds = fetch_dataset()
+    orig_lotto_csv="input/Orig_IL_lotto.csv"
+    lotto_csv_file="input/lotto_IL_filtered.csv"
+
+    lotto_ds = fetch_dataset(orig_lotto_csv, lotto_csv_file)
     X_train, y_train, X_test, y_test = train_test_split(lotto_ds)
 
-    checkpoint_path = "model/training_0/cp-{epoch:04d}.weights.h5"
 
     model = get_compiled_model()
     hist = train(
@@ -104,5 +108,6 @@ if __name__ == "__main__":
         y_test,
         epochs=EPOCHS,
         batch_size=BATCH_SIZE,
-        checkpoint_path=checkpoint_path,
+        checkpoint_path=MODEL_CP_PATH,
+        save_model_path=SAVED_MODEL_PATH
     )

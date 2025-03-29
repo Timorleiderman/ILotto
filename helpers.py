@@ -68,7 +68,7 @@ class ILottoCSV(object):
 
 # beam search
 def beam_search_decoder(data, k, replace=True):
-    logger.info("Beam search decoder")
+    logger.debug("Beam search decoder")
     sequences = [[list(), 0.0]]
     # walk over each step in sequence
     for row in data:
