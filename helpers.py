@@ -101,9 +101,10 @@ def fetch_dataset(
     base_dir = os.path.dirname(orig_lotto_csv)
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
-    r = requests.get(csv_url)
+    res = requests.get(csv_url, timeout=10)
+    res.raise_for_status()  # Raise an error if the request fails
     with open(orig_lotto_csv, "wb") as f:
-        f.write(r.content)
+        f.write(res.content)
     ILottoCSV(orig_lotto_csv, lotto_csv_file)
     lotto_ds = pd.read_csv(lotto_csv_file, index_col="Date")
     return lotto_ds
