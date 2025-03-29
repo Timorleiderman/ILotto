@@ -98,10 +98,13 @@ def fetch_dataset(
 ):
 
     csv_url = "https://pais.co.il/Lotto/lotto_resultsDownload.aspx"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
     base_dir = os.path.dirname(orig_lotto_csv)
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
-    res = requests.get(csv_url, timeout=10)
+    res = requests.get(csv_url, headers=headers, timeout=7)
     res.raise_for_status()  # Raise an error if the request fails
     with open(orig_lotto_csv, "wb") as f:
         f.write(res.content)
