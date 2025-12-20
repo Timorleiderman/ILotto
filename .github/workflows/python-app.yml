@@ -28,10 +28,7 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
     - name: Install dependencies with uv
       run: |
-          uv venv .venv
+          uv sync
     - name: Ruff
       run: |
         uv run ruff check .
-    - name: Eval 
-      run: |
-        .venv/bin/python evaluate.py

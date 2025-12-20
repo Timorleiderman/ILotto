@@ -1,97 +1,168 @@
+# ILotto - Israeli Lottery Analysis
 
-ILotto
-======
+A machine learning project for analyzing Israeli Lotto patterns. Built as a learning exercise to explore different neural network architectures, with proper statistical analysis and evaluation metrics.
 
+> **Note:** Lottery numbers are random by design. No model can predict them. This project demonstrates ML concepts, not a winning strategy.
 
-Israel Lotto predictor
+## Features
 
+- **4 Neural Network Architectures** - Seq2Seq, Multi-Output, Transformer, Set Prediction
+- **Statistical Analysis** - Chi-square tests, runs test, serial correlation
+- **Smart Ticket Generator** - Avoids popular combinations to maximize payout if winning
+- **Interactive Visualization** - Netron integration for model architecture exploration
+- **Comprehensive Metrics** - Proper evaluation against random baseline
 
-# Prediction
-  
-***``[12 27 27 27 27 27 27]``***
+## Quick Start
 
+```bash
+# Install dependencies
+uv sync
 
-## Beam Serarch
-  
-Beam Width: 10 replace True
-- Prediction: [12 27 27 27 27 27 27]	Log Likelihood: -25.15162484276538
-- Prediction: [12 12 27 27 27 27 27]	Log Likelihood: -25.152465007128615
-- Prediction: [27 27 27 27 27 27 27]	Log Likelihood: -25.15298185050528
-- Prediction: [12 27 27 27 27 27 17]	Log Likelihood: -25.153547309468685
-- Prediction: [12 27 27 27 27 27 12]	Log Likelihood: -25.153552756366942
-- Prediction: [12 27 12 27 27 27 27]	Log Likelihood: -25.15364752466846
-- Prediction: [27 12 27 27 27 27 27]	Log Likelihood: -25.153822014868517
-- Prediction: [12 27 27 27 27 12 27]	Log Likelihood: -25.153958795605924
-- Prediction: [12 27 27 12 27 27 27]	Log Likelihood: -25.154145040961268
-- Prediction: [12 27 27 27 12 27 27]	Log Likelihood: -25.154193884070626
-  
-Beam Width: 10 replace False
-- Prediction: [12  1 27 17 25 32 36]	Log Likelihood: -25.183216682746668
-- Prediction: [12  1 27 17 25 36 32]	Log Likelihood: -25.183218286413137
-- Prediction: [12 27  1 17 25 32 36]	Log Likelihood: -25.183393414911063
-- Prediction: [12 27  1 17 25 36 32]	Log Likelihood: -25.18339501857753
-- Prediction: [12  1 27 17 36 25 32]	Log Likelihood: -25.18360656075464
-- Prediction: [12 27  1 17 36 25 32]	Log Likelihood: -25.183783292919035
-- Prediction: [12 27 17  1 25 36 32]	Log Likelihood: -25.18425493225365
-- Prediction: [12  1 27 17 25 36 23]	Log Likelihood: -25.185994634699224
-- Prediction: [12  1 27 17 25 36 19]	Log Likelihood: -25.186008483719807
-- Prediction: [12  1 27 17 25 36 37]	Log Likelihood: -25.186066967095066
+# Train a model
+uv run python train.py --model multi_output --epochs 50
 
+# Evaluate
+uv run python evaluate.py
 
+# Generate smart tickets
+uv run python smart_generator.py
 
-## Test set validation
+# View model architecture (opens in browser)
+uv run netron model/multi_output_functional.keras --host 0.0.0.0 --port 8080
+```
 
+## Model Architectures
 
+| Model | Description | Parameters | Mode Collapse Risk |
+|-------|-------------|------------|-------------------|
+| **Original** | Seq2Seq with Bahdanau Attention | ~343K | High |
+| **Multi-Output** | LSTM + 7 Independent Dense Heads | ~123K | Low |
+| **Transformer** | Multi-Head Self-Attention | ~244K | Low |
+| **Set Prediction** | Multi-Label Sigmoid Output | ~193K | Very Low |
 
-|Prediction|GoundTruth|
-| :---: | :---: |
-|[26 26 26 26 18 18 18]|[ 5 12 17 19 21 27  4]|
-|[26 26 26 26 26 26 31]|[ 0  2  7 13 16 32  1]|
-|[11 11 11 31 31 31 31]|[ 1  7 10 20 24 33  1]|
-|[11 11 11 11 11 11 11]|[ 9 10 22 25 28 33  0]|
-|[11 11 26 26 26 25 25]|[ 3  6  8  9 11 26  6]|
-|[26 26 26 26 26 26 26]|[ 2  4 13 18 21 26  1]|
-|[11 11 26 26 26 26 26]|[ 0  3 15 25 26 33  1]|
-|[11 11 26 26 24 35 35]|[10 14 20 21 27 28  0]|
-|[32 32 32 32 25 25 25]|[14 16 20 29 33 36  6]|
-|[11 32 32 32 32 32 32]|[ 1  2  6  9 13 17  0]|
-|[24 24 24 24 24 24 24]|[ 2  6  7 20 23 34  1]|
-|[26 26 26 26 26 26 26]|[ 2 13 24 28 29 30  5]|
-|[26 26 26 26 26 26 26]|[11 12 20 22 23 32  2]|
-|[26 26 26 26 26 26 26]|[ 1 10 16 17 24 33  3]|
-|[26 26 26 26 26 26 26]|[ 9 19 25 27 29 32  2]|
-|[26 26 26 26 26 26 26]|[ 0  4 23 26 27 30  3]|
-|[26 26 26 26 14 14 14]|[ 1  8 11 14 18 36  6]|
-|[26 26 14 14 14 14 14]|[ 6 23 24 26 29 34  6]|
-|[26 26 26 14 14 14 14]|[ 1 10 16 18 19 30  5]|
-|[16 16 16 16 16 16 16]|[ 4  7 13 14 25 30  0]|
-|[26 26 16 16 16 16 16]|[ 3 12 15 29 31 36  0]|
-|[16 16 16 16 16 16 16]|[ 1 14 18 22 25 36  3]|
-|[26 26 26 26 26 25 25]|[10 13 22 23 33 34  2]|
-|[26 26 26 26 26 26 26]|[ 0  5 11 17 30 33  2]|
-|[26 26 26 26 26 25 25]|[ 1 20 24 31 33 34  5]|
-|[26 26 26 26 26 26 26]|[ 3  4 19 22 32 34  4]|
-|[26 26 26 26 26 26 26]|[ 5 16 20 21 27 32  4]|
-|[26 26 26 26 26 26 26]|[ 0  3 11 14 31 32  3]|
-|[26 26 26 26 33 33 33]|[ 5 12 14 23 29 33  6]|
-|[26 26 18 33 33 33 33]|[ 2  6  9 11 14 35  6]|
-|[26 26 26 26 26 26 26]|[13 17 21 25 28 34  4]|
-|[36 36 36 36 36 36 36]|[ 8 20 25 26 30 33  4]|
-|[36 36 36 36 36 36 36]|[ 1  2  5  9 26 31  1]|
-|[35 35 35 35 35 14 14]|[ 9 23 27 30 35 36  5]|
-|[16 35 35 35 35 35 35]|[ 3  4 10 19 26 31  6]|
-|[11 35 35 35 35 35 35]|[10 14 15 21 23 36  0]|
-|[11 35 35 35 35 35 35]|[ 1  6  8 18 19 34  6]|
-|[11 35 35 35 35 35 35]|[ 2  6  9 12 24 32  5]|
-|[35 35 35 35 35 35 35]|[ 2  6 23 27 29 33  0]|
-|[ 3 35 35 35 35 35 35]|[ 3 15 16 23 32 34  4]|
-|[18 35 35 35 35 35 35]|[ 0  5 15 22 25 26  1]|
-|[26 26 35 35 35 35 35]|[11 13 17 20 21 28  3]|
-|[ 7 35 14 14 14 14 14]|[ 3  4  8  9 20 25  1]|
-|[18 18 14 14 14 14 14]|[ 0  2  8 11 28 35  2]|
-|[26 14 14 14 14 14 14]|[ 2  6  8 10 22 33  3]|
-|[26 26 14 14 14 14 14]|[ 0 10 26 31 34 35  2]|
-|[26 26 26 26 26 26 26]|[ 4  5 12 24 27 35  6]|
-|[26 26 26 26 26 16 16]|[13 20 22 25 27 29  4]|
-|[26 26 16 35 35 35 35]|[ 2 14 20 22 26 29  0]|
-|[26 35 35 35 35 35 35]|[18 20 28 29 33 34  1]|
+### Training All Models
+
+```bash
+# Compare all architectures
+uv run python train.py --compare-all --epochs 100
+
+# Train specific model with diversity loss (prevents mode collapse)
+uv run python train.py --model multi_output --epochs 100 --diversity-loss
+```
+
+## Visualization
+
+### Model Architecture Diagrams
+
+```bash
+# Generate matplotlib-based architecture diagrams
+uv run python model_viz.py
+
+# Interactive model viewer (Netron)
+uv run netron model/transformer_functional.keras --host 0.0.0.0 --port 8080
+```
+
+Generated diagrams are saved to `model/diagrams/`:
+- `original_architecture_detailed.png`
+- `multi_output_architecture_detailed.png`
+- `transformer_architecture_detailed.png`
+- `set_prediction_architecture_detailed.png`
+- `all_models_comparison.png`
+- `attention_comparison.png`
+
+### Analysis Charts
+
+```bash
+uv run python visualizations.py
+```
+
+Generates charts in `visualizations/`:
+- Number frequency analysis
+- Co-occurrence heatmaps
+- Model comparison
+- Randomness test results
+
+## Evaluation Results
+
+### Model Performance (vs Random Baseline)
+
+The models are evaluated against a random baseline (expected ~0.97 matches per draw):
+
+| Metric | Value |
+|--------|-------|
+| Samples Evaluated | 50 |
+| Model Avg Matches | 0.24 |
+| Baseline Avg Matches | 0.97 |
+| Improvement | -75% (mode collapse) |
+
+**Key Finding:** The original model suffers from mode collapse, predicting the same numbers repeatedly. The Multi-Output and Transformer architectures perform near random baseline, which is optimal for truly random data.
+
+### Lottery Randomness Tests
+
+| Test | P-Value | Result |
+|------|---------|--------|
+| Chi-square (main balls) | 0.015 | Minor bias |
+| Chi-square (bonus ball) | 0.995 | Random |
+| Runs test | 0.888 | Independent |
+| Serial correlation | 0.861 | No correlation |
+
+## Project Structure
+
+```
+ILotto/
+├── train.py              # Training script with CLI
+├── evaluate.py           # Evaluation and metrics
+├── models.py             # Neural network architectures
+├── ilotto.py             # Original Seq2Seq model
+├── metrics.py            # Statistical evaluation
+├── smart_generator.py    # Unpopular ticket generator
+├── visualizations.py     # Chart generation
+├── model_viz.py          # Architecture diagrams
+├── helpers.py            # Data loading utilities
+├── ARCHITECTURES.md      # Detailed architecture docs
+├── GUIDE.md              # User guide
+├── model/                # Saved models and diagrams
+│   ├── *.keras           # Trained models
+│   ├── *_functional.keras # Functional API models (for Netron)
+│   └── diagrams/         # Architecture visualizations
+├── visualizations/       # Generated charts
+└── input/                # Lottery data
+```
+
+## Documentation
+
+- **[GUIDE.md](GUIDE.md)** - Comprehensive user guide
+- **[ARCHITECTURES.md](ARCHITECTURES.md)** - Detailed architecture explanations with diagrams
+
+## Key Concepts Demonstrated
+
+1. **Seq2Seq with Attention** - Encoder-decoder architecture with Bahdanau attention
+2. **Multi-Head Self-Attention** - Transformer architecture
+3. **Multi-Output Learning** - Independent prediction heads
+4. **Multi-Label Classification** - Set prediction with sigmoid
+5. **Mode Collapse Prevention** - Diversity loss and architecture design
+6. **Statistical Hypothesis Testing** - Chi-square, runs test, correlation
+
+## Smart Tickets
+
+Instead of trying to predict numbers (impossible), the smart generator creates tickets that:
+- Favor high numbers (32-37) - less popular with players
+- Avoid birthday numbers (1-31)
+- Skip sequential patterns
+- Ensure good spread
+
+If you win, you're less likely to share the jackpot.
+
+```bash
+uv run python smart_generator.py --count 10
+```
+
+## Requirements
+
+- Python 3.12+
+- TensorFlow 2.x
+- See `pyproject.toml` for full dependencies
+
+## Disclaimer
+
+**This is an educational project.** Lottery numbers are designed to be random - no prediction method can reliably predict future draws. The models demonstrate ML concepts, not a winning strategy. Please gamble responsibly.

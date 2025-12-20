@@ -1,13 +1,25 @@
-FROM tensorflow/tensorflow:2.3.4-gpu
+FROM python:3.12-slim
 
-RUN pip install pandas numba scipy scikit-learn matplotlib tqdm pydot pydotplus ipykernel
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    graphviz \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN rm /etc/apt/sources.list.d/cuda.list
-RUN rm /etc/apt/sources.list.d/nvidia-ml.list
-RUN apt-key del 7fa2af80
-RUN apt-get update && apt-get install -y --no-install-recommends wget
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb
-RUN dpkg -i cuda-keyring_1.0-1_all.deb
+# Set working directory
+WORKDIR /app
 
-RUN apt install graphviz -y
-RUN apt install git -y
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Create directories for outputs
+RUN mkdir -p model visualizations
+
+# Default command
+CMD ["python", "evaluate.py"]
