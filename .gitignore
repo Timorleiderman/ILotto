@@ -5,3 +5,4 @@ __pycache__/*
 training_*
 *.log
 model/logs/*
+PREDICTION.md

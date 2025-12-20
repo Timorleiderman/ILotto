@@ -55,7 +55,26 @@ Pure heuristic-based ticket generation:
 uv run python smart_generator.py --count 10
 ```
 
-#### Option C: Full Evaluation
+#### Option C: All-Model Predictions
+Generate predictions from ALL trained models into a single report:
+
+```bash
+# Generate predictions from all models
+uv run python predict.py
+
+# Select specific models
+uv run python predict.py --models multi_output transformer
+
+# Generate more tickets per model
+uv run python predict.py --count 10
+```
+
+This creates `PREDICTION.md` with:
+- Greedy predictions + top probabilities per model
+- Hybrid tickets (model + smart scoring)
+- Pure smart tickets for comparison
+
+#### Option D: Full Evaluation
 Run complete evaluation with model predictions, metrics, and smart tickets:
 
 ```bash
@@ -96,6 +115,7 @@ uv run netron model/multi_output_functional.keras --host 0.0.0.0 --port 8080
 
 | Task | Command |
 |------|---------|
+| **All-model predictions** | `uv run python predict.py` |
 | **Get predictions** | `uv run python smart_generator.py --model multi_output --count 5` |
 | **Full evaluation** | `uv run python evaluate.py` |
 | **Train model** | `uv run python train.py --model multi_output --epochs 50` |
@@ -215,12 +235,13 @@ The models are evaluated against a random baseline (expected ~0.97 matches per d
 
 ```
 ILotto/
+├── predict.py            # All-model prediction generator
 ├── train.py              # Training script with CLI
 ├── evaluate.py           # Evaluation and metrics
 ├── models.py             # Neural network architectures
 ├── ilotto.py             # Original Seq2Seq model
 ├── metrics.py            # Statistical evaluation
-├── smart_generator.py    # Unpopular ticket generator
+├── smart_generator.py    # Hybrid + smart ticket generator
 ├── visualizations.py     # Chart generation
 ├── model_viz.py          # Architecture diagrams
 ├── helpers.py            # Data loading utilities

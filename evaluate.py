@@ -61,7 +61,7 @@ def evaluate_model(
     }
 
 
-def generate_readme(
+def generate_prediction_report(
     model_results: dict,
     y_test: np.ndarray,
     metrics_comparison: dict,
@@ -69,15 +69,14 @@ def generate_readme(
     smart_tickets: list,
     beam_width: int = 10,
 ):
-    """Generate comprehensive README with all results."""
+    """Generate PREDICTION.md with all results."""
     
-    mdFile = MdUtils(file_name="README", title="ILotto - Israeli Lottery Analysis")
+    mdFile = MdUtils(file_name="PREDICTION", title="ILotto - Lottery Predictions")
     
     # Introduction
     mdFile.new_paragraph(
-        "A machine learning project for analyzing Israeli Lotto patterns. "
-        "Includes proper statistical analysis, model evaluation metrics, and "
-        "smart ticket generation to avoid popular combinations."
+        "Generated predictions from the ILotto neural network model. "
+        "Includes model predictions, smart tickets, and evaluation metrics."
     )
     
     # Model Prediction Section
@@ -199,7 +198,7 @@ def generate_readme(
     )
     
     mdFile.create_md_file()
-    logger.info("README.md created successfully")
+    logger.info("PREDICTION.md created successfully")
 
 
 def run_full_evaluation(
@@ -252,9 +251,9 @@ def run_full_evaluation(
     )
     print_tickets(smart_tickets, f"Top {n_smart_tickets} Smart Tickets")
     
-    # Generate README
-    print("\n[6/6] Generating README.md...")
-    generate_readme(
+    # Generate PREDICTION.md
+    print("\n[6/6] Generating PREDICTION.md...")
+    generate_prediction_report(
         model_results=model_results,
         y_test=y_test,
         metrics_comparison=comparison,
@@ -270,7 +269,7 @@ def run_full_evaluation(
     print("                    EVALUATION COMPLETE")
     print("=" * 70)
     print("\nFiles generated:")
-    print("  - README.md (comprehensive report)")
+    print("  - PREDICTION.md (comprehensive report)")
     print("\nNext steps:")
     print("  - Review the metrics to understand model performance")
     print("  - Use smart tickets if you decide to play")
