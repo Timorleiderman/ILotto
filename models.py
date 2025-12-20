@@ -320,6 +320,7 @@ class SetPredictionLotto(Model):
         return config
 
 
+@saving.register_keras_serializable(package="ILotto")
 class DiversityLoss(tf.keras.losses.Loss):
     """
     Custom loss that penalizes predicting the same number repeatedly.

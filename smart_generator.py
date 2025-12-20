@@ -372,38 +372,302 @@ def analyze_ticket(ticket: List[int], scorer: TicketScorer) -> None:
         print("  Assessment: Average - many people might pick similar numbers")
 
 
+class HybridGenerator:
+    """
+    Combines neural network predictions with smart scoring.
+    
+    The model provides probability distributions over numbers,
+    and we sample from them while applying smart scoring to
+    maximize unpopularity (higher payout if you win).
+    """
+    
+    def __init__(
+        self,
+        model,
+        historical_data: Optional[np.ndarray] = None,
+        model_weight: float = 0.5,
+    ):
+        """
+        Args:
+            model: Trained Keras model that outputs (batch, 7, 37) probabilities
+            historical_data: Historical lottery data for smart scoring
+            model_weight: Weight given to model vs smart scoring (0-1)
+                         0 = pure smart, 1 = pure model
+        """
+        self.model = model
+        self.model_weight = model_weight
+        self.scorer = TicketScorer(historical_data)
+        self.n_main = MAIN_NUMBERS
+        self.n_bonus = BONUS_NUMBERS
+    
+    def get_model_probabilities(self, X_input: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Get probability distributions from model.
+        
+        Returns:
+            main_probs: (37,) average probability for each main number
+            bonus_probs: (7,) probability for each bonus number
+        """
+        # Get model prediction
+        pred = self.model.predict(X_input, verbose=0)
+        
+        # pred shape: (1, 7, 37) - 7 positions, 37 classes each
+        # Average across positions for main balls, take last for bonus
+        pred = pred[0]  # Remove batch dimension
+        
+        # Main balls: average probabilities across first 6 positions
+        main_probs = np.mean(pred[:6, :self.n_main], axis=0)
+        main_probs = main_probs / main_probs.sum()  # Renormalize
+        
+        # Bonus: use the 7th position, first 7 classes
+        bonus_probs = pred[6, :self.n_bonus]
+        bonus_probs = bonus_probs / bonus_probs.sum()  # Renormalize
+        
+        return main_probs, bonus_probs
+    
+    def generate_hybrid_ticket(
+        self,
+        X_input: np.ndarray,
+        temperature: float = 1.0,
+    ) -> List[int]:
+        """
+        Generate a ticket using model probabilities + random sampling.
+        
+        Args:
+            X_input: Input sequence for model (batch, seq_len, 7)
+            temperature: Sampling temperature (higher = more random)
+        """
+        main_probs, bonus_probs = self.get_model_probabilities(X_input)
+        
+        # Apply temperature
+        if temperature != 1.0:
+            main_probs = np.power(main_probs, 1/temperature)
+            main_probs = main_probs / main_probs.sum()
+            bonus_probs = np.power(bonus_probs, 1/temperature)
+            bonus_probs = bonus_probs / bonus_probs.sum()
+        
+        # Sample 6 unique main numbers
+        main_balls = []
+        remaining_probs = main_probs.copy()
+        
+        for _ in range(6):
+            # Sample one number
+            idx = np.random.choice(self.n_main, p=remaining_probs)
+            main_balls.append(idx + 1)  # 1-indexed
+            # Zero out probability and renormalize
+            remaining_probs[idx] = 0
+            if remaining_probs.sum() > 0:
+                remaining_probs = remaining_probs / remaining_probs.sum()
+        
+        # Sample bonus
+        bonus = np.random.choice(self.n_bonus, p=bonus_probs) + 1
+        
+        return sorted(main_balls) + [bonus]
+    
+    def generate_hybrid_tickets(
+        self,
+        X_input: np.ndarray,
+        n_tickets: int = 5,
+        n_candidates: int = 1000,
+        temperature: float = 1.5,
+        min_score: float = 0.5,
+    ) -> List[Tuple[List[int], Dict]]:
+        """
+        Generate tickets combining model predictions and smart scoring.
+        
+        Strategy:
+        1. Get model probabilities once
+        2. Sample many tickets using those probabilities
+        3. Score each with smart scorer
+        4. Return top tickets by combined score
+        
+        Args:
+            X_input: Model input (latest sequence)
+            n_tickets: Number of tickets to return
+            n_candidates: Candidates to generate
+            temperature: Sampling temperature (higher = more diverse)
+            min_score: Minimum smart score to consider
+        """
+        # Get probabilities ONCE
+        main_probs, bonus_probs = self.get_model_probabilities(X_input)
+        
+        # Apply temperature
+        if temperature != 1.0:
+            main_probs = np.power(main_probs, 1/temperature)
+            main_probs = main_probs / main_probs.sum()
+            bonus_probs = np.power(bonus_probs, 1/temperature)
+            bonus_probs = bonus_probs / bonus_probs.sum()
+        
+        candidates = []
+        
+        for _ in range(n_candidates):
+            # Sample ticket using pre-computed probabilities
+            main_balls = []
+            remaining_probs = main_probs.copy()
+            
+            for _ in range(6):
+                idx = np.random.choice(self.n_main, p=remaining_probs)
+                main_balls.append(idx + 1)
+                remaining_probs[idx] = 0
+                if remaining_probs.sum() > 0:
+                    remaining_probs = remaining_probs / remaining_probs.sum()
+            
+            bonus = np.random.choice(self.n_bonus, p=bonus_probs) + 1
+            ticket = sorted(main_balls) + [bonus]
+            
+            # Score with smart scorer
+            smart_scores = self.scorer.score_ticket(ticket)
+            smart_score = smart_scores["total"]
+            
+            # Skip if too "popular"
+            if smart_score < min_score:
+                continue
+            
+            # Calculate model score (how much model "likes" this ticket)
+            model_score = 0
+            for num in ticket[:6]:
+                model_score += main_probs[num - 1]
+            model_score /= 6
+            model_score += bonus_probs[ticket[6] - 1]
+            model_score /= 2
+            model_score += bonus_probs[ticket[6] - 1]
+            model_score /= 2
+            
+            # Combined score
+            combined = (
+                self.model_weight * model_score + 
+                (1 - self.model_weight) * smart_score
+            )
+            
+            smart_scores["model_score"] = model_score
+            smart_scores["combined"] = combined
+            
+            candidates.append((ticket, smart_scores))
+        
+        # Sort by combined score
+        candidates.sort(key=lambda x: x[1]["combined"], reverse=True)
+        
+        # Return top unique tickets
+        selected = []
+        seen = set()
+        
+        for ticket, scores in candidates:
+            key = tuple(ticket[:6])
+            if key not in seen:
+                selected.append((ticket, scores))
+                seen.add(key)
+                if len(selected) >= n_tickets:
+                    break
+        
+        return selected
+
+
+def print_hybrid_tickets(
+    tickets: List[Tuple[List[int], Dict]], 
+    title: str = "Hybrid Model + Smart Tickets"
+):
+    """Print hybrid tickets with model and smart scores."""
+    print(f"\n{'=' * 70}")
+    print(f"  {title}")
+    print(f"{'=' * 70}")
+    
+    for i, (ticket, scores) in enumerate(tickets, 1):
+        main = ticket[:6]
+        bonus = ticket[6]
+        
+        main_str = " ".join(f"{n:2d}" for n in main)
+        
+        print(f"\n  Ticket #{i}:")
+        print(f"    Numbers:  [{main_str}]  Bonus: {bonus}")
+        print(f"    Combined Score: {scores['combined']:.3f}")
+        print(f"    ├─ Model confidence: {scores['model_score']:.3f}")
+        print(f"    └─ Smart score:      {scores['total']:.3f}")
+        print(f"       (high={scores['high_numbers']:.2f} spread={scores['spread']:.2f} "
+              f"seq={scores['sequence_avoidance']:.2f})")
+    
+    print(f"\n{'=' * 70}")
+
+
 if __name__ == "__main__":
-    from helpers import fetch_dataset
+    import argparse
+    from helpers import fetch_dataset, train_test_split
+    
+    parser = argparse.ArgumentParser(description="Generate smart lottery tickets")
+    parser.add_argument("--count", "-n", type=int, default=5, help="Number of tickets")
+    parser.add_argument("--model", "-m", type=str, default=None, 
+                       choices=["original", "multi_output", "transformer"],
+                       help="Use model predictions (hybrid mode)")
+    parser.add_argument("--model-weight", "-w", type=float, default=0.5,
+                       help="Weight for model vs smart (0-1, higher = more model)")
+    parser.add_argument("--temperature", "-t", type=float, default=1.5,
+                       help="Sampling temperature (higher = more diverse)")
+    args = parser.parse_args()
     
     # Load historical data
     print("Loading historical lottery data...")
     lotto_ds = fetch_dataset()
-    historical_data = lotto_ds.values  # Keep 1-indexed for analysis
+    historical_data = lotto_ds.values
     
-    # Create generator with historical data
-    generator = SmartTicketGenerator(historical_data - 1)  # Convert to 0-indexed for internal use
+    if args.model:
+        # Hybrid mode: use model + smart scoring
+        print(f"\nLoading {args.model} model for hybrid generation...")
+        from train import get_compiled_model
+        
+        # Always create model and load weights (more reliable than loading .keras)
+        model = get_compiled_model(args.model)
+        
+        # Build model by calling it once with dummy data
+        import tensorflow as tf
+        dummy_input = tf.zeros((1, 10, 7))
+        _ = model(dummy_input)
+        
+        weights_path = f"model/{args.model}_best.weights.h5"
+        model.load_weights(weights_path)
+        print(f"  Loaded weights from {weights_path}")
+        
+        # Get latest sequence for prediction
+        X_train, y_train, X_test, y_test = train_test_split(lotto_ds)
+        X_latest = X_test[0][1:]  # Remove first, add last
+        X_latest = np.concatenate([X_latest, y_test[0].reshape(1, 7)], axis=0)
+        X_latest = X_latest.reshape(1, X_latest.shape[0], X_latest.shape[1])
+        
+        # Create hybrid generator
+        hybrid_gen = HybridGenerator(
+            model=model,
+            historical_data=historical_data - 1,
+            model_weight=args.model_weight,
+        )
+        
+        # Generate hybrid tickets
+        print(f"\nGenerating {args.count} hybrid tickets...")
+        print(f"  Model weight: {args.model_weight:.0%} model, {1-args.model_weight:.0%} smart")
+        print(f"  Temperature: {args.temperature}")
+        
+        tickets = hybrid_gen.generate_hybrid_tickets(
+            X_input=X_latest,
+            n_tickets=args.count,
+            n_candidates=5000,
+            temperature=args.temperature,
+        )
+        print_hybrid_tickets(tickets, f"Hybrid Tickets ({args.model} model + smart scoring)")
+        
+    else:
+        # Pure smart mode (no model)
+        generator = SmartTicketGenerator(historical_data - 1)
+        
+        print(f"\nGenerating {args.count} smart tickets...")
+        smart_tickets = generator.generate_optimized_tickets(
+            n_tickets=args.count, 
+            n_candidates=5000
+        )
+        print_tickets(smart_tickets, f"Top {args.count} Smart Tickets (Unpopular Combinations)")
+        
+        # Also show coverage tickets if multiple
+        if args.count >= 3:
+            print("\nGenerating diverse coverage tickets...")
+            coverage_tickets = generator.generate_coverage_tickets(n_tickets=args.count)
+            print_tickets(coverage_tickets, f"{args.count} Diverse Coverage Tickets")
     
-    # Generate optimized tickets
-    print("\nGenerating optimized tickets...")
-    smart_tickets = generator.generate_optimized_tickets(n_tickets=5, n_candidates=5000)
-    print_tickets(smart_tickets, "Top 5 Smart Tickets (Unpopular Combinations)")
-    
-    # Generate coverage tickets (good if buying multiple)
-    print("\nGenerating diverse coverage tickets...")
-    coverage_tickets = generator.generate_coverage_tickets(n_tickets=5)
-    print_tickets(coverage_tickets, "5 Diverse Coverage Tickets")
-    
-    # Analyze a sample popular ticket for comparison
-    print("\n" + "=" * 60)
-    print("  Comparison: Popular vs Unpopular Tickets")
-    print("=" * 60)
-    
-    scorer = TicketScorer(historical_data - 1)
-    
-    print("\nA 'popular' ticket (birthdays + sequence):")
-    popular_ticket = [1, 2, 3, 7, 14, 21, 3]  # Sequential + all low numbers
-    analyze_ticket(popular_ticket, scorer)
-    
-    print("\nOur best smart ticket:")
-    best_ticket = smart_tickets[0][0]
-    analyze_ticket(best_ticket, scorer)
+    print("\n💡 Tip: These tickets maximize expected payout IF you win,")
+    print("   by avoiding numbers that other players commonly pick.")
+    print("   Remember: lottery is random, play responsibly!")
