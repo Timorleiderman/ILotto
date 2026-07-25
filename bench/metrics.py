@@ -70,7 +70,9 @@ def prize_tier(n_matched: int, strong_hit: bool) -> str:
     return "no prize"
 
 
-def summarise(match_counts: np.ndarray, losses: np.ndarray, strong_hits: np.ndarray) -> dict:
+def summarise(
+    match_counts: np.ndarray, losses: np.ndarray | None, strong_hits: np.ndarray
+) -> dict:
     """Aggregate one predictor's walk-forward results with significance."""
     n = len(match_counts)
     mean_matches = float(np.mean(match_counts))
@@ -90,7 +92,8 @@ def summarise(match_counts: np.ndarray, losses: np.ndarray, strong_hits: np.ndar
         "match_se": se,
         "z_score": float(z),
         "p_value": p_two_sided,
-        "mean_log_loss": float(np.mean(losses)),
+        # None for rank-only predictors: see `Predictor.emits_probabilities`.
+        "mean_log_loss": None if losses is None else float(np.mean(losses)),
         "baseline_log_loss": BASELINE_LOGLOSS,
         "best_draw_matches": int(np.max(match_counts)),
         "hit_3plus_rate": float(np.mean(match_counts >= 3)),

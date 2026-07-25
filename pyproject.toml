@@ -33,6 +33,9 @@ line-length = 110
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# `uv run pytest` does not put the project root on sys.path the way
+# `python -m pytest` does, so `bench` would not import under CI without this.
+pythonpath = ["."]
 filterwarnings = ["ignore::DeprecationWarning"]
 
 [dependency-groups]

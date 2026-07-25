@@ -129,6 +129,54 @@ def test_predictor_contract(predictor):
     assert len(set(picks.tolist())) == 6
 
 
+def test_log_loss_is_withheld_from_rank_only_predictors():
+    """Normalising ranks or negated counts into a distribution is meaningless.
+
+    The cold-frequency predictor is the sharp case: its scores are all negative,
+    so clipping collapses them to the uniform prior and it would report exactly
+    the baseline log loss regardless of how it ranked the numbers.
+    """
+    d = fake_draws(400, seed=4)
+    cold = backtest.walk_forward(
+        predictors.Frequency(cold=True), d, n_test=30, min_history=100
+    )
+    hot = backtest.walk_forward(predictors.Frequency(), d, n_test=30, min_history=100)
+    assert cold.summary["mean_log_loss"] is None
+    assert hot.summary["mean_log_loss"] is not None
+
+
+def test_rank_only_predictors_declare_themselves():
+    ranked = {"Overdue (longest absence)", "Rank ensemble", "Sum-targeted combination"}
+    for p in predictors.statistical_suite():
+        if p.name in ranked:
+            assert not p.emits_probabilities, p.name
+
+
+def test_verdict_covers_randomness_tests_too(tmp_path):
+    """A significant randomness test must flip the headline even if no strategy wins."""
+    from bench import report
+
+    d = fake_draws(300, seed=6)
+    results = backtest.run_suite([predictors.UniformRandom(seed=1)], d, n_test=30)
+    assert not any(r.summary["significant_after_correction"] for r in results)
+
+    rigged = [{"test": "rigged", "statistic": 99.0, "dof": 1, "p_value": 1e-9, "detail": ""}]
+    html = report.build(
+        d,
+        rigged,
+        results,
+        {"n_trials": 10, "mean": 0.97, "std": 0.05, "p95": 1.05, "max": 1.1,
+         "samples": np.full(10, 0.97)},
+        [],
+        __import__("pandas").DataFrame(
+            {"year": [2012], "draws": [1], "max_ball": [37], "max_strong": [7],
+             "dropped_by_legacy_filter": [0], "kept_pct": [100.0]}
+        ),
+        out_path=str(tmp_path / "report.html"),
+    )
+    assert "signal detected" in html and "no signal detected" not in html
+
+
 def test_neural_predictor_end_to_end():
     from bench.nn import NeuralPredictor
 

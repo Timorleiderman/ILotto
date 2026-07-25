@@ -27,6 +27,14 @@ class Predictor:
     description = ""
     #: Refit cadence in draws for models with a `fit` step (0 = never refit).
     refit_every = 0
+    #: True only when `scores` returns values proportional to a genuine
+    #: inclusion probability per number. Log loss is a proper scoring rule, so
+    #: it is meaningless for predictors that emit ranks, gaps or signed values:
+    #: normalising those into a distribution is an arbitrary transform, and for
+    #: all-negative scores it collapses to the uniform prior and reports exactly
+    #: the baseline no matter how the numbers were ranked. Those predictors get
+    #: no log loss rather than a flattering one.
+    emits_probabilities = False
 
     def fit(self, history: Draws) -> None:  # noqa: D102
         pass
@@ -55,6 +63,9 @@ class Frequency(Predictor):
     def __init__(self, window: int | None = None, cold: bool = False):
         self.window = window
         self.cold = cold
+        # Counts normalise to a real categorical distribution; negated counts
+        # do not, so the cold variant is scored on matches only.
+        self.emits_probabilities = not cold
         span = "all-time" if window is None else f"last {window} draws"
         self.name = f"{'Cold' if cold else 'Hot'} numbers ({span})"
         self.description = (
@@ -73,6 +84,8 @@ class Frequency(Predictor):
 
 class ExponentialRecency(Predictor):
     """Frequency with exponential forgetting: recent draws count for more."""
+
+    emits_probabilities = True
 
     def __init__(self, half_life: int = 50):
         self.half_life = half_life
@@ -151,6 +164,8 @@ class SequentialMarkov(Predictor):
     """
 
     name = "Lag-1 persistence"
+    # Returns P(number drawn | its state last draw) per number: calibrated.
+    emits_probabilities = True
     description = (
         "Estimates, for each number independently, the probability it is drawn given whether it "
         "was drawn last time, then scores by that conditional probability."

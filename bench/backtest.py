@@ -59,11 +59,16 @@ def walk_forward(
         actual = draws.balls[i]
 
         match_counts.append(metrics.matches(ball_scores, actual))
-        losses.append(metrics.log_loss(ball_scores, actual))
+        if predictor.emits_probabilities:
+            losses.append(metrics.log_loss(ball_scores, actual))
         strong_hits.append(int(np.argmax(strong_scores) + 1 == draws.strong[i]))
 
     match_counts = np.asarray(match_counts)
-    summary = metrics.summarise(match_counts, np.asarray(losses), np.asarray(strong_hits))
+    summary = metrics.summarise(
+        match_counts,
+        np.asarray(losses) if predictor.emits_probabilities else None,
+        np.asarray(strong_hits),
+    )
 
     return Result(
         name=predictor.name,

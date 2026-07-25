@@ -127,11 +127,18 @@ def build(
     now = datetime.now(timezone.utc)
     last_date = np.datetime_as_string(draws.dates[-1], unit="D")
     best = results[0]
-    any_signal = any(r.summary["significant_after_correction"] for r in results)
 
     # --- randomness tests, family-corrected -------------------------------
     test_p = {t["test"]: t["p_value"] for t in tests}
     test_sig = metrics.holm_bonferroni(test_p)
+
+    # The verdict covers *both* families. A significant randomness test with no
+    # significant predictor is still a change in draw behaviour, and is exactly
+    # the case this page exists to catch; keying the headline off the strategy
+    # table alone would report "no signal" while the test table said otherwise.
+    any_signal = any(r.summary["significant_after_correction"] for r in results) or any(
+        test_sig.values()
+    )
 
     # --- charts ------------------------------------------------------------
     strat_chart = charts.barh(
@@ -191,7 +198,7 @@ def build(
             f"{r.summary['lift_pct']:+.1f}%",
             f"{r.summary['z_score']:+.2f}",
             f"{r.summary['p_value']:.3f}",
-            f"{r.summary['mean_log_loss']:.4f}",
+            "&mdash;" if r.summary["mean_log_loss"] is None else f"{r.summary['mean_log_loss']:.4f}",
             f"{r.summary['strong_accuracy']:.3f}",
             _pill(r.summary["significant_after_correction"]),
         ]
@@ -238,6 +245,7 @@ def build(
             f"which is what &ldquo;no information&rdquo; looks like.</p></div>"
         )
 
+    n_calibrated = sum(1 for r in results if r.summary["mean_log_loss"] is not None)
     verdict_pill = (
         '<span class="pill yes">signal detected</span>'
         if any_signal
@@ -314,8 +322,13 @@ the window.</figcaption></figure>
 )}
 <p>Two columns deserve attention. <strong>Log loss</strong> is a proper scoring rule &mdash; it grades
 the full probability distribution a strategy assigns, not just its top six &mdash; and a uniform
-guess scores exactly ln({N_NUMBERS}) = {metrics.BASELINE_LOGLOSS:.4f}. Nothing here beats that, which
-means no strategy holds information about the next draw even in principle. <strong>Verdict</strong>
+guess scores exactly ln({N_NUMBERS}) = {metrics.BASELINE_LOGLOSS:.4f}. It is shown only for the
+{n_calibrated} strategies that emit genuine per-number inclusion probabilities; the rest produce
+ranks, gaps or indicator values, and normalising those into a distribution would be an arbitrary
+transform that says nothing about calibration (for all-negative scores it collapses to the uniform
+prior and would report exactly the baseline no matter how the numbers were ranked). Among the
+strategies where the number means something, <strong>none beats the uniform guess</strong>, which
+means none holds information about the next draw even in principle. <strong>Verdict</strong>
 applies Holm&ndash;Bonferroni across all {len(results)} strategies, because the highest of
 {len(results)} noisy numbers is high by construction.</p>
 

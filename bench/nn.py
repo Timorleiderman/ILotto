@@ -130,6 +130,9 @@ def _positional(length: int, dim: int) -> np.ndarray:
 class NeuralPredictor(Predictor):
     """Walk-forward wrapper: refits periodically, scores every draw."""
 
+    # Sigmoid heads trained with BCE emit per-number inclusion probabilities.
+    emits_probabilities = True
+
     def __init__(
         self,
         arch: str = "gru",

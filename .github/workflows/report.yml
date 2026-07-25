@@ -1,10 +1,12 @@
 name: Build & publish report
 
 on:
-  # Israeli Lotto draws are Tuesday and Thursday evenings (Asia/Jerusalem).
-  # Rebuild the morning after each, in UTC.
+  # Draw days in the archive since 2012: Tuesday (707) and Saturday (703),
+  # plus a Thursday run that appears intermittently (161). Draws are in the
+  # evening, Asia/Jerusalem, so rebuild the *following* morning in UTC:
+  # Sunday (after Sat), Wednesday (after Tue), Friday (after any Thu).
   schedule:
-    - cron: "0 6 * * 3,6"
+    - cron: "0 6 * * 0,3,5"
   push:
     branches: [main]
     paths:
