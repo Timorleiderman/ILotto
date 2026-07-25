@@ -1,8 +1,13 @@
 *.hdf5
 *.png
-__pycache__/*
 8.pyc
 training_*
 *.log
 model/logs/*
 PREDICTION.md
+
+# Python bytecode (the original __pycache__/* rule only matched the top level)
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
