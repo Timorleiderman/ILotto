@@ -48,7 +48,7 @@ jobs:
         run: uv sync --frozen || uv sync
 
       - name: Lint
-        run: uv run ruff check ilotto scripts
+        run: uv run ruff check bench scripts tests
 
       - name: Tests
         run: uv run pytest -q
