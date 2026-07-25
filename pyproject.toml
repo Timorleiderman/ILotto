@@ -1,7 +1,7 @@
 [project]
 name = "ilotto"
 version = "0.1.0"
-description = "Add your description here"
+description = "An honest benchmark of lottery-prediction methods against the Israeli 6/37 Lotto"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -16,6 +16,7 @@ dependencies = [
     "pydot>=3.0.4",
     "pydotplus>=2.0.2",
     "pyyaml>=6.0.2",
+    "requests>=2.32.0",
     "ruff>=0.11.2",
     "scikit-learn>=1.6.1",
     "scipy>=1.15.2",
@@ -24,5 +25,20 @@ dependencies = [
 ]
 
 
+[tool.ruff]
+line-length = 110
+
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = ["F401"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# `uv run pytest` does not put the project root on sys.path the way
+# `python -m pytest` does, so `bench` would not import under CI without this.
+pythonpath = ["."]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

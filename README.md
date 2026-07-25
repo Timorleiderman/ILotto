@@ -4,6 +4,10 @@ A machine learning project for analyzing Israeli Lotto patterns. Built as a lear
 
 > **Note:** Lottery numbers are random by design. No model can predict them. This project demonstrates ML concepts, not a winning strategy.
 
+**📊 [Read the published report →](https://timorleiderman.github.io/ILotto/)** — rebuilt
+automatically after every draw: randomness tests, 13 strategies benchmarked walk-forward
+against exact nulls, and next-draw picks.
+
 ## Features
 
 - **4 Neural Network Architectures** - Seq2Seq, Multi-Output, Transformer, Set Prediction
@@ -12,6 +16,7 @@ A machine learning project for analyzing Israeli Lotto patterns. Built as a lear
 - **Smart Ticket Generator** - Avoids popular combinations to maximize payout if winning
 - **Interactive Visualization** - Netron integration for model architecture exploration
 - **Comprehensive Metrics** - Proper evaluation against random baseline
+- **Leak-Free Benchmark** - Walk-forward harness with Holm–Bonferroni correction, published to GitHub Pages
 
 ---
 
@@ -209,27 +214,56 @@ Generates charts in `visualizations/`:
 
 ## Evaluation Results
 
-### Model Performance (vs Random Baseline)
+### The data pipeline had to be fixed first
 
-The models are evaluated against a random baseline (expected ~0.97 matches per draw):
+The numbers below changed once `helpers.py`'s data handling was corrected. Three issues,
+each now guarded by a test in `tests/`:
 
-| Metric | Value |
-|--------|-------|
-| Samples Evaluated | 50 |
-| Model Avg Matches | 0.24 |
-| Baseline Avg Matches | 0.97 |
-| Improvement | -75% (mode collapse) |
+| Issue | Effect |
+|---|---|
+| Rows filtered by **ball value ≤ 37** | A selection on the *outcome*, not a format filter — it deletes every historic draw containing a high number and keeps the low ones, biasing the surviving frequency table downward. It discarded ~2,000 of ~2,100 pre-2004 draws |
+| Draws consumed **newest-first** | Sequence windows trained models to predict the past from the future |
+| **Mixed game formats** | The archive spans 6/49-ish (to 2004), 6/34 with strong 1–10 (to 2008) and 6/37 (2009+). Only the 1,629 draws from 2012 on are one game |
 
-**Key Finding:** The original model suffers from mode collapse, predicting the same numbers repeatedly. The Multi-Output and Transformer architectures perform near random baseline, which is optimal for truly random data.
+The era is now selected by **date**, which is unbiased. This matters for the conclusions:
+the previously reported chi-square on the main balls (p = 0.015, "minor bias") was an
+artifact of that filter. On clean single-era data it is **p = 0.50** — no bias at all.
 
-### Lottery Randomness Tests
+### Randomness tests (2012+, 1,629 draws)
 
 | Test | P-Value | Result |
 |------|---------|--------|
-| Chi-square (main balls) | 0.015 | Minor bias |
-| Chi-square (bonus ball) | 0.995 | Random |
-| Runs test | 0.888 | Independent |
-| Serial correlation | 0.861 | No correlation |
+| Ball frequency uniformity (chi-square) | 0.504 | Uniform |
+| Strong-number uniformity (chi-square) | 0.845 | Uniform |
+| Lag-1 serial independence (hot/due) | 0.315 | Independent |
+| Appearance-gap distribution vs geometric | 0.432 | As expected |
+| Pairwise co-occurrence (666 pairs, Šidák) | 0.122 | No structure |
+| Draw-sum distribution (KS) | 0.710 | As expected |
+| First-half vs second-half drift | 0.863 | Stationary |
+
+Nothing fires, before or after Holm–Bonferroni correction.
+
+### Strategy benchmark
+
+Thirteen strategies evaluated walk-forward — for each draw a strategy sees only the draws
+before it. A randomly filled ticket scores 6×6/37 = **0.973** matches per draw; that is the
+bar. **No strategy beats it after correcting for the number of strategies tried, and none
+beats uniform log-loss (ln 37 = 3.611)** — meaning none holds information even in principle.
+
+The instability is the finding: refreshing the archive by 93 draws completely reshuffled
+the leaderboard ("Hot last 100" fell from p = 0.007 to p = 0.084). For scale, the luckiest
+of 5,000 *purely random* strategies outscored the best real one.
+
+Full detail, charts and next-draw picks: **[the published report](https://timorleiderman.github.io/ILotto/)**.
+
+### Benchmark commands
+
+```bash
+uv run pytest -q                                   # 24 tests, ~4s
+uv run python scripts/build_report.py --quick      # skip the neural models
+uv run python scripts/build_report.py --refresh    # full run against fresh data (~80s)
+open docs/index.html
+```
 
 ## Project Structure
 
@@ -245,6 +279,17 @@ ILotto/
 ├── visualizations.py     # Chart generation
 ├── model_viz.py          # Architecture diagrams
 ├── helpers.py            # Data loading utilities
+├── bench/                # Leak-free benchmark package
+│   ├── data.py           # Era-aware loading; chronological; no outcome filtering
+│   ├── randomness.py     # 7 tests for exploitable structure
+│   ├── predictors.py     # Frequency/Markov/ensemble strategies
+│   ├── nn.py             # GRU + Transformer set prediction
+│   ├── metrics.py        # Order-invariant scoring, exact nulls, Holm–Bonferroni
+│   ├── backtest.py       # Walk-forward harness + Monte-Carlo null
+│   └── report.py         # Builds docs/index.html
+├── scripts/build_report.py
+├── tests/                # Regression guards for the bugs above
+├── docs/                 # Published GitHub Pages report
 ├── ARCHITECTURES.md      # Detailed architecture docs
 ├── GUIDE.md              # User guide
 ├── model/                # Saved models and diagrams
@@ -291,6 +336,13 @@ uv run python smart_generator.py --model multi_output --count 10
 - Python 3.12+
 - TensorFlow 2.x
 - See `pyproject.toml` for full dependencies
+
+## Publishing
+
+`.github/workflows/report.yml` rebuilds the report every Wednesday and Saturday morning UTC
+(the mornings after the Tuesday/Thursday draws), commits the refreshed draw archive, and
+deploys `docs/` to GitHub Pages. `ci.yml` runs ruff, the test suite and a quick report build
+on every push and PR.
 
 ## Disclaimer
 

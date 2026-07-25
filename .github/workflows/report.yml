@@ -1,0 +1,98 @@
+name: Build & publish report
+
+on:
+  # Draw days in the archive since 2012: Tuesday (707) and Saturday (703),
+  # plus a Thursday run that appears intermittently (161). Draws are in the
+  # evening, Asia/Jerusalem, so rebuild the *following* morning in UTC:
+  # Sunday (after Sat), Wednesday (after Tue), Friday (after any Thu).
+  schedule:
+    - cron: "0 6 * * 0,3,5"
+  push:
+    branches: [main]
+    paths:
+      - "bench/**"
+      - "scripts/**"
+      - ".github/workflows/report.yml"
+  workflow_dispatch:
+    inputs:
+      n_test:
+        description: "Walk-forward window length"
+        default: "300"
+
+permissions:
+  contents: read
+
+# Never let two publishes race; a queued run supersedes a running one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Write access is only for committing the refreshed draw archive below.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --frozen || uv sync
+
+      - name: Lint
+        run: uv run ruff check ilotto scripts
+
+      - name: Tests
+        run: uv run pytest -q
+
+      - name: Build report
+        env:
+          # Keras/TF are noisy and default to grabbing every core; neither helps here.
+          TF_CPP_MIN_LOG_LEVEL: "3"
+          PYTHONHASHSEED: "0"
+        run: |
+          uv run python scripts/build_report.py \
+            --refresh \
+            --n-test "${{ github.event.inputs.n_test || 300 }}" \
+            --out-dir docs
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      # The refreshed archive is committed so the report still builds when
+      # pais.co.il is unreachable, and so the data history is auditable.
+      - name: Commit refreshed draw archive
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add input/Orig_IL_lotto.csv input/lotto_IL_filtered.csv
+          if git diff --cached --quiet; then
+            echo "No new draws."
+          else
+            git commit -m "chore: refresh draw archive [skip ci]"
+            git push
+          fi
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
