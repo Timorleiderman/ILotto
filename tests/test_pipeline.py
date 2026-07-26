@@ -197,3 +197,40 @@ def test_nn_windows_are_causal():
     # and must not appear inside it.
     assert np.array_equal(y[0], d.multi_hot[10])
     assert not np.array_equal(X[0][-1][:37], y[0])
+
+
+def test_empty_era_fails_with_a_clear_message(tmp_path):
+    """A truncated or restructured upstream archive must not fail opaquely."""
+    raw = tmp_path / "raw.csv"
+    raw.write_text(
+        "id,date,1,2,3,4,5,6,strong,w1,w2\n"
+        "1,03/09/1968,3,14,18,22,25,33,2,0,0\n",
+        encoding="latin-1",
+    )
+    with pytest.raises(ValueError, match="No draws parsed"):
+        data.load(raw_csv=str(raw), clean_csv=None)
+
+
+def test_hostile_csv_content_never_reaches_the_report(tmp_path):
+    """The archive is re-downloaded in CI, so its content is untrusted input.
+
+    Rows carrying markup must be dropped by type coercion rather than rendered.
+    """
+    raw = tmp_path / "raw.csv"
+    rows = ["id,date,1,2,3,4,5,6,strong,w1,w2"]
+    rows.append("9,<script>alert(1)</script>,10,18,20,21,29,34,2,0,0")
+    rows.append("8,11/10/2025,<img src=x onerror=alert(2)>,18,20,21,29,34,2,0,0")
+    rng = np.random.default_rng(3)
+    for i in range(400):
+        balls = np.sort(rng.random(37).argsort()[:6] + 1)
+        day, month, year = 1 + i % 28, 1 + i % 12, 2013 + i % 10
+        rows.append(
+            f"{100 + i},{day:02d}/{month:02d}/{year},"
+            + ",".join(str(b) for b in balls)
+            + f",{rng.integers(1, 8)},0,0"
+        )
+    raw.write_text("\n".join(rows) + "\n", encoding="latin-1")
+
+    d = data.load(raw_csv=str(raw), clean_csv=None)
+    assert len(d) == 400  # both hostile rows coerced to NaN/NaT and dropped
+    assert d.balls.min() >= 1 and d.balls.max() <= data.N_NUMBERS

