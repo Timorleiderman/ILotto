@@ -4,9 +4,17 @@ A machine learning project for analyzing Israeli Lotto patterns. Built as a lear
 
 > **Note:** Lottery numbers are random by design. No model can predict them. This project demonstrates ML concepts, not a winning strategy.
 
-**📊 [Read the published report →](https://timorleiderman.github.io/ILotto/)** — rebuilt
-automatically after every draw: randomness tests, 13 strategies benchmarked walk-forward
-against exact nulls, and next-draw picks.
+**📊 [Read the documentation site →](https://timorleiderman.github.io/ILotto/)** — rebuilt
+automatically after every draw. Diagrams and explanations for every approach in this repo,
+the randomness tests, 13 strategies benchmarked walk-forward against exact nulls, and
+next-draw picks.
+
+| | |
+|---|---|
+| [How it is measured](https://timorleiderman.github.io/ILotto/evaluation/) | the walk-forward harness and the data bugs it exposed |
+| [The approaches](https://timorleiderman.github.io/ILotto/approaches/) | diagrammed: statistical rules, neural set prediction, the four legacy models, ticket generators |
+| [Results](https://timorleiderman.github.io/ILotto/results/) | the current scoreboard, regenerated each run |
+| [Benchmark report](https://timorleiderman.github.io/ILotto/benchmark/) | the full standalone report with charts |
 
 ## Features
 
@@ -259,7 +267,7 @@ Full detail, charts and next-draw picks: **[the published report](https://timorl
 ### Benchmark commands
 
 ```bash
-uv run pytest -q                                   # 24 tests, ~4s
+uv run pytest -q                                   # 27 tests, ~4s
 uv run python scripts/build_report.py --quick      # skip the neural models
 uv run python scripts/build_report.py --refresh    # full run against fresh data (~80s)
 open docs/index.html
@@ -339,10 +347,19 @@ uv run python smart_generator.py --model multi_output --count 10
 
 ## Publishing
 
-`.github/workflows/report.yml` rebuilds the report every Wednesday and Saturday morning UTC
-(the mornings after the Tuesday/Thursday draws), commits the refreshed draw archive, and
-deploys `docs/` to GitHub Pages. `ci.yml` runs ruff, the test suite and a quick report build
-on every push and PR.
+`.github/workflows/report.yml` rebuilds everything on Sunday, Wednesday and Friday mornings
+UTC — the mornings after the Saturday, Tuesday and occasional Thursday draws — commits the
+refreshed draw archive, and deploys to GitHub Pages. `ci.yml` runs ruff, the test suite, a
+quick report build and a strict docs build on every push and PR.
+
+The site is MkDocs Material. `scripts/build_report.py` writes the generated pages into the
+`docs/` tree (`docs/benchmark/index.html` and `docs/results.md`), then `mkdocs build`
+renders the whole tree into `site/`, which is the published artifact.
+
+```bash
+uv sync --group docs
+uv run mkdocs serve      # live preview on http://localhost:8000
+```
 
 ## Disclaimer
 

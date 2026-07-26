@@ -1,0 +1,85 @@
+site_name: ILotto
+site_description: How every lottery-prediction approach in this repo works, and how each one scores.
+site_url: https://timorleiderman.github.io/ILotto/
+repo_url: https://github.com/Timorleiderman/ILotto
+repo_name: Timorleiderman/ILotto
+edit_uri: ""
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    # navigation.instant is deliberately off: it re-injects pages via XHR and
+    # leaves the mermaid containers empty, so diagrams vanish on the second
+    # page you visit.
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.arithmatex:
+      generic: true
+  # Renders ```mermaid fences as diagrams that follow the active colour scheme.
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  # Lets the docs pull in ARCHITECTURES.md and GUIDE.md from the repo root, so
+  # those files stay where the README already points at them.
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - How it is measured: evaluation.md
+  - Approaches:
+      - approaches/index.md
+      - Statistical strategies: approaches/statistical.md
+      - Neural set prediction: approaches/set-prediction.md
+      - The four legacy models: approaches/legacy-models.md
+      - Ticket generators: approaches/ticket-generators.md
+  - Results: results.md
+  - Benchmark report: benchmark/index.html
+  - Reference:
+      - Architecture deep dive: reference/architectures.md
+      - User guide: reference/guide.md
