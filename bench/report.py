@@ -397,7 +397,7 @@ Mifal HaPayis. Nothing here is gambling advice; the analysis concludes the oppos
 
 
 def dump_markdown(
-    path: str, draws: Draws, tests, results, null_dist, predictions
+    path: str, draws: Draws, tests, results, null_dist, predictions, memorisation=None
 ) -> None:
     """Write the MkDocs results page.
 
@@ -461,6 +461,34 @@ def dump_markdown(
             f"| {t['test']} | {t['statistic']:.2f} | {t['p_value']:.4f} | "
             f"{pill(test_sig[t['test']])} |"
         )
+
+    if memorisation:
+        lines += [
+            "",
+            "## Memorisation vs prediction",
+            "",
+            "The date-conditioned generative model takes a date rather than a history, and "
+            "there is exactly one draw per calendar date — so the date is a **unique key**. "
+            "A model with enough capacity can store a lookup table and reproduce past draws "
+            "perfectly. **DKRR** (Date-Keyed Reconstruction Rate) is that seductive number: "
+            "matched numbers on dates the model was *trained on*. It measures storage, not "
+            "skill, and is never shown without the walk-forward column beside it.",
+            "",
+            "| Model | DKRR (in-sample) | In-sample log loss | Walk-forward matches | p |",
+            "|---|---:|---:|---:|---:|",
+        ]
+        for m in memorisation:
+            lines.append(
+                f"| {m['name']} | {m['dkrr_matches']:.3f} / 6 | {m['dkrr_log_loss']:.4f} | "
+                f"{m['wf_matches']:.4f} | {m['wf_p']:.3f} |"
+            )
+        lines += [
+            "",
+            f"Chance is **{metrics.BASELINE_MATCHES:.4f}** matched numbers and "
+            f"**{metrics.BASELINE_LOGLOSS:.4f}** log loss. The lookup control reconstructs "
+            "every training draw perfectly and is worth nothing on a date it has not seen. "
+            "That gap is the entire point of the exercise.",
+        ]
 
     if predictions:
         lines += [

@@ -40,6 +40,7 @@ def main() -> int:
 
     suite = predictors.statistical_suite()
     if not args.quick:
+        suite += predictors.generative_suite()
         from bench.nn import NeuralPredictor
 
         suite += [
@@ -57,6 +58,28 @@ def main() -> int:
             r.summary["p_value"],
             r.seconds,
         )
+
+    # The date-conditioned model cannot be judged by the strategy table alone:
+    # its in-sample reconstruction is the number people will quote, so it is
+    # measured explicitly and shown next to its walk-forward score.
+    memorisation = None
+    if not args.quick:
+        from bench.generative import DateConditionedCB, MemorisingDateLookup
+        from bench import generative as gen
+
+        memorisation = []
+        for p in (DateConditionedCB(), MemorisingDateLookup()):
+            rec = gen.reconstruction_rate(p, draws)
+            wf = backtest.walk_forward(p, draws, n_test=args.n_test)
+            memorisation.append({
+                "name": p.name,
+                "dkrr_matches": rec["dkrr_matches"],
+                "dkrr_log_loss": rec["dkrr_log_loss"],
+                "wf_matches": wf.summary["mean_matches"],
+                "wf_p": wf.summary["p_value"],
+            })
+            logger.info("  %-40s DKRR=%.3f  walk-forward=%.4f",
+                        p.name, rec["dkrr_matches"], wf.summary["mean_matches"])
 
     logger.info("Building Monte-Carlo null (%d trials)", args.null_trials)
     null_dist = backtest.random_ticket_null(draws, args.n_test, n_trials=args.null_trials)
@@ -95,7 +118,8 @@ def main() -> int:
         str(bench_dir / "results.json"), draws, tests, results, null_dist, predictions
     )
     report.dump_markdown(
-        str(out_dir / "results.md"), draws, tests, results, null_dist, predictions
+        str(out_dir / "results.md"), draws, tests, results, null_dist, predictions,
+        memorisation=memorisation,
     )
 
     logger.info("Wrote %s and %s", bench_dir / "index.html", out_dir / "results.md")

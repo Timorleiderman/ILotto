@@ -35,6 +35,11 @@ class Predictor:
     #: the baseline no matter how the numbers were ranked. Those predictors get
     #: no log loss rather than a flattering one.
     emits_probabilities = False
+    #: True for models conditioned on *when* the draw happens rather than on the
+    #: preceding draws. The harness then passes the target draw's date. This is
+    #: not lookahead: the date of the next draw is public in advance. What it
+    #: must never receive is the draw itself, which `LeakageError` enforces.
+    wants_target_date = False
 
     def fit(self, history: Draws) -> None:  # noqa: D102
         pass
@@ -268,6 +273,14 @@ class Ensemble(Predictor):
             ball_acc += np.argsort(np.argsort(np.nan_to_num(b, neginf=-1e18))) / N_NUMBERS
             strong_acc += np.argsort(np.argsort(s)) / N_STRONG
         return ball_acc / len(self.members), strong_acc / len(self.members)
+
+
+def generative_suite() -> list[Predictor]:
+    """The date-conditioned generative model. Imported lazily: it needs SciPy's
+    optimiser, and `predictors` is imported by tests that must stay fast."""
+    from .generative import DateConditionedCB
+
+    return [DateConditionedCB()]
 
 
 def statistical_suite() -> list[Predictor]:

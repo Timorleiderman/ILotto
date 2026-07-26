@@ -98,6 +98,27 @@ Each corresponds to a bug that made the old pipeline report ~30% top-10 "accurac
 5. **Holm–Bonferroni over every family**, both the 13 strategies and the 7 randomness tests. The
    report's headline verdict reads both.
 
+## The date-conditioned model is a special case
+
+`bench/generative.py` is conditioned on the draw's *date* rather than on preceding draws,
+which makes it the one model here that can cheat spectacularly: there is exactly one draw
+per calendar date, so the date is a unique key and enough capacity turns the model into a
+lookup table that "predicts the past" perfectly.
+
+Two invariants keep it honest, both enforced by tests:
+
+- **The head must stay linear in the date basis.** The basis includes a time trend, so it
+  is injective over all 1,629 dates — a unique key in a smooth costume. Only linearity
+  bounds capacity: fitting one date necessarily moves all the others. Adding a hidden layer
+  turns this into a memoriser and breaks `test_head_is_linear`.
+- **DKRR is never reported alone.** Date-Keyed Reconstruction Rate is in-sample matched
+  numbers; it measures storage, not skill. `MemorisingDateLookup` ships as a deliberate
+  control that scores a perfect 6.000/6 in-sample and chance out of sample.
+
+`Predictor.wants_target_date` makes the harness pass `draws.dates[i]`. That is not
+lookahead — the next draw's date is public in advance — but `scores` raises `LeakageError`
+if the history ever reaches the target date.
+
 ## Adding a predictor
 
 Subclass `bench.predictors.Predictor` and implement:
