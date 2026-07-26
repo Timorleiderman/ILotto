@@ -101,9 +101,18 @@ def fetch_dataset(
     base_dir = os.path.dirname(orig_lotto_csv)
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
-    r = requests.get(csv_url)
-    with open(orig_lotto_csv, "wb") as f:
-        f.write(r.content)
+    # Guarded: without a timeout a hung request stalls the caller indefinitely,
+    # and without raise_for_status an error page would be written over the
+    # committed archive as if it were data. Failure keeps the existing file.
+    try:
+        r = requests.get(csv_url, timeout=15)
+        r.raise_for_status()
+        if len(r.content) < 10_000:
+            raise ValueError(f"download too small ({len(r.content)} bytes)")
+        with open(orig_lotto_csv, "wb") as f:
+            f.write(r.content)
+    except (requests.RequestException, ValueError) as exc:
+        logger.warning("Could not refresh archive (%s); using committed copy", exc)
     ILottoCSV(orig_lotto_csv, lotto_csv_file)
     lotto_ds = pd.read_csv(lotto_csv_file, index_col="Date")
     return lotto_ds

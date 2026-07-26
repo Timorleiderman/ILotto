@@ -135,6 +135,15 @@ def load(
     if era_start is not None:
         df = df[df["date"] >= pd.Timestamp(era_start)].reset_index(drop=True)
 
+    if df.empty:
+        # Reachable if the upstream download succeeds but yields nothing parseable
+        # for this era. Failing with a clear message beats an opaque numpy
+        # "zero-size array to reduction" from the range check below.
+        raise ValueError(
+            f"No draws parsed from {raw_csv} on or after {era_start}. The archive is "
+            "empty, truncated, or its column layout changed upstream."
+        )
+
     balls = df[BALL_COLS].to_numpy(dtype=np.int64)
     strong = df["Ball_Bonus"].to_numpy(dtype=np.int64)
 
