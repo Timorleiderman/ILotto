@@ -20,7 +20,12 @@ dependencies = [
     "ruff>=0.11.2",
     "scikit-learn>=1.6.1",
     "scipy>=1.15.2",
-    "tensorflow>=2.19.0",
+    # TensorFlow dropped Intel-macOS wheels after 2.16.2 (verified against PyPI:
+    # 2.17/2.18/2.19 publish no macosx x86_64 artifact). Pinning >=2.19
+    # unconditionally would therefore fail to resolve on an Intel Mac exactly the
+    # way tensorflow[and-cuda] used to fail on Apple Silicon.
+    "tensorflow>=2.19.0; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    "tensorflow>=2.16.2,<2.17; sys_platform == 'darwin' and platform_machine == 'x86_64'",
     "tqdm>=4.67.1",
 ]
 

@@ -54,6 +54,15 @@ platform_machine == 'x86_64'` marker, so requesting it elsewhere is a no-op rath
 resolution failure. Do not move it back into the base dependencies: that is what used to
 make `uv sync` and `uv run` fail outright on macOS.
 
+**TensorFlow version is platform-split.** Upstream stopped publishing Intel-macOS wheels
+after 2.16.2 — 2.17, 2.18 and 2.19 have no `macosx x86_64` artifact at all — so an
+unconditional `>=2.19` would fail to resolve on an Intel Mac in exactly the way
+`tensorflow[and-cuda]` used to fail on Apple Silicon. The base dependency therefore carries
+two markered entries: `>=2.19` everywhere, `>=2.16.2,<2.17` on Intel macOS. That path is
+resolvable but **untested** — nobody working on this has an Intel Mac — and it pins Keras
+3.0 rather than 3.x-latest, so treat a bug report from that platform as plausible rather
+than surprising.
+
 ## Two parallel stacks
 
 This is the single most important structural fact. They share the `input/` data and nothing
