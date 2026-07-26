@@ -91,6 +91,10 @@ def main() -> int:
     to_predict += [p for p in suite if p.name == best_name and p is not suite[0]]
     to_predict += [p for p in suite if p.name.startswith("Neural (gru")]
     to_predict += [p for p in suite if p.name.startswith("Unpopular")]
+    # Always show the date-conditioned model's pick: generating a ticket for a
+    # named future date is the whole point of it, and this is the one call where
+    # it is forecasting rather than reconstructing.
+    to_predict += [p for p in suite if p.wants_target_date]
 
     predictions = []
     seen = set()

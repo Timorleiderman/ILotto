@@ -281,6 +281,13 @@ class CBFit:
     ref: FeatureRef
     tau: float
     nll: float
+    #: Latest draw this fit actually saw. The leakage guard compares against
+    #: THIS, not against whatever history the caller passes to `scores`: a
+    #: caller can fit on everything and then hand over a truncated history,
+    #: which would sail past a check that only looked at the argument.
+    train_max_date: np.datetime64
+    #: Every training date, for labelling reconstructions as such.
+    train_dates: frozenset
 
     def logits(self, dates: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         phi = date_features(dates, self.ref)
@@ -308,7 +315,12 @@ def fit_cb(draws: Draws, tau: float = 10.0, maxiter: int = 500) -> CBFit:
         options={"maxiter": maxiter, "ftol": 1e-12, "gtol": 1e-8},
     )
     alpha, W, beta, V = _unpack(res.x)
-    return CBFit(alpha, W, beta, V, ref, tau, float(res.fun))
+    days = draws.dates.astype("datetime64[D]")
+    return CBFit(
+        alpha, W, beta, V, ref, tau, float(res.fun),
+        train_max_date=days.max(),
+        train_dates=frozenset(str(d) for d in days),
+    )
 
 
 class DateConditionedCB(Predictor):
@@ -341,14 +353,19 @@ class DateConditionedCB(Predictor):
         if target_date is None:
             raise ValueError(f"{self.name} requires the target draw's date")
         # The whole point of this model is that it takes a date, so the one
-        # mistake that would flatter it is being handed a history that already
-        # contains the answer. Refuse rather than warn.
-        if len(history) and np.datetime64(history.dates.max(), "D") >= np.datetime64(
-            target_date, "D"
-        ):
+        # mistake that would flatter it is scoring a draw it was fitted on.
+        # Check the FIT, not the passed history — otherwise fitting on
+        # everything and then passing a truncated history slips straight
+        # through, which is exactly how an in-sample number becomes a headline.
+        target = np.datetime64(target_date, "D")
+        if self.fit_.train_max_date >= target:
             raise LeakageError(
-                f"history ends {history.dates.max()} but target is {target_date}; "
-                "the target draw must be strictly after every training draw"
+                f"model was fitted on draws up to {self.fit_.train_max_date} but the target "
+                f"is {target}; the target must be strictly after every training draw"
+            )
+        if len(history) and np.datetime64(history.dates.max(), "D") >= target:
+            raise LeakageError(
+                f"history ends {history.dates.max()} but target is {target}"
             )
         theta, eta = self.fit_.logits(np.asarray([target_date], dtype="datetime64[D]"))
         strong = np.exp(eta[0] - logsumexp(eta[0]))
@@ -357,16 +374,29 @@ class DateConditionedCB(Predictor):
     # -- generative extras. Not part of the scoring contract, never scored. ----
 
     def sample(self, target_date, rng: np.random.Generator | None = None) -> dict:
-        """Generate a ticket for any date. See `in_sample` in the return value."""
+        """Generate a ticket for any date.
+
+        The returned `in_sample` flag is the safeguard, not decoration: for a
+        date the model was fitted on this is a *reconstruction*, and without the
+        label a screenshot of it is indistinguishable from a forecast.
+        """
         if self.fit_ is None:
             raise RuntimeError("fit() first")
         rng = rng or np.random.default_rng()
-        theta, eta = self.fit_.logits(np.asarray([target_date], dtype="datetime64[D]"))
+        day = np.datetime64(target_date, "D")
+        theta, eta = self.fit_.logits(np.asarray([day]))
         p_strong = np.exp(eta[0] - logsumexp(eta[0]))
+        in_sample = str(day) in self.fit_.train_dates
         return {
-            "date": str(np.datetime64(target_date, "D")),
+            "date": str(day),
             "numbers": sample_set(theta, rng).tolist(),
             "strong": int(rng.choice(N_STRONG, p=p_strong) + 1),
+            "in_sample": in_sample,
+            "label": (
+                "in-sample reconstruction, not a prediction"
+                if in_sample
+                else "out-of-sample generation"
+            ),
         }
 
     def set_log_prob(self, balls: np.ndarray, target_date) -> float:

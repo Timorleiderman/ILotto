@@ -167,11 +167,24 @@ against 264.2 expected** — less often than chance, the opposite of the folk hy
     chance". Both are storage. The walk-forward column is the only one that is about the
     future.
 
-The in-sample gain has a **closed-form prediction**, which is the useful part. Under the
-null, Wilks gives \(2\Delta\ell \sim \chi^2_{484}\), so the expected in-sample overfit is
-242 nats — 0.148 nats/draw. The measured gain is 0.107 nats/draw, below that because of
-ridge shrinkage. If it ever materially exceeds 0.16, something is leaking. That is a live
-tripwire, not a footnote.
+The in-sample gain comes with an **analytic reference point**, which is the useful part.
+
+Counting parameters gives \(37 \times 11 + 7 \times 11 = 484\) date coefficients, but 22 of
+those directions do not exist. For each feature, adding the same constant to *every* ball
+logit leaves the size-6 conditional-Bernoulli distribution untouched — the normaliser absorbs
+it exactly — and the softmax has the identical invariance. So there are **462** identifiable
+date directions, not 484. (`test_constant_logit_shift_is_unidentifiable` verifies this to
+machine precision, and it is why the count is stated rather than assumed.)
+
+Under the null an unpenalised fit would then give \(2\Delta\ell \sim \chi^2_{462}\), so the
+expected in-sample overfit is 231 nats — **0.142 nats/draw**. Two caveats keep that honest:
+it applies to the *unpenalised* fit, and ridge shrinkage means the realised gain must come in
+strictly below it. So 0.142 is an upper reference, not a prediction of what we should see.
+
+The measured gain is **0.107 nats/draw** — below the bound, as shrinkage requires. A gain
+sitting at or above the unpenalised bound would mean the model is fitting more than 462
+directions' worth of noise, which a correctly specified ridge fit cannot do: that is the
+tripwire, and it is a live check rather than a footnote.
 
 ## How to read the walk-forward number
 
@@ -199,15 +212,24 @@ from bench.generative import DateConditionedCB
 model = DateConditionedCB()
 model.fit(load())
 model.sample("2027-03-16")
-# {'date': '2027-03-16', 'numbers': [3, 11, 19, 24, 30, 36], 'strong': 4}
+# {'date': '2027-03-16', 'numbers': [3, 11, 19, 24, 30, 36], 'strong': 4,
+#  'in_sample': False, 'label': 'out-of-sample generation'}
+
+model.sample("2025-10-11")          # a date it was trained on
+# {..., 'in_sample': True, 'label': 'in-sample reconstruction, not a prediction'}
 ```
 
-Asking for a date the model was trained on returns an **in-sample reconstruction, not a
-prediction**, and the API labels it as such — otherwise a screenshot of the box pointed at a
-past date circulates as evidence of prophecy.
+The `in_sample` flag is the safeguard, not decoration. Without it a screenshot of the box
+pointed at a past date is indistinguishable from a forecast.
 
-`scores(history, target_date)` raises `LeakageError` if the history reaches the target date,
-so the harness cannot be handed the answer by accident.
+`scores(history, target_date)` raises `LeakageError` if the target is not strictly after
+every draw the model was **fitted** on. Checking the caller's `history` argument alone would
+not be enough: fitting on the whole archive and then passing a truncated history would sail
+straight through, which is exactly how an in-sample number becomes a headline.
+
+The published report shows this model's pick for the **next scheduled draw**, inferred from
+the recent Tuesday/Saturday cadence rather than hard-coded — the one call where it is
+forecasting rather than reconstructing.
 
 ## Why this model earns its place
 

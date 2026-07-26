@@ -101,7 +101,18 @@ def predict_next(predictor: Predictor, draws: Draws, top_n: int = 12) -> dict:
     """Ticket the given predictor would play for the next, undrawn result."""
     if predictor.refit_every:
         predictor.fit(draws)
-    ball_scores, strong_scores = predictor.scores(draws)
+
+    target_date = None
+    if predictor.wants_target_date:
+        # Date-conditioned models need the round's date. The next scheduled draw
+        # is genuinely in the future, so this is also the one call where such a
+        # model is doing what it was built for rather than reconstructing.
+        from .data import next_draw_date
+
+        target_date = next_draw_date(draws)
+        ball_scores, strong_scores = predictor.scores(draws, target_date)
+    else:
+        ball_scores, strong_scores = predictor.scores(draws)
 
     order = np.argsort(-np.nan_to_num(ball_scores, neginf=-1e18))
     picks = sorted((order[:N_DRAWN] + 1).tolist())
@@ -109,6 +120,7 @@ def predict_next(predictor: Predictor, draws: Draws, top_n: int = 12) -> dict:
     p = p / p.sum()
     return {
         "strategy": predictor.name,
+        "target_date": None if target_date is None else str(target_date),
         "numbers": picks,
         "strong": int(np.argmax(strong_scores) + 1),
         "shortlist": [(int(i + 1), float(p[i])) for i in order[:top_n]],
@@ -498,12 +510,13 @@ def dump_markdown(
             "Published because they were asked for. These have exactly the same chance as "
             "any other six numbers.",
             "",
-            "| Strategy | Numbers | Strong |",
-            "|---|---|---:|",
+            "| Strategy | For draw of | Numbers | Strong |",
+            "|---|---|---|---:|",
         ]
         for pr in predictions:
             nums = " · ".join(str(n) for n in pr["numbers"])
-            lines.append(f"| {pr['strategy']} | {nums} | {pr['strong']} |")
+            when = pr.get("target_date") or "next draw"
+            lines.append(f"| {pr['strategy']} | {when} | {nums} | {pr['strong']} |")
 
     lines += [
         "",

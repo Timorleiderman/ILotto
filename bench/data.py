@@ -170,6 +170,29 @@ def load(
     return draws
 
 
+def next_draw_date(draws: Draws, lookback: int = 200) -> np.datetime64:
+    """The date of the next scheduled draw after the last one on record.
+
+    Inferred from the recent cadence rather than hard-coded, so it keeps working
+    if the operator changes the schedule. Draw days are currently Tuesday and
+    Saturday, with an intermittent Thursday series; only weekdays carrying a
+    meaningful share of the recent draws count as scheduled.
+    """
+    recent = draws.dates[-lookback:].astype("datetime64[D]")
+    weekday = (recent.astype(int) + 3) % 7  # Monday == 0
+    counts = np.bincount(weekday, minlength=7)
+    scheduled = set(np.flatnonzero(counts >= 0.1 * len(recent)).tolist())
+    if not scheduled:  # pathological history; fall back to a week later
+        return draws.dates[-1].astype("datetime64[D]") + np.timedelta64(7, "D")
+
+    day = draws.dates[-1].astype("datetime64[D]")
+    for _ in range(1, 15):
+        day = day + np.timedelta64(1, "D")
+        if int((day.astype(int) + 3) % 7) in scheduled:
+            return day
+    return day
+
+
 def era_table(raw_csv: str = RAW_CSV) -> pd.DataFrame:
     """Per-year summary used by the report to justify the era cutoff."""
     df = _read_raw(raw_csv)

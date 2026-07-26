@@ -210,8 +210,11 @@ def test_head_is_linear():
     rng = np.random.default_rng(2)
     alpha = rng.normal(size=37)
     W = rng.normal(size=(37, generative.N_FEATURES))
-    fit = generative.CBFit(alpha, W, np.zeros(7), np.zeros((7, generative.N_FEATURES)),
-                           generative.FeatureRef(0.0, 1.0), 1.0, 0.0)
+    fit = generative.CBFit(
+        alpha, W, np.zeros(7), np.zeros((7, generative.N_FEATURES)),
+        generative.FeatureRef(0.0, 1.0), 1.0, 0.0,
+        train_max_date=np.datetime64("2020-01-01", "D"), train_dates=frozenset(),
+    )
 
     p1 = rng.normal(size=generative.N_FEATURES)
     p2 = rng.normal(size=generative.N_FEATURES)
@@ -247,3 +250,68 @@ def test_contract_still_holds_for_every_other_predictor():
     """The harness change must not touch models that ignore the date."""
     for p in predictors.statistical_suite():
         assert p.wants_target_date is False
+
+
+def test_constant_logit_shift_is_unidentifiable():
+    """Adding a constant to every ball logit must change nothing.
+
+    This is not a curiosity: it is why the Wilks degrees of freedom in the docs
+    are 462 and not the naive 37*11 + 7*11 = 484. Twenty-two of those directions
+    do not exist, so quoting 484 would overstate the expected in-sample overfit
+    by ~5% and loosen the leak tripwire that depends on it.
+    """
+    rng = np.random.default_rng(0)
+    theta = rng.normal(size=(4, 37))
+    for c in (0.7, -2.3, 5.0):
+        assert generative.marginals(theta + c) == pytest.approx(
+            generative.marginals(theta), abs=1e-12
+        )
+        shift = generative.log_partition(theta + c) - generative.log_partition(theta)
+        assert shift == pytest.approx(np.full(4, 6 * c), abs=1e-9)
+
+    identifiable = 37 * generative.N_FEATURES + 7 * generative.N_FEATURES - 2 * generative.N_FEATURES
+    assert identifiable == 462
+
+
+def test_leakage_guard_checks_the_fit_not_the_passed_history():
+    """Fitting on everything then passing a short history must still be refused.
+
+    The guard exists to stop an in-sample score reaching a headline. Checking
+    only the caller's `history` argument would let exactly that through.
+    """
+    d = dated_draws(300, seed=9)
+    p = DateConditionedCB()
+    p.fit(d)  # sees every draw
+    with pytest.raises(LeakageError, match="fitted on draws up to"):
+        p.scores(d.slice(0, 100), d.dates[100])
+
+
+def test_sample_labels_in_sample_reconstructions():
+    d = dated_draws(200, seed=10)
+    p = DateConditionedCB()
+    p.fit(d)
+
+    past = p.sample(d.dates[50], np.random.default_rng(0))
+    assert past["in_sample"] is True
+    assert "not a prediction" in past["label"]
+
+    future = p.sample(np.datetime64("2030-01-01", "D"), np.random.default_rng(0))
+    assert future["in_sample"] is False
+    assert "out-of-sample" in future["label"]
+
+
+def test_next_draw_date_lands_on_a_scheduled_day():
+    d = data.load(clean_csv=None)
+    nxt = data.next_draw_date(d)
+    assert nxt > d.dates[-1].astype("datetime64[D]")
+    assert int((nxt.astype(int) + 3) % 7) in {1, 3, 5}  # Tue / Thu / Sat
+
+
+def test_report_can_predict_next_with_a_date_conditioned_model():
+    """Regression: this path used to raise because no target date was supplied."""
+    from bench import report
+
+    d = data.load(clean_csv=None)
+    out = report.predict_next(DateConditionedCB(), d)
+    assert len(out["numbers"]) == 6 and out["target_date"] is not None
+    assert np.datetime64(out["target_date"]) > d.dates[-1].astype("datetime64[D]")
