@@ -80,6 +80,7 @@ nav:
       - Statistical strategies: approaches/statistical.md
       - Neural set prediction: approaches/set-prediction.md
       - Date-conditioned generative: approaches/date-conditioned.md
+      - The perfect-fit function: approaches/perfect-fit.md
       - The four legacy models: approaches/legacy-models.md
       - Ticket generators: approaches/ticket-generators.md
   - Results: results.md
