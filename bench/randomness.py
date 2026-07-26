@@ -186,8 +186,16 @@ def incompressibility(draws: Draws, n_sim: int = 200, seed: int = 0) -> dict:
     The p-value is Monte-Carlo: the observed compressed size ranked against the
     same compressor on simulated fair histories of the same length. Small p
     means "more compressible than fair", i.e. structure.
+
+    zlib rather than lzma, deliberately: encoder setup dominates on a ~5 KB
+    payload, and the 201 lzma preset-9 encoders this null needs cost minutes on
+    a CI runner against ~10 ms for zlib. The teeth are unchanged — the
+    function-generated control still collapses to 15.5% of the entropy floor
+    under zlib (10.4% under lzma) while the real archive sits at 100.4% either
+    way — and observed and null always use the same compressor, so the
+    calibration is internally consistent.
     """
-    import lzma
+    import zlib
     from math import comb, log2
 
     def pack(balls: np.ndarray, strong: np.ndarray) -> bytes:
@@ -201,7 +209,7 @@ def incompressibility(draws: Draws, n_sim: int = 200, seed: int = 0) -> dict:
             out += (r * N_STRONG + int(s_) - 1).to_bytes(3, "big")
         return bytes(out)
 
-    compress = lambda b: len(lzma.compress(b, preset=9))  # noqa: E731
+    compress = lambda b: len(zlib.compress(b, 9))  # noqa: E731
     observed = compress(pack(draws.balls, draws.strong))
 
     rng = np.random.default_rng(seed)
@@ -219,7 +227,7 @@ def incompressibility(draws: Draws, n_sim: int = 200, seed: int = 0) -> dict:
         "dof": None,
         "p_value": float(p),
         "detail": (
-            f"lzma: {observed * 8 / n:.2f} bits/draw vs entropy floor {floor_bits:.2f}; "
+            f"zlib: {observed * 8 / n:.2f} bits/draw vs entropy floor {floor_bits:.2f}; "
             f"fair-sim mean {sims.mean() * 8 / n:.2f}"
         ),
     }

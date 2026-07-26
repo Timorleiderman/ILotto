@@ -83,9 +83,22 @@ Identical machinery, negated.
 
 This is the gambler's fallacy stated precisely enough to test. It requires the machine to
 remember what it has already produced and compensate — physically, that a ball drawn less
-often is somehow more available. The lag-1 test measures exactly this: P(drawn again |
-drawn last time) = **0.1650** against 0.1622 expected. The bias, such as it is, points the
-*wrong way* for cold numbers.
+often is somehow more available. The fair test of that is not the previous draw but the
+**cumulative deficit**: how far behind its expected count a number has fallen over the whole
+history. Conditioning every (number, draw) pair on that deficit's z-score:
+
+| Cumulative deficit | Observations | P(drawn) | vs 6/37 |
+|---|---:|---:|---:|
+| z < −2 (very cold) | 9,887 | 0.1612 | −0.25 sd |
+| −2 … −1 | 18,480 | 0.1602 | −0.71 sd |
+| −1 … 0 | 17,463 | 0.1643 | +0.78 sd |
+| 0 … 1 | 9,881 | 0.1627 | +0.15 sd |
+| 1 … 2 | 2,558 | 0.1638 | +0.22 sd |
+| z > 2 (very hot) | 154 | 0.1429 | −0.65 sd |
+
+Flat. The overall deficit→hit correlation is **r = +0.003** (p = 0.41) — and compensation
+would require it to be *negative*. The coldest numbers in fourteen years of draws are not
+catching up, because there is no ledger to balance.
 
 It also gets no log loss, and the reason is instructive: its scores are all negative, so
 normalising them into a distribution collapses everything to the uniform prior. It would
@@ -189,7 +202,8 @@ smoothed conditionals per number:
 
 ### Why it fails
 
-Both estimates converge to \(6/37\). The pooled contingency test gives p = 0.42 — the two
+Both estimates converge to \(6/37\). The pooled contingency test in the
+[randomness suite](../evaluation.md) gives **p = 0.32** on this archive — the two
 conditionals are the same number to within noise, so the strategy is ranking by an estimate
 whose true value is constant across all 37 balls. What remains is estimation error, and the
 top six are simply whichever balls got the luckiest smoothing.
@@ -251,8 +265,10 @@ noise, made visible.
 
 ## The scoreboard trap
 
-Two strategies on the current board sit near p = 0.05. It would be easy to write up the
-first one. Look at both:
+Two strategies sit near p = 0.05 in the run this page was written against (300-draw
+walk-forward, July 2026 archive). The numbers on the [live scoreboard](../results.md) are
+regenerated after every draw and will drift — which is itself the lesson of this section.
+It would be easy to write up the first row. Look at both:
 
 | Strategy | Matches | p |
 |---|---:|---:|
