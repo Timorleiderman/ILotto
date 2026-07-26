@@ -212,11 +212,11 @@ model needs no diversity term at all.
 
 | Model | Encoder | Output | Target | Order-invariant |
 |---|---|---|---|---|
-| Original | BiLSTM 128/64/32 + MHA | `(7, 37)` softmax | sorted balls | :material-close: |
-| Multi-output | LSTM 64 ×2 | 7 independent softmaxes | sorted balls | :material-close: |
-| Transformer | 2 × MHA blocks over 70 tokens | 7 independent softmaxes | sorted balls | :material-close: |
-| Set prediction | LSTM 128 | 37 sigmoids | multi-hot set | :material-check: |
-| `bench` GRU / Transformer | GRU 96/64 or MHA | 37 sigmoids + 7 softmax | multi-hot set | :material-check: |
+| Original | BiLSTM 128/64/32 + MHA | `(7, 37)` softmax | sorted balls | **no** |
+| Multi-output | LSTM 64 ×2 | 7 independent softmaxes | sorted balls | **no** |
+| Transformer | 2 × MHA blocks over 70 tokens | 7 independent softmaxes | sorted balls | **no** |
+| Set prediction | LSTM 128 | 37 sigmoids | multi-hot set | **yes** |
+| `bench` GRU / Transformer | GRU 96/64 or MHA | 37 sigmoids + 7 softmax | multi-hot set | **yes** |
 
 ---
 
