@@ -54,13 +54,13 @@ flowchart TB
 
 `TicketScorer.score_ticket` combines five components into a weighted total in `[0, 1]`:
 
-| Component | Weight | Rewards |
-|---|---:|---|
-| `high_numbers` | 0.25 | including numbers above 31 — outside the calendar range |
-| `sequence_avoidance` | 0.25 | no arithmetic progressions (`4, 8, 12, 16` is a popular pick) |
-| `pair_rarity` | 0.20 | pairs that historically co-occur rarely |
-| `spread` | 0.15 | even gaps and wide range coverage, rather than clustering |
-| `pattern_avoidance` | 0.15 | not matching known slip patterns (lines, diagonals) |
+| Component | Weight | Rewards | Grounded in |
+|---|---:|---|---|
+| `high_numbers` | 0.25 | including numbers above 31 — outside the calendar range | player behaviour |
+| `sequence_avoidance` | 0.25 | no arithmetic progressions (`4, 8, 12, 16` is a popular pick) | player behaviour |
+| `pattern_avoidance` | 0.15 | not matching known slip patterns (lines, diagonals) | player behaviour |
+| `spread` | 0.15 | even gaps and wide range coverage, rather than clustering | player behaviour |
+| `pair_rarity` | 0.20 | pairs that co-occurred rarely **in past draws** | nothing — see below |
 
 ```mermaid
 flowchart LR
@@ -87,8 +87,21 @@ flowchart LR
   classDef flaw fill:#e3494826,stroke:#e34948,stroke-width:3px
 ```
 
-Only `pair_rarity` touches the draw history, and only to find combinations *people* favour —
-not to predict the machine.
+!!! warning "`pair_rarity` does not measure popularity"
+
+    `TicketScorer._analyze_historical_patterns` builds `pair_frequencies` by counting pairs in
+    the **draw archive** — the machine's output, not anybody's ticket. Which pairs the machine
+    happened to draw says nothing about which pairs players choose, and the
+    [pairwise co-occurrence test](../evaluation.md) confirms those counts are consistent with
+    chance. So this component contributes 20% of the weight and carries no information in
+    either direction.
+
+    Fixing it properly needs data this repo does not have: the distribution of *submitted
+    tickets*, or winner counts per tier as a proxy. Until then the four behavioural components
+    are what the argument rests on, and `pair_rarity` is noise diluting them.
+
+The other four are grounded in documented human picking behaviour rather than in the draw
+history, which is what makes them sound.
 
 ## The hybrid generator
 
@@ -117,14 +130,24 @@ flowchart TB
   classDef flaw fill:#e3494826,stroke:#e34948,stroke-width:3px
 ```
 
-Worth being straight about what each half contributes. The model half is measurably worthless
-— that is what [the benchmark](../results.md) shows. The smart half is sound. So
-`--model-weight 0` is the setting with the best expected value, and every step above zero
-trades payout for the appearance of sophistication.
+Worth being straight about what each half contributes. The model half is measurably worthless —
+that is what [the benchmark](../results.md) shows. The behavioural half is sound.
 
-Temperature sampling is doing real work though: it stops the generator returning the same
-six numbers every time, which matters because a deterministic generator that many people ran
-would itself become a crowded pick.
+!!! note "`--model-weight 0` is not a pure-smart mode"
+
+    The weight only drops `model_score` out of the final **ranking**. Every candidate ticket is
+    still *sampled* from the model's probability distribution — `generate_hybrid_tickets` calls
+    `get_model_probabilities` before the loop and draws all six balls from it regardless of the
+    weight. So the model still decides which tickets are ever considered.
+
+    In practice this costs little, because the model's distribution is almost uniform, so
+    sampling from it is close to sampling at random. But "weight 0 removes the model" is not
+    true of the current code. A genuine pure-smart path would sample candidates uniformly;
+    `smart_generator.py --count N` with no `--model` does exactly that.
+
+Temperature sampling is doing real work though: it stops the generator returning the same six
+numbers every time, which matters because a deterministic generator that many people ran would
+itself become a crowded pick.
 
 ## What this does not do
 

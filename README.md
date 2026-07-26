@@ -270,7 +270,8 @@ Full detail, charts and next-draw picks: **[the published report](https://timorl
 uv run pytest -q                                   # 27 tests, ~4s
 uv run python scripts/build_report.py --quick      # skip the neural models
 uv run python scripts/build_report.py --refresh    # full run against fresh data (~80s)
-open docs/index.html
+open docs/benchmark/index.html                 # the standalone report
+uv run mkdocs serve                            # or the full site
 ```
 
 ## Project Structure
@@ -294,7 +295,7 @@ ILotto/
 │   ├── nn.py             # GRU + Transformer set prediction
 │   ├── metrics.py        # Order-invariant scoring, exact nulls, Holm–Bonferroni
 │   ├── backtest.py       # Walk-forward harness + Monte-Carlo null
-│   └── report.py         # Builds docs/index.html
+│   └── report.py         # Builds docs/benchmark/index.html + docs/results.md
 ├── scripts/build_report.py
 ├── tests/                # Regression guards for the bugs above
 ├── docs/                 # Published GitHub Pages report

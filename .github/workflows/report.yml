@@ -12,6 +12,12 @@ on:
     paths:
       - "bench/**"
       - "scripts/**"
+      - "docs/**"
+      - "mkdocs.yml"
+      # Pulled into the site via pymdownx.snippets, so edits to them change the
+      # published pages even though they live at the repo root.
+      - "ARCHITECTURES.md"
+      - "GUIDE.md"
       - ".github/workflows/report.yml"
   workflow_dispatch:
     inputs:
