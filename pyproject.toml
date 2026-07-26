@@ -20,7 +20,12 @@ dependencies = [
     "ruff>=0.11.2",
     "scikit-learn>=1.6.1",
     "scipy>=1.15.2",
-    "tensorflow[and-cuda]>=2.19.0",
+    # TensorFlow dropped Intel-macOS wheels after 2.16.2 (verified against PyPI:
+    # 2.17/2.18/2.19 publish no macosx x86_64 artifact). Pinning >=2.19
+    # unconditionally would therefore fail to resolve on an Intel Mac exactly the
+    # way tensorflow[and-cuda] used to fail on Apple Silicon.
+    "tensorflow>=2.19.0; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    "tensorflow>=2.16.2,<2.17; sys_platform == 'darwin' and platform_machine == 'x86_64'",
     "tqdm>=4.67.1",
 ]
 
@@ -37,6 +42,19 @@ testpaths = ["tests"]
 # `python -m pytest` does, so `bench` would not import under CI without this.
 pythonpath = ["."]
 filterwarnings = ["ignore::DeprecationWarning"]
+
+[project.optional-dependencies]
+# CUDA is opt-in rather than the default, for two reasons. The CI runner has no
+# GPU, so the ~3 GB of nvidia-* wheels the `and-cuda` extra pulls are downloaded
+# and never used; and the models here are small enough (GRU 96/64, 4-head
+# attention over a 20x74 input, ~1600 samples) that kernel-launch overhead makes
+# a GPU no faster than CPU anyway. The marker keeps `--extra gpu` from exploding
+# on macOS and arm64, where those wheels do not exist.
+#
+#     uv sync --extra gpu        # on an x86_64 Linux box with a GPU
+gpu = [
+    "tensorflow[and-cuda]>=2.19.0; sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
 
 [dependency-groups]
 dev = [

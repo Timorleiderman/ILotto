@@ -38,8 +38,16 @@ git clone https://github.com/Timorleiderman/ILotto.git
 cd ILotto
 
 # Install dependencies (requires uv - https://github.com/astral-sh/uv)
-uv sync
+uv sync                  # CPU TensorFlow, works on every supported platform
+
+# Optional: CUDA, on an x86_64 Linux box with an NVIDIA GPU.
+# Left out of the default install because CI has no GPU and the models here are
+# small enough that a GPU is no faster than CPU.
+uv sync --extra gpu
 ```
+
+> Apple Silicon and Linux resolve TensorFlow 2.19; Intel macOS resolves 2.16.2, the last
+> release upstream published a wheel for on that platform.
 
 ### 2. Generate Lottery Predictions
 

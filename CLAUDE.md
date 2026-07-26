@@ -13,39 +13,55 @@ makes a strategy look good, suspect the change.
 
 ## Commands
 
-**On macOS, invoke the venv directly — `uv run` and `uv sync` both fail here.** `pyproject.toml`
-pins `tensorflow[and-cuda]`, which has no macOS wheel, so any command that syncs first dies on
-`nvidia-cublas-cu12`. Use `.venv/bin/python -m …`. To add a dependency: edit `pyproject.toml`,
-then `uv lock` (resolves without installing) plus `uv pip install <pkg>` for the local venv.
-CI runs on Ubuntu, where the `uv run` forms below work as written.
-
 ```bash
-# Tests (27, ~4s). testpaths=tests and pythonpath=["."] come from pyproject.
-.venv/bin/python -m pytest -q
-.venv/bin/python -m pytest tests/test_pipeline.py::test_walk_forward_never_sees_the_future
-.venv/bin/python -m pytest -k "log_loss"
+# Setup. The docs group is separate so library users and the test job don't pull
+# in a site generator. CUDA is an opt-in extra — see "GPU" below.
+uv sync --group docs
 
-.venv/bin/python -m ruff check .     # must pass over the whole repo, both stacks
+# Tests (47, ~10s). testpaths=tests and pythonpath=["."] come from pyproject.
+uv run pytest -q
+uv run pytest tests/test_pipeline.py::test_walk_forward_never_sees_the_future  # single test
+uv run pytest -k "log_loss"                                                    # by pattern
+
+uv run ruff check .          # must pass over the whole repo, both stacks
 
 # Benchmark + report. Writes docs/benchmark/index.html and docs/results.md.
-.venv/bin/python scripts/build_report.py --quick            # skip neural models (fast iteration)
-.venv/bin/python scripts/build_report.py --refresh          # download fresh draws, full run (~80s)
-.venv/bin/python scripts/build_report.py --n-test 300 --null-trials 5000
+uv run python scripts/build_report.py --quick            # skip neural models (fast iteration)
+uv run python scripts/build_report.py --refresh          # fresh draws, full run
+uv run python scripts/build_report.py --n-test 300 --null-trials 5000
 
 # Docs site
-.venv/bin/python -m mkdocs serve            # live preview
-.venv/bin/python -m mkdocs build --strict   # what CI runs; broken links fail the build
+uv run mkdocs serve                # live preview
+uv run mkdocs build --strict       # what CI runs; broken links fail the build
 
 # Legacy stack
-.venv/bin/python train.py --model multi_output --epochs 50   # original|multi_output|transformer|set_prediction
-.venv/bin/python train.py --compare-all
-.venv/bin/python predict.py                                  # writes PREDICTION.md
-.venv/bin/python smart_generator.py --model multi_output --count 5
+uv run python train.py --model multi_output --epochs 50   # original|multi_output|transformer|set_prediction
+uv run python predict.py                                  # writes PREDICTION.md
+uv run python smart_generator.py --model multi_output --count 5
 ```
 
-CI equivalents: `uv sync --group docs`, then `uv run pytest -q`, `uv run ruff check .`,
-`uv run python scripts/build_report.py …`, `uv run mkdocs build --strict`. The `docs`
-dependency group is separate so library users and the test job don't pull in a site generator.
+**GPU.** The default install is CPU TensorFlow, on every platform. CUDA is the `gpu` extra:
+
+```bash
+uv sync --extra gpu      # x86_64 Linux with an NVIDIA GPU
+```
+
+It is opt-in rather than default because the CI runner has no GPU — the ~3 GB of `nvidia-*`
+wheels would be downloaded and never used — and because the models here are small enough
+(GRU 96/64, 4-head attention over a 20x74 input, ~1600 samples) that kernel-launch overhead
+makes a GPU no faster than CPU. The extra carries a `sys_platform == 'linux' and
+platform_machine == 'x86_64'` marker, so requesting it elsewhere is a no-op rather than a
+resolution failure. Do not move it back into the base dependencies: that is what used to
+make `uv sync` and `uv run` fail outright on macOS.
+
+**TensorFlow version is platform-split.** Upstream stopped publishing Intel-macOS wheels
+after 2.16.2 — 2.17, 2.18 and 2.19 have no `macosx x86_64` artifact at all — so an
+unconditional `>=2.19` would fail to resolve on an Intel Mac in exactly the way
+`tensorflow[and-cuda]` used to fail on Apple Silicon. The base dependency therefore carries
+two markered entries: `>=2.19` everywhere, `>=2.16.2,<2.17` on Intel macOS. That path is
+resolvable but **untested** — nobody working on this has an Intel Mac — and it pins Keras
+3.0 rather than 3.x-latest, so treat a bug report from that platform as plausible rather
+than surprising.
 
 ## Two parallel stacks
 
