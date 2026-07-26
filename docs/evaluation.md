@@ -113,12 +113,12 @@ windows that predict the past from the future.
 
 ## Guarding against the luckiest strategy
 
-Thirteen strategies are backtested. The highest of thirteen noisy numbers is high by
+Every strategy is backtested together. The highest of a dozen-odd noisy numbers is high by
 construction, so two corrections apply:
 
 ```mermaid
 flowchart LR
-  S["13 strategies<br/>walk-forward"] --> P["p-value each<br/>(exact-null z-test)"]
+  S["all strategies<br/>walk-forward"] --> P["p-value each<br/>(exact-null z-test)"]
   P --> H["Holm–Bonferroni<br/>across the family"]
   S2["5,000 random-ticket<br/>portfolios"] --> MC["empirical null<br/>distribution"]
   MC --> CMP["is the best strategy<br/>outside pure chance?"]

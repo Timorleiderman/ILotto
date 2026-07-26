@@ -74,7 +74,7 @@ uv run python -c "import tensorflow as tf; print(tf.__version__)"
 ### Using pip
 
 ```bash
-pip install -r requirements.txt
+uv sync            # dependencies come from pyproject.toml + uv.lock
 ```
 
 ### Using Docker
