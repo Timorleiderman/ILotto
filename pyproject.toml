@@ -42,3 +42,9 @@ filterwarnings = ["ignore::DeprecationWarning"]
 dev = [
     "pytest>=9.1.1",
 ]
+# Docs build only; kept out of `dev` so `uv sync --group docs` in CI does not
+# drag in the test stack, and out of the runtime deps so users installing the
+# library do not pay for a static-site generator.
+docs = [
+    "mkdocs-material>=9.5",
+]

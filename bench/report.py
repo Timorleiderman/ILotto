@@ -396,6 +396,102 @@ Mifal HaPayis. Nothing here is gambling advice; the analysis concludes the oppos
     return doc
 
 
+def dump_markdown(
+    path: str, draws: Draws, tests, results, null_dist, predictions
+) -> None:
+    """Write the MkDocs results page.
+
+    Generated rather than hand-written so the prose in the architecture pages can
+    never drift from the numbers the benchmark actually produced.
+    """
+    last_date = np.datetime_as_string(draws.dates[-1], unit="D")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+
+    def pill(sig: bool) -> str:
+        return (
+            '<span class="pill warn">signal</span>'
+            if sig
+            else '<span class="pill ok">no signal</span>'
+        )
+
+    lines = [
+        "# Results",
+        "",
+        "!!! info \"Generated output\"",
+        "",
+        f"    Rebuilt {now} UTC from {len(draws):,} draws through {last_date}. "
+        "Do not edit by hand — `scripts/build_report.py` overwrites this page.",
+        "",
+        "## Strategy scoreboard",
+        "",
+        "Walk-forward over the last "
+        f"{results[0].summary['n_draws']} draws. A random ticket averages "
+        f"**{metrics.BASELINE_MATCHES:.4f}** matches; a uniform guess scores "
+        f"**{metrics.BASELINE_LOGLOSS:.4f}** log loss. Log loss is shown only where the "
+        "strategy emits genuine inclusion probabilities.",
+        "",
+        "| Strategy | Mean matches | Lift | z | p | Log loss | Verdict |",
+        "|---|---:|---:|---:|---:|---:|---|",
+    ]
+    for r in results:
+        su = r.summary
+        ll = "—" if su["mean_log_loss"] is None else f"{su['mean_log_loss']:.4f}"
+        lines.append(
+            f"| {r.name} | {su['mean_matches']:.4f} | {su['lift_pct']:+.1f}% | "
+            f"{su['z_score']:+.2f} | {su['p_value']:.3f} | {ll} | "
+            f"{pill(su['significant_after_correction'])} |"
+        )
+
+    lines += [
+        "",
+        "Verdicts apply Holm–Bonferroni across all "
+        f"{len(results)} strategies. For scale, the luckiest of "
+        f"{null_dist['n_trials']:,} purely random strategies scored "
+        f"**{null_dist['max']:.3f}** over the same draws — against the best strategy here at "
+        f"**{results[0].summary['mean_matches']:.3f}**.",
+        "",
+        "## Randomness tests",
+        "",
+        "| Test | Statistic | p | After correction |",
+        "|---|---:|---:|---|",
+    ]
+    test_sig = metrics.holm_bonferroni({t["test"]: t["p_value"] for t in tests})
+    for t in tests:
+        lines.append(
+            f"| {t['test']} | {t['statistic']:.2f} | {t['p_value']:.4f} | "
+            f"{pill(test_sig[t['test']])} |"
+        )
+
+    if predictions:
+        lines += [
+            "",
+            "## Next-draw picks",
+            "",
+            "Published because they were asked for. These have exactly the same chance as "
+            "any other six numbers.",
+            "",
+            "| Strategy | Numbers | Strong |",
+            "|---|---|---:|",
+        ]
+        for pr in predictions:
+            nums = " · ".join(str(n) for n in pr["numbers"])
+            lines.append(f"| {pr['strategy']} | {nums} | {pr['strong']} |")
+
+    lines += [
+        "",
+        "---",
+        "",
+        "Full charts and methodology: [the benchmark report](benchmark/index.html).",
+        "",
+    ]
+
+    import os
+
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines))
+
+
 def dump_json(path: str, draws: Draws, tests, results, null_dist, predictions) -> None:
     payload = {
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),

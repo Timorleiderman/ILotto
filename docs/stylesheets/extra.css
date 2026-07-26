@@ -1,0 +1,60 @@
+/* Legend chips mirror the `classDef` palette baked into every mermaid diagram
+   (see any ```mermaid block). Mermaid inlines its own styles at render time, so
+   the diagram colours cannot be driven from here — these two must be kept in
+   step by hand. Validated for both themes with the dataviz palette checker:
+   blue #2a78d6, green #199e70, red #e34948 pass every check on both surfaces.
+   The red/green pair sits in the 6-8 CVD band, which is legal here because every
+   node also carries a text label and `flaw` uses a heavier stroke. */
+
+:root {
+  --role-struct: #8a8a85;
+  --role-learn: #2a78d6;
+  --role-out: #199e70;
+  --role-flaw: #e34948;
+}
+
+/* Diagrams are wide; let them scroll rather than squashing the page. */
+.mermaid {
+  overflow-x: auto;
+}
+
+.role-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin: 0.6rem 0 1.2rem;
+  font-size: 0.72rem;
+  color: var(--md-default-fg-color--light);
+}
+.role-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.role-key i {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 3px;
+  border: 2px solid currentColor;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+}
+.role-key .k-data { color: var(--role-struct); }
+.role-key .k-data i { background: none; }
+.role-key .k-op { color: var(--role-struct); }
+.role-key .k-op i { background: none; border-style: dashed; }
+.role-key .k-learn { color: var(--role-learn); }
+.role-key .k-out { color: var(--role-out); }
+.role-key .k-flaw { color: var(--role-flaw); }
+
+/* Verdict pills reused in the generated results tables. */
+.pill {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1em 0.55em;
+  border-radius: 99px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.pill.ok { color: #0ca30c; }
+.pill.warn { color: #d03b3b; }

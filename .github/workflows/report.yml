@@ -12,6 +12,12 @@ on:
     paths:
       - "bench/**"
       - "scripts/**"
+      - "docs/**"
+      - "mkdocs.yml"
+      # Pulled into the site via pymdownx.snippets, so edits to them change the
+      # published pages even though they live at the repo root.
+      - "ARCHITECTURES.md"
+      - "GUIDE.md"
       - ".github/workflows/report.yml"
   workflow_dispatch:
     inputs:
@@ -45,7 +51,7 @@ jobs:
         run: uv python install 3.12
 
       - name: Install dependencies
-        run: uv sync --frozen || uv sync
+        run: uv sync --frozen --group docs || uv sync --group docs
 
       - name: Lint
         run: uv run ruff check bench scripts tests
@@ -64,10 +70,16 @@ jobs:
             --n-test "${{ github.event.inputs.n_test || 300 }}" \
             --out-dir docs
 
+      # build_report.py writes docs/benchmark/index.html and docs/results.md;
+      # MkDocs then renders the whole docs/ tree (copying the standalone report
+      # through verbatim) into site/, which is what gets published.
+      - name: Build docs site
+        run: uv run mkdocs build --strict
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: site
 
       # The refreshed archive is committed so the report still builds when
       # pais.co.il is unreachable, and so the data history is auditable.

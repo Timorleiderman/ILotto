@@ -27,7 +27,7 @@ def main() -> int:
     ap.add_argument("--refresh", action="store_true", help="re-download the draw archive")
     ap.add_argument("--n-test", type=int, default=300, help="walk-forward window length")
     ap.add_argument("--quick", action="store_true", help="skip neural models")
-    ap.add_argument("--out-dir", default="docs")
+    ap.add_argument("--out-dir", default="docs", help="MkDocs source tree")
     ap.add_argument("--null-trials", type=int, default=5000)
     args = ap.parse_args()
 
@@ -78,7 +78,10 @@ def main() -> int:
         logger.info("Predicting next draw with %s", p.name)
         predictions.append(report.predict_next(p, draws))
 
+    # The standalone report lives under docs/benchmark/ so MkDocs copies it
+    # verbatim into the built site; docs/index.md is the site landing page.
     out_dir = Path(args.out_dir)
+    bench_dir = out_dir / "benchmark"
     report.build(
         draws,
         tests,
@@ -86,12 +89,16 @@ def main() -> int:
         null_dist,
         predictions,
         data.era_table(),
-        out_path=str(out_dir / "index.html"),
+        out_path=str(bench_dir / "index.html"),
     )
-    report.dump_json(str(out_dir / "results.json"), draws, tests, results, null_dist, predictions)
-    (out_dir / ".nojekyll").touch()
+    report.dump_json(
+        str(bench_dir / "results.json"), draws, tests, results, null_dist, predictions
+    )
+    report.dump_markdown(
+        str(out_dir / "results.md"), draws, tests, results, null_dist, predictions
+    )
 
-    logger.info("Wrote %s", out_dir / "index.html")
+    logger.info("Wrote %s and %s", bench_dir / "index.html", out_dir / "results.md")
     return 0
 
 
