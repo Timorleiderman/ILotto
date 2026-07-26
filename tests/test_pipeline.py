@@ -234,3 +234,90 @@ def test_hostile_csv_content_never_reaches_the_report(tmp_path):
     d = data.load(raw_csv=str(raw), clean_csv=None)
     assert len(d) == 400  # both hostile rows coerced to NaN/NaT and dropped
     assert d.balls.min() >= 1 and d.balls.max() <= data.N_NUMBERS
+
+
+# --- perfect-fit interpolators (bench/spacetime.py) -------------------------
+
+
+def test_perfect_fits_are_actually_perfect():
+    """The premise is granted, not strawmanned: the fits must be exact."""
+    from bench import spacetime
+
+    d = fake_draws(400, seed=13)
+    dft = spacetime.PerfectFitDFT()
+    assert np.abs(dft.reconstruct(d) - d.multi_hot).max() < 1e-6
+
+    # Spline: zero error at every knot.
+    from scipy.interpolate import CubicSpline
+
+    t = np.arange(len(d), dtype=float)
+    for j in (0, 18, 36):
+        cs = CubicSpline(t, d.multi_hot[:, j])
+        assert np.abs(cs(t) - d.multi_hot[:, j]).max() < 1e-12
+
+
+def test_dft_extrapolation_is_the_first_draw():
+    """f(n) = f(0) by periodicity — computed from the coefficients, not assumed."""
+    from bench import spacetime
+
+    d = fake_draws(200, seed=14)
+    n = len(d)
+    coef = np.fft.rfft(d.multi_hot[:, 7])
+    k = np.arange(len(coef))
+    # Real signal: f(t) = Re[ c0 + 2*sum_{k>=1} c_k e^{2pi i k t / n} ] / n  (n even: Nyquist term once)
+    weights = np.ones(len(coef)) * 2.0
+    weights[0] = 1.0
+    if n % 2 == 0:
+        weights[-1] = 1.0
+    f_n = np.real(np.sum(weights * coef * np.exp(2j * np.pi * k * n / n))) / n
+    # multi_hot is float32, so the round-trip carries ~1e-9 of noise.
+    assert f_n == pytest.approx(d.multi_hot[0, 7], abs=1e-6)
+
+    ball_scores, _ = spacetime.PerfectFitDFT().scores(d)
+    assert np.array_equal(np.sort(np.argsort(-ball_scores)[:6]) + 1, d.balls[0])
+
+
+def test_perfect_fit_families_disagree_about_the_future():
+    """Same history, three exact fits, three different next draws.
+
+    This is the identifiability argument made constructive: if the data
+    determined the continuation, exact fits would have to agree on it.
+    """
+    from bench import metrics, spacetime
+
+    d = fake_draws(400, seed=15)
+    tickets = []
+    for p in spacetime.spacetime_suite():
+        scores, _ = p.scores(d)
+        tickets.append(frozenset((metrics.top_k(scores) + 1).tolist()))
+    assert len(set(tickets)) >= 2, "at least two families must disagree"
+
+
+def test_perfect_fit_walk_forward_is_chance():
+    from bench import spacetime
+
+    d = fake_draws(700, seed=16)
+    for p in spacetime.spacetime_suite():
+        r = backtest.walk_forward(p, d, n_test=150, min_history=400)
+        se = np.sqrt(metrics.BASELINE_MATCH_VAR / 150)
+        assert abs(r.summary["mean_matches"] - metrics.BASELINE_MATCHES) < 4 * se, p.name
+
+
+def test_compression_detects_a_generator():
+    """Negative control: the incompressibility test must fire on a sequence that
+    actually has a generating function, else 'no structure found' means nothing."""
+    n = 800
+    balls = np.array([sorted(((np.arange(6) * 6 + t) % 37) + 1) for t in range(n)])
+    strong = (np.arange(n) % 7) + 1
+    dates = np.datetime64("2012-01-03", "D") + np.arange(n) * 3
+    functional = data.Draws(dates.astype("datetime64[ns]"), balls, strong)
+
+    t = randomness.incompressibility(functional, n_sim=40)
+    assert t["p_value"] < 0.05, "a generated sequence must be flagged as compressible"
+    assert t["statistic"] < 10, "bits/draw should collapse far below the 23.96 floor"
+
+
+def test_compression_passes_fair_data():
+    d = fake_draws(800, seed=17)
+    t = randomness.incompressibility(d, n_sim=40)
+    assert t["p_value"] > 0.05

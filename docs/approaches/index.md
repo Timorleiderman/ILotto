@@ -35,7 +35,8 @@ flowchart TB
 | [Neural set prediction](set-prediction.md) | a network can find structure counting misses | No — it converges on the uniform prior, which is correct |
 | [Legacy sequence models](legacy-models.md) | the draw is a sequence to be decoded position by position | No — and three of the four optimise a target that leaks sort order |
 | [Ticket generators](ticket-generators.md) | *which* numbers you pick changes the payout, not the odds | **Yes, for payout** — the only real edge here |
-| [Date-conditioned generative](date-conditioned.md) | the draw is a function of *when* it happened | No — but it reconstructs past draws perfectly, which is the most instructive failure here |
+| [Date-conditioned generative](date-conditioned.md) | the draw is a function of *when* it happened | No — but it reconstructs past draws perfectly, which is an instructive failure |
+| [The perfect-fit function](perfect-fit.md) | one function through all past draws, extrapolated | No — three exact fits disagree about the future, and the archive contains 0 of the 23.96 bits/draw that choosing between them requires |
 
 ## The one honest edge
 
