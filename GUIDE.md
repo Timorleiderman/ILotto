@@ -73,9 +73,17 @@ uv run python -c "import tensorflow as tf; print(tf.__version__)"
 
 ### Using pip
 
+`uv` is the supported path, but the project is a normal PEP 517 package, so pip works too.
+Dependencies come from `pyproject.toml` either way — there is no separate requirements file
+to drift out of sync.
+
 ```bash
-uv sync            # dependencies come from pyproject.toml + uv.lock
+python -m venv .venv && source .venv/bin/activate
+pip install .                 # benchmark package + all dependencies
+pip install ".[gpu]"          # optional CUDA, x86_64 Linux only
 ```
+
+pip resolves fresh rather than from `uv.lock`, so versions may differ slightly from CI.
 
 ### Using Docker
 

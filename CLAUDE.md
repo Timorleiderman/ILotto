@@ -40,6 +40,8 @@ uv run python predict.py                                  # writes PREDICTION.md
 uv run python smart_generator.py --model multi_output --count 5
 ```
 
+**There is a `.dockerignore` and it matters.** Docker does not read `.gitignore`, and the Dockerfile creates a Linux virtualenv at `/app/.venv` before copying the source over it — without the exclusion a host `.venv` (1.9 GB of arm64 wheels on this Mac) would overwrite it and `uv run` would fail inside the image.
+
 **Dependencies live in `pyproject.toml` + `uv.lock` only.** The Dockerfile installs from that pair too; a parallel `requirements.txt` used to exist and had silently drifted out of sync (it was missing `requests`, which both `helpers.py` and `bench/data.py` import).
 
 **GPU.** The default install is CPU TensorFlow, on every platform. CUDA is the `gpu` extra:

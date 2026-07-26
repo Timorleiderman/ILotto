@@ -1,0 +1,28 @@
+# Docker does not read .gitignore, so this file has to exist separately.
+#
+# The critical entry is .venv: the Dockerfile creates a Linux virtualenv at
+# /app/.venv and then copies the source tree over it. Without this exclusion a
+# host .venv — on macOS, ~1.9 GB of arm64 interpreter symlinks and native
+# wheels — would overwrite it, and `uv run` would fail on an environment that
+# cannot execute.
+.venv/
+venv/
+env/
+
+# Build outputs and caches: pure bloat in the image, and stale by definition.
+site/
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Not needed to run anything, and .git in particular is large.
+.git/
+.github/
+.devcontainer/
+.vscode/
+*.log
