@@ -11,8 +11,9 @@ same exact null.
 
 ## The short version
 
-Thirteen strategies — counting heuristics, Markov models, GRU and Transformer networks —
-are backtested walk-forward against 1,600+ draws. **None beats a randomly filled ticket by a
+Every strategy in this repository — counting heuristics, Markov models, GRU and Transformer
+networks, and a date-conditioned generative model — is backtested walk-forward against
+1,600+ draws. **None beats a randomly filled ticket by a
 margin that survives correcting for the number of strategies tried, and none beats a uniform
 guess on log loss**, meaning none holds information about the next draw even in principle.
 

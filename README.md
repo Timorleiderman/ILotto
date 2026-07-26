@@ -6,7 +6,7 @@ A machine learning project for analyzing Israeli Lotto patterns. Built as a lear
 
 **📊 [Read the documentation site →](https://timorleiderman.github.io/ILotto/)** — rebuilt
 automatically after every draw. Diagrams and explanations for every approach in this repo,
-the randomness tests, 13 strategies benchmarked walk-forward against exact nulls, and
+the randomness tests, every strategy benchmarked walk-forward against exact nulls, and
 next-draw picks.
 
 | | |
@@ -261,7 +261,7 @@ Nothing fires, before or after Holm–Bonferroni correction.
 
 ### Strategy benchmark
 
-Thirteen strategies evaluated walk-forward — for each draw a strategy sees only the draws
+Every strategy is evaluated walk-forward — for each draw it sees only the draws
 before it. A randomly filled ticket scores 6×6/37 = **0.973** matches per draw; that is the
 bar. **No strategy beats it after correcting for the number of strategies tried, and none
 beats uniform log-loss (ln 37 = 3.611)** — meaning none holds information even in principle.
@@ -304,10 +304,12 @@ ILotto/
 │   ├── generative.py     # date-conditioned generative model
 │   ├── metrics.py        # Order-invariant scoring, exact nulls, Holm–Bonferroni
 │   ├── backtest.py       # Walk-forward harness + Monte-Carlo null
+│   ├── charts.py         # Dependency-free inline SVG
 │   └── report.py         # Builds docs/benchmark/index.html + docs/results.md
 ├── scripts/build_report.py
 ├── tests/                # Regression guards for the bugs above
-├── docs/                 # Published GitHub Pages report
+├── docs/                 # MkDocs source; built to site/ and published to Pages
+├── mkdocs.yml
 ├── ARCHITECTURES.md      # Detailed architecture docs
 ├── GUIDE.md              # User guide
 ├── model/                # Saved models and diagrams

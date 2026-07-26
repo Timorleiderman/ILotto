@@ -43,6 +43,15 @@ testpaths = ["tests"]
 pythonpath = ["."]
 filterwarnings = ["ignore::DeprecationWarning"]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Only the benchmark package is distributable; the root-level legacy scripts are
+# run from a checkout, not installed.
+[tool.hatch.build.targets.wheel]
+packages = ["bench"]
+
 [project.optional-dependencies]
 # CUDA is opt-in rather than the default, for two reasons. The CI runner has no
 # GPU, so the ~3 GB of nvidia-* wheels the `and-cuda` extra pulls are downloaded

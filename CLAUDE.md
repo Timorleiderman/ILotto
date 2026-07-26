@@ -40,6 +40,10 @@ uv run python predict.py                                  # writes PREDICTION.md
 uv run python smart_generator.py --model multi_output --count 5
 ```
 
+**There is a `.dockerignore` and it matters.** Docker does not read `.gitignore`, and the Dockerfile creates a Linux virtualenv at `/app/.venv` before copying the source over it — without the exclusion a host `.venv` (1.9 GB of arm64 wheels on this Mac) would overwrite it and `uv run` would fail inside the image.
+
+**Dependencies live in `pyproject.toml` + `uv.lock` only.** The Dockerfile installs from that pair too; a parallel `requirements.txt` used to exist and had silently drifted out of sync (it was missing `requests`, which both `helpers.py` and `bench/data.py` import).
+
 **GPU.** The default install is CPU TensorFlow, on every platform. CUDA is the `gpu` extra:
 
 ```bash
@@ -111,7 +115,7 @@ Each corresponds to a bug that made the old pipeline report ~30% top-10 "accurac
    `bench/` predicts the drawn *set* (37-way multi-hot, BCE).
 4. **Baselines are stated, not implied.** `BASELINE_MATCHES = 6*6/37 = 0.9730` (hypergeometric
    mean), `BASELINE_LOGLOSS = ln 37 = 3.6109`.
-5. **Holm–Bonferroni over every family**, both the 13 strategies and the 7 randomness tests. The
+5. **Holm–Bonferroni over every family**, both the strategy table and the 7 randomness tests. The
    report's headline verdict reads both.
 
 ## The date-conditioned model is a special case
