@@ -12,7 +12,7 @@ next-draw picks.
 | | |
 |---|---|
 | [How it is measured](https://timorleiderman.github.io/ILotto/evaluation/) | the walk-forward harness and the data bugs it exposed |
-| [The approaches](https://timorleiderman.github.io/ILotto/approaches/) | diagrammed: statistical rules, neural set prediction, the four legacy models, ticket generators |
+| [The approaches](https://timorleiderman.github.io/ILotto/approaches/) | diagrammed: statistical rules, neural set prediction, a date-conditioned generative model, the four legacy models, ticket generators |
 | [Results](https://timorleiderman.github.io/ILotto/results/) | the current scoreboard, regenerated each run |
 | [Benchmark report](https://timorleiderman.github.io/ILotto/benchmark/) | the full standalone report with charts |
 
@@ -267,7 +267,7 @@ Full detail, charts and next-draw picks: **[the published report](https://timorl
 ### Benchmark commands
 
 ```bash
-uv run pytest -q                                   # 27 tests, ~4s
+uv run pytest -q                                   # 47 tests, ~11s
 uv run python scripts/build_report.py --quick      # skip the neural models
 uv run python scripts/build_report.py --refresh    # full run against fresh data (~80s)
 open docs/benchmark/index.html                 # the standalone report
@@ -293,6 +293,7 @@ ILotto/
 │   ├── randomness.py     # 7 tests for exploitable structure
 │   ├── predictors.py     # Frequency/Markov/ensemble strategies
 │   ├── nn.py             # GRU + Transformer set prediction
+│   ├── generative.py     # date-conditioned generative model
 │   ├── metrics.py        # Order-invariant scoring, exact nulls, Holm–Bonferroni
 │   ├── backtest.py       # Walk-forward harness + Monte-Carlo null
 │   └── report.py         # Builds docs/benchmark/index.html + docs/results.md

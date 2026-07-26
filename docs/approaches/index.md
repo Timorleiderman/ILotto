@@ -9,15 +9,17 @@ flowchart TB
   H --> N["<b>Neural set prediction</b><br/>learn P(number ∈ next draw)"]
   H --> L["<b>Legacy sequence models</b><br/>learn P(ball at position k)"]
   H --> G["<b>Ticket generators</b><br/>optimise the payout, not the odds"]
+  CAL["Calendar date"] --> DC["<b>Date-conditioned generative</b><br/>p(draw | date)"]
 
   S --> B["the same walk-forward harness"]
+  DC --> B
   N --> B
   L --> B
   G --> B
   B --> V["matches vs 0.973 · log loss vs ln 37"]
 
-  class H data
-  class S,N,L,G learn
+  class H,CAL data
+  class S,N,L,G,DC learn
   class B op
   class V out
   classDef data fill:none,stroke:#8a8a85,stroke-width:1.5px
@@ -33,6 +35,7 @@ flowchart TB
 | [Neural set prediction](set-prediction.md) | a network can find structure counting misses | No — it converges on the uniform prior, which is correct |
 | [Legacy sequence models](legacy-models.md) | the draw is a sequence to be decoded position by position | No — and three of the four optimise a target that leaks sort order |
 | [Ticket generators](ticket-generators.md) | *which* numbers you pick changes the payout, not the odds | **Yes, for payout** — the only real edge here |
+| [Date-conditioned generative](date-conditioned.md) | the draw is a function of *when* it happened | No — but it reconstructs past draws perfectly, which is the most instructive failure here |
 
 ## The one honest edge
 

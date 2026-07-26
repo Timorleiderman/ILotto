@@ -101,7 +101,18 @@ def predict_next(predictor: Predictor, draws: Draws, top_n: int = 12) -> dict:
     """Ticket the given predictor would play for the next, undrawn result."""
     if predictor.refit_every:
         predictor.fit(draws)
-    ball_scores, strong_scores = predictor.scores(draws)
+
+    target_date = None
+    if predictor.wants_target_date:
+        # Date-conditioned models need the round's date. The next scheduled draw
+        # is genuinely in the future, so this is also the one call where such a
+        # model is doing what it was built for rather than reconstructing.
+        from .data import next_draw_date
+
+        target_date = next_draw_date(draws)
+        ball_scores, strong_scores = predictor.scores(draws, target_date)
+    else:
+        ball_scores, strong_scores = predictor.scores(draws)
 
     order = np.argsort(-np.nan_to_num(ball_scores, neginf=-1e18))
     picks = sorted((order[:N_DRAWN] + 1).tolist())
@@ -109,6 +120,7 @@ def predict_next(predictor: Predictor, draws: Draws, top_n: int = 12) -> dict:
     p = p / p.sum()
     return {
         "strategy": predictor.name,
+        "target_date": None if target_date is None else str(target_date),
         "numbers": picks,
         "strong": int(np.argmax(strong_scores) + 1),
         "shortlist": [(int(i + 1), float(p[i])) for i in order[:top_n]],
@@ -397,7 +409,7 @@ Mifal HaPayis. Nothing here is gambling advice; the analysis concludes the oppos
 
 
 def dump_markdown(
-    path: str, draws: Draws, tests, results, null_dist, predictions
+    path: str, draws: Draws, tests, results, null_dist, predictions, memorisation=None
 ) -> None:
     """Write the MkDocs results page.
 
@@ -462,6 +474,34 @@ def dump_markdown(
             f"{pill(test_sig[t['test']])} |"
         )
 
+    if memorisation:
+        lines += [
+            "",
+            "## Memorisation vs prediction",
+            "",
+            "The date-conditioned generative model takes a date rather than a history, and "
+            "there is exactly one draw per calendar date — so the date is a **unique key**. "
+            "A model with enough capacity can store a lookup table and reproduce past draws "
+            "perfectly. **DKRR** (Date-Keyed Reconstruction Rate) is that seductive number: "
+            "matched numbers on dates the model was *trained on*. It measures storage, not "
+            "skill, and is never shown without the walk-forward column beside it.",
+            "",
+            "| Model | DKRR (in-sample) | In-sample log loss | Walk-forward matches | p |",
+            "|---|---:|---:|---:|---:|",
+        ]
+        for m in memorisation:
+            lines.append(
+                f"| {m['name']} | {m['dkrr_matches']:.3f} / 6 | {m['dkrr_log_loss']:.4f} | "
+                f"{m['wf_matches']:.4f} | {m['wf_p']:.3f} |"
+            )
+        lines += [
+            "",
+            f"Chance is **{metrics.BASELINE_MATCHES:.4f}** matched numbers and "
+            f"**{metrics.BASELINE_LOGLOSS:.4f}** log loss. The lookup control reconstructs "
+            "every training draw perfectly and is worth nothing on a date it has not seen. "
+            "That gap is the entire point of the exercise.",
+        ]
+
     if predictions:
         lines += [
             "",
@@ -470,12 +510,13 @@ def dump_markdown(
             "Published because they were asked for. These have exactly the same chance as "
             "any other six numbers.",
             "",
-            "| Strategy | Numbers | Strong |",
-            "|---|---|---:|",
+            "| Strategy | For draw of | Numbers | Strong |",
+            "|---|---|---|---:|",
         ]
         for pr in predictions:
             nums = " · ".join(str(n) for n in pr["numbers"])
-            lines.append(f"| {pr['strategy']} | {nums} | {pr['strong']} |")
+            when = pr.get("target_date") or "next draw"
+            lines.append(f"| {pr['strategy']} | {when} | {nums} | {pr['strong']} |")
 
     lines += [
         "",

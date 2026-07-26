@@ -55,7 +55,10 @@ def walk_forward(
         if predictor.refit_every and (i - start_idx) % predictor.refit_every == 0:
             predictor.fit(history)
 
-        ball_scores, strong_scores = predictor.scores(history)
+        if predictor.wants_target_date:
+            ball_scores, strong_scores = predictor.scores(history, draws.dates[i])
+        else:
+            ball_scores, strong_scores = predictor.scores(history)
         actual = draws.balls[i]
 
         match_counts.append(metrics.matches(ball_scores, actual))
