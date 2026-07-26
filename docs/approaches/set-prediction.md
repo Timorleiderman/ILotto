@@ -112,10 +112,41 @@ number 13" — a relationship that carries no meaning in a lottery.
 The output bias is initialised at \(\operatorname{logit}(6/37)\), so the model starts already
 calibrated on the base rate instead of spending its first epochs learning the prior.
 
-## What it learns
+## Why it fails, precisely
 
-It converges on the uniform prior — which is the correct answer, and the reason it is worth
-publishing.
+It converges on the base rate — which is the correct answer, and the reason it is worth
+publishing. But "it learns nothing" can be made exact rather than asserted.
+
+A model that has learned *only* that each number appears with probability 6/37, and nothing
+else, has a computable loss. For the balls head that is the binary entropy at the base rate,
+and for the strong head the entropy of a uniform 7-way choice:
+
+\[
+\underbrace{-\left[p\log p + (1-p)\log(1-p)\right]}_{0.4432,\; p = 6/37}
+\;+\; 0.2 \times \underbrace{\ln 7}_{1.9459}
+\;=\; \mathbf{0.8324}
+\]
+
+The GRU's best validation loss across refits is **0.8387** — **+0.75%** above that floor.
+The gap is not signal it found; it is the small amount of training noise it fit and could
+not fully shed.
+
+Look at what comes out the other end:
+
+| | |
+|---|---|
+| 37 sigmoid outputs | 0.113 to 0.239, **mean 0.163** |
+| Base rate 6/37 | 0.162 |
+| Implied per-number probability | 1.86% – 3.96% (uniform = 2.70%) |
+| Strong head | 0.107 – 0.178 (uniform = 0.143) |
+
+The outputs are *not* flat — the network confidently ranks some numbers above others. Those
+rankings are noise, reshuffled at every refit, which is why a top-6 taken from them scores at
+chance. A model that had genuinely learned "nothing is predictable" would output 0.162
+everywhere; this one outputs scatter around 0.162, and the scatter is what a finite sample
+buys you.
+
+## What it learns
 
 ```mermaid
 flowchart LR
