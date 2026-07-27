@@ -233,6 +233,37 @@ def incompressibility(draws: Draws, n_sim: int = 200, seed: int = 0) -> dict:
     }
 
 
+def surrogate_determinism(draws: Draws, n_sim: int = 40, n_eval: int = 120, seed: int = 0) -> dict:
+    """The canonical chaos-vs-noise test: does the *ordering* of draws predict?
+
+    Lorenz's method of analogues is scored on the real sequence, then on
+    shuffled surrogates — permutation destroys any dynamics while preserving
+    the composition exactly. If the draws were successive states of one
+    evolving system, similar past windows would have similar futures and the
+    real ordering would out-predict its shuffles. The negative control in
+    `test_surrogate_test_detects_determinism` holds a deterministic cycle,
+    which this test flags at the smallest reachable p.
+    """
+    from .chaos import analogue_skill
+
+    observed = analogue_skill(draws.multi_hot, n_eval=n_eval)
+    rng = np.random.default_rng(seed)
+    sims = np.empty(n_sim)
+    for i in range(n_sim):
+        sims[i] = analogue_skill(draws.multi_hot[rng.permutation(len(draws))], n_eval=n_eval)
+    p = (1 + np.sum(sims >= observed)) / (1 + n_sim)
+    return {
+        "test": "Surrogate-data determinism (method of analogues vs shuffles)",
+        "statistic": float(observed),
+        "dof": None,
+        "p_value": float(p),
+        "detail": (
+            f"real ordering {observed:.3f} matches vs {sims.mean():.3f} mean over "
+            f"{n_sim} shuffled surrogates (chance {36 / 37:.3f})"
+        ),
+    }
+
+
 ALL_TESTS = (
     uniformity,
     strong_uniformity,
@@ -242,6 +273,7 @@ ALL_TESTS = (
     sum_distribution,
     drift,
     incompressibility,
+    surrogate_determinism,
 )
 
 

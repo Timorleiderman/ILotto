@@ -275,7 +275,7 @@ Full detail, charts and next-draw picks: **[the published report](https://timorl
 ### Benchmark commands
 
 ```bash
-uv run pytest -q                                   # 47 tests, ~11s
+uv run pytest -q                                   # full suite, well under a minute
 uv run python scripts/build_report.py --quick      # skip the neural models
 uv run python scripts/build_report.py --refresh    # full run against fresh data (~80s)
 open docs/benchmark/index.html                 # the standalone report
@@ -302,6 +302,8 @@ ILotto/
 │   ├── predictors.py     # Frequency/Markov/ensemble strategies
 │   ├── nn.py             # GRU + Transformer set prediction
 │   ├── generative.py     # date-conditioned generative model
+│   ├── spacetime.py      # perfect-fit interpolator controls (DFT, spline, polynomial)
+│   ├── chaos.py          # Takens embedding, correlation dimension, method of analogues
 │   ├── metrics.py        # Order-invariant scoring, exact nulls, Holm–Bonferroni
 │   ├── backtest.py       # Walk-forward harness + Monte-Carlo null
 │   ├── charts.py         # Dependency-free inline SVG

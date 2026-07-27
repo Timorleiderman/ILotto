@@ -10,16 +10,20 @@ flowchart TB
   H --> L["<b>Legacy sequence models</b><br/>learn P(ball at position k)"]
   H --> G["<b>Ticket generators</b><br/>optimise the payout, not the odds"]
   CAL["Calendar date"] --> DC["<b>Date-conditioned generative</b><br/>p(draw | date)"]
+  H --> PF["<b>Perfect-fit functions</b><br/>exact interpolation, extrapolated"]
+  H --> CH["<b>Chaos theory</b><br/>attractors and analogues"]
 
   S --> B["the same walk-forward harness"]
   DC --> B
+  PF --> B
+  CH --> B
   N --> B
   L --> B
   G --> B
   B --> V["matches vs 0.973 · log loss vs ln 37"]
 
   class H,CAL data
-  class S,N,L,G,DC learn
+  class S,N,L,G,DC,PF,CH learn
   class B op
   class V out
   classDef data fill:none,stroke:#8a8a85,stroke-width:1.5px
@@ -37,6 +41,7 @@ flowchart TB
 | [Ticket generators](ticket-generators.md) | *which* numbers you pick changes the payout, not the odds | **Yes, for payout** — the only real edge here |
 | [Date-conditioned generative](date-conditioned.md) | the draw is a function of *when* it happened | No — but it reconstructs past draws perfectly, which is an instructive failure |
 | [The perfect-fit function](perfect-fit.md) | one function through all past draws, extrapolated | No — three exact fits disagree about the future, and the archive contains 0 of the 23.96 bits/draw that choosing between them requires |
+| [Chaos theory](chaos.md) | the machine is deterministic, so dynamics tools can recover structure | No — the premise is *true*, but the reset between draws erases the state Takens' theorem needs; no attractor, analogues at chance, surrogates indistinguishable |
 
 ## The one honest edge
 
