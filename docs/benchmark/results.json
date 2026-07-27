@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-07-27T04:05:35+00:00",
+  "generated_utc": "2026-07-27T04:59:58+00:00",
   "n_draws": 1629,
   "last_draw_date": "2026-07-25",
   "randomness_tests": [
@@ -78,7 +78,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.06
+      "seconds": 0.07
     },
     {
       "name": "Hot numbers (last 100 draws)",
@@ -116,7 +116,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.01
+      "seconds": 0.02
     },
     {
       "name": "EWMA frequency (half-life 50)",
@@ -154,7 +154,7 @@
       "strong_accuracy": 0.15666666666666668,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.24
+      "seconds": 0.25
     },
     {
       "name": "Overdue (longest absence)",
@@ -230,7 +230,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 1.22
+      "seconds": 1.21
     },
     {
       "name": "Perfect-fit function (polynomial)",
@@ -249,7 +249,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.22
+      "seconds": 0.21
     },
     {
       "name": "Neural (gru, set prediction)",
@@ -268,7 +268,7 @@
       "strong_accuracy": 0.17,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 41.15
+      "seconds": 41.69
     },
     {
       "name": "Pairwise co-occurrence (Markov)",
@@ -344,7 +344,7 @@
       "strong_accuracy": 0.16,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 2.47
+      "seconds": 2.37
     },
     {
       "name": "Sum-targeted combination",
@@ -363,7 +363,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.09
+      "seconds": 0.08
     },
     {
       "name": "Neural (transformer, set prediction)",
@@ -382,7 +382,7 @@
       "strong_accuracy": 0.13,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 32.79
+      "seconds": 32.3
     }
   ],
   "monte_carlo_null": {

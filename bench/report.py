@@ -462,7 +462,9 @@ def dump_markdown(
         f"p ≈ {1 / len(results):.2f} is expected among {len(results)} rows |",
         "| **Log loss** | Grades the full probability distribution the strategy assigned, not "
         f"just its top 6. A uniform guess scores exactly ln 37 = "
-        f"**{metrics.BASELINE_LOGLOSS:.4f}**; *below* that means real information | “—” means "
+        f"**{metrics.BASELINE_LOGLOSS:.4f}**. Genuine information would show up as a value "
+        "*consistently* below that across rebuilds — a hair below it on one window is "
+        "sampling noise, and no significance test is applied to this column | “—” means "
         "the strategy outputs ranks, not probabilities, so this score would be meaningless "
         "for it |",
         "| **Verdict** | Significance after Holm–Bonferroni correction across all "
@@ -485,7 +487,7 @@ def dump_markdown(
         "",
         "Two rulers for the table above. First, the luckiest of "
         f"{null_dist['n_trials']:,} **purely random** strategies scored "
-        f"**{null_dist['max']:.3f}** over these same draws — against the best real strategy's "
+        f"**{null_dist['max']:.3f}** over these same draws — against this build's top row at "
         f"**{results[0].summary['mean_matches']:.3f}** — so topping this table is well within "
         "what luck alone produces. Second, note both tails: strategies land *below* chance as "
         "often as above it, and a low row is exactly as (un)meaningful as a high one.",

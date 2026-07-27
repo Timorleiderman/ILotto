@@ -2,7 +2,7 @@
 
 !!! info "Generated output"
 
-    Rebuilt 2026-07-27 04:05 UTC from 1,629 draws through 2026-07-25. Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
+    Rebuilt 2026-07-27 04:59 UTC from 1,629 draws through 2026-07-25. Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
 
 ## Strategy scoreboard
 
@@ -14,7 +14,7 @@ Every strategy was asked to pick 6 numbers for each of the last **300 draws**, s
 | **Lift** | Mean matches relative to chance, as a percentage | ±10% is the ±2-standard-error band — single-digit lifts are noise at this sample size |
 | **z** | How many standard errors the mean sits from chance | \|z\| < 2 is unremarkable, and with 17 strategies the *largest* \|z\| is expected to exceed 2 by chance alone |
 | **p** | Probability that a skill-less strategy would score at least this far from chance | **Not** the probability the strategy works. One row near p ≈ 0.06 is expected among 17 rows |
-| **Log loss** | Grades the full probability distribution the strategy assigned, not just its top 6. A uniform guess scores exactly ln 37 = **3.6109**; *below* that means real information | “—” means the strategy outputs ranks, not probabilities, so this score would be meaningless for it |
+| **Log loss** | Grades the full probability distribution the strategy assigned, not just its top 6. A uniform guess scores exactly ln 37 = **3.6109**. Genuine information would show up as a value *consistently* below that across rebuilds — a hair below it on one window is sampling noise, and no significance test is applied to this column | “—” means the strategy outputs ranks, not probabilities, so this score would be meaningless for it |
 | **Verdict** | Significance after Holm–Bonferroni correction across all 17 rows | “no signal” is the expected outcome; a genuine “signal” would survive the correction *and* recur in the next rebuild |
 
 | Strategy | Mean matches | Lift | z | p | Log loss | Verdict |
@@ -37,7 +37,7 @@ Every strategy was asked to pick 6 numbers for each of the last **300 draws**, s
 | Sum-targeted combination | 0.9300 | -4.4% | -0.89 | 0.374 | — | <span class="pill ok">no signal</span> |
 | Neural (transformer, set prediction) | 0.8533 | -12.3% | -2.47 | 0.013 | 3.6194 | <span class="pill ok">no signal</span> |
 
-Two rulers for the table above. First, the luckiest of 5,000 **purely random** strategies scored **1.147** over these same draws — against the best real strategy's **1.067** — so topping this table is well within what luck alone produces. Second, note both tails: strategies land *below* chance as often as above it, and a low row is exactly as (un)meaningful as a high one.
+Two rulers for the table above. First, the luckiest of 5,000 **purely random** strategies scored **1.147** over these same draws — against this build's top row at **1.067** — so topping this table is well within what luck alone produces. Second, note both tails: strategies land *below* chance as often as above it, and a low row is exactly as (un)meaningful as a high one.
 
 ## Randomness tests
 
