@@ -81,6 +81,7 @@ nav:
       - Neural set prediction: approaches/set-prediction.md
       - Date-conditioned generative: approaches/date-conditioned.md
       - The perfect-fit function: approaches/perfect-fit.md
+      - Chaos theory: approaches/chaos.md
       - The four legacy models: approaches/legacy-models.md
       - Ticket generators: approaches/ticket-generators.md
   - Results: results.md

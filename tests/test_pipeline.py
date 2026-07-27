@@ -321,3 +321,69 @@ def test_compression_passes_fair_data():
     d = fake_draws(800, seed=17)
     t = randomness.incompressibility(d, n_sim=40)
     assert t["p_value"] > 0.05
+
+
+# --- chaos theory (bench/chaos.py) ------------------------------------------
+
+
+def test_correlation_dimension_separates_chaos_from_noise():
+    """The instrument check: GP dimension must saturate on a chaotic series and
+    keep climbing with embedding dimension on iid noise."""
+    from bench import chaos
+
+    rng = np.random.default_rng(4)
+    lx = np.empty(1600)
+    lx[0] = 0.61234
+    for i in range(1, len(lx)):
+        lx[i] = 4 * lx[i - 1] * (1 - lx[i - 1])  # logistic map, D2 = 1
+    noise = rng.normal(size=1600)
+
+    assert chaos.correlation_dimension(lx, m=4) < 1.8, "chaos must saturate near 1"
+    assert chaos.correlation_dimension(noise, m=4) > 2.5, "noise must fill the embedding"
+
+
+def test_draw_sums_have_no_attractor():
+    """The real archive must look like the noise column, not the chaos column."""
+    from bench import chaos
+
+    d = data.load(clean_csv=None)
+    sums = d.balls.sum(axis=1).astype(float)
+    assert chaos.correlation_dimension(sums, m=4) > 2.5
+
+
+def test_analogues_nail_a_deterministic_sequence():
+    """Positive control: on a periodic sequence, similar pasts genuinely have
+    similar futures, and the method must recover them perfectly."""
+    from bench import chaos
+
+    d = fake_draws(700, seed=18)
+    cyc = np.tile(d.multi_hot[:7], (100, 1))[:700]
+    assert chaos.analogue_skill(cyc, n_eval=100) == pytest.approx(6.0)
+
+
+def test_analogues_walk_forward_is_chance_on_fair_draws():
+    from bench.chaos import MethodOfAnalogues
+
+    d = fake_draws(900, seed=19)
+    r = backtest.walk_forward(MethodOfAnalogues(), d, n_test=150, min_history=500)
+    se = np.sqrt(metrics.BASELINE_MATCH_VAR / 150)
+    assert abs(r.summary["mean_matches"] - metrics.BASELINE_MATCHES) < 4 * se
+    # Smoothed successor frequencies are genuine probabilities summing to 6.
+    b, s = MethodOfAnalogues().scores(d)
+    assert b.sum() == pytest.approx(6.0, abs=1e-9)
+    assert s.sum() == pytest.approx(1.0, abs=1e-9)
+    assert (b > 0).all() and (b < 1).all()
+
+
+def test_surrogate_test_detects_determinism():
+    """Negative control for the negative result: a deterministic cycle must be
+    flagged at the smallest reachable p, and fair draws must not be."""
+    d = fake_draws(800, seed=20)
+    cyc_balls = np.tile(d.balls[:7], (120, 1))[:800]
+    cyc = data.Draws(d.dates, cyc_balls, d.strong)
+
+    flagged = randomness.surrogate_determinism(cyc, n_sim=30)
+    assert flagged["p_value"] <= 1 / 31 + 1e-9
+
+    fair = randomness.surrogate_determinism(d, n_sim=30)
+    assert fair["p_value"] > 0.05

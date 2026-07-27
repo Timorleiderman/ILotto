@@ -3,6 +3,7 @@
 __all__ = [
     "backtest",
     "charts",
+    "chaos",
     "data",
     "generative",
     "metrics",

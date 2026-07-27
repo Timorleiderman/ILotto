@@ -275,7 +275,7 @@ Full detail, charts and next-draw picks: **[the published report](https://timorl
 ### Benchmark commands
 
 ```bash
-uv run pytest -q                                   # 47 tests, ~11s
+uv run pytest -q                                   # full suite, well under a minute
 uv run python scripts/build_report.py --quick      # skip the neural models
 uv run python scripts/build_report.py --refresh    # full run against fresh data (~80s)
 open docs/benchmark/index.html                 # the standalone report

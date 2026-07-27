@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-07-27T04:59:58+00:00",
+  "generated_utc": "2026-07-27T20:50:16+00:00",
   "n_draws": 1629,
   "last_draw_date": "2026-07-25",
   "randomness_tests": [
@@ -58,6 +58,13 @@
       "dof": null,
       "p_value": 1.0,
       "detail": "zlib: 24.05 bits/draw vs entropy floor 23.96; fair-sim mean 24.05"
+    },
+    {
+      "test": "Surrogate-data determinism (method of analogues vs shuffles)",
+      "statistic": 0.8833333333333333,
+      "dof": null,
+      "p_value": 0.8536585365853658,
+      "detail": "real ordering 0.883 matches vs 0.970 mean over 40 shuffled surrogates (chance 0.973)"
     }
   ],
   "strategies": [
@@ -135,7 +142,7 @@
       "strong_accuracy": 0.14,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.04
+      "seconds": 0.05
     },
     {
       "name": "Rank ensemble",
@@ -154,7 +161,7 @@
       "strong_accuracy": 0.15666666666666668,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.25
+      "seconds": 0.29
     },
     {
       "name": "Overdue (longest absence)",
@@ -173,7 +180,7 @@
       "strong_accuracy": 0.13333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.1
+      "seconds": 0.11
     },
     {
       "name": "Hot numbers (all-time)",
@@ -230,7 +237,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 1.21
+      "seconds": 1.42
     },
     {
       "name": "Perfect-fit function (polynomial)",
@@ -249,7 +256,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.21
+      "seconds": 0.25
     },
     {
       "name": "Neural (gru, set prediction)",
@@ -268,7 +275,7 @@
       "strong_accuracy": 0.17,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 41.69
+      "seconds": 48.92
     },
     {
       "name": "Pairwise co-occurrence (Markov)",
@@ -344,7 +351,7 @@
       "strong_accuracy": 0.16,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 2.37
+      "seconds": 2.86
     },
     {
       "name": "Sum-targeted combination",
@@ -363,7 +370,26 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.08
+      "seconds": 0.09
+    },
+    {
+      "name": "Method of analogues (chaos)",
+      "description": "Lorenz's nearest-neighbour forecaster from chaotic dynamics: find the k past 3-draw windows most similar to the current one and average their successors. The standard short-horizon predictor for real chaotic systems.",
+      "n_draws": 300,
+      "mean_matches": 0.9233333333333333,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": -5.101851851851857,
+      "match_se": 0.04837259012129297,
+      "z_score": -1.026193542978981,
+      "p_value": 0.30480036435886493,
+      "mean_log_loss": 3.7195130126591325,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 4,
+      "hit_3plus_rate": 0.04666666666666667,
+      "strong_accuracy": 0.17,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 0.11
     },
     {
       "name": "Neural (transformer, set prediction)",
@@ -382,7 +408,7 @@
       "strong_accuracy": 0.13,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 32.3
+      "seconds": 34.97
     }
   ],
   "monte_carlo_null": {

@@ -37,6 +37,7 @@ flowchart TB
 | [Ticket generators](ticket-generators.md) | *which* numbers you pick changes the payout, not the odds | **Yes, for payout** — the only real edge here |
 | [Date-conditioned generative](date-conditioned.md) | the draw is a function of *when* it happened | No — but it reconstructs past draws perfectly, which is an instructive failure |
 | [The perfect-fit function](perfect-fit.md) | one function through all past draws, extrapolated | No — three exact fits disagree about the future, and the archive contains 0 of the 23.96 bits/draw that choosing between them requires |
+| [Chaos theory](chaos.md) | the machine is deterministic, so dynamics tools can recover structure | No — the premise is *true*, but the reset between draws erases the state Takens' theorem needs; no attractor, analogues at chance, surrogates indistinguishable |
 
 ## The one honest edge
 
