@@ -298,7 +298,7 @@ ILotto/
 ├── helpers.py            # Data loading utilities
 ├── bench/                # Leak-free benchmark package
 │   ├── data.py           # Era-aware loading; chronological; no outcome filtering
-│   ├── randomness.py     # 7 tests for exploitable structure
+│   ├── randomness.py     # tests for exploitable structure (uniformity, gaps, pairs, drift, compressibility, …)
 │   ├── predictors.py     # Frequency/Markov/ensemble strategies
 │   ├── nn.py             # GRU + Transformer set prediction
 │   ├── generative.py     # date-conditioned generative model
