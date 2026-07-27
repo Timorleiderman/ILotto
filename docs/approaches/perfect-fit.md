@@ -107,7 +107,7 @@ for lzma preset 9; lzma agrees where it counts — 101.4% of floor on the real a
 
 The control matters: it proves the test can see a generating function when one exists. On
 the real archive it finds nothing — the past contains approximately **zero** of the 23.96
-bits per draw that selecting the right continuation requires. This now runs as the eighth
+bits per draw that selecting the right continuation requires. This runs as a standing
 test in the [randomness suite](../evaluation.md), Monte-Carlo calibrated, and
 `test_compression_detects_a_generator` keeps the negative control honest.
 

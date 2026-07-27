@@ -117,7 +117,7 @@ It runs on the [scoreboard](../results.md) as a full participant, with honest pr
 
 ## Instrument 3: the surrogate-data test
 
-The canonical chaos-vs-noise hypothesis test, now the ninth entry in the
+The canonical chaos-vs-noise hypothesis test, now a standing entry in the
 [randomness suite](../evaluation.md). Shuffle the draw order — this destroys any dynamics
 completely while preserving the composition exactly — and ask whether the real ordering
 out-predicts its own shuffles.

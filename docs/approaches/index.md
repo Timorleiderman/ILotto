@@ -10,16 +10,20 @@ flowchart TB
   H --> L["<b>Legacy sequence models</b><br/>learn P(ball at position k)"]
   H --> G["<b>Ticket generators</b><br/>optimise the payout, not the odds"]
   CAL["Calendar date"] --> DC["<b>Date-conditioned generative</b><br/>p(draw | date)"]
+  H --> PF["<b>Perfect-fit functions</b><br/>exact interpolation, extrapolated"]
+  H --> CH["<b>Chaos theory</b><br/>attractors and analogues"]
 
   S --> B["the same walk-forward harness"]
   DC --> B
+  PF --> B
+  CH --> B
   N --> B
   L --> B
   G --> B
   B --> V["matches vs 0.973 · log loss vs ln 37"]
 
   class H,CAL data
-  class S,N,L,G,DC learn
+  class S,N,L,G,DC,PF,CH learn
   class B op
   class V out
   classDef data fill:none,stroke:#8a8a85,stroke-width:1.5px
