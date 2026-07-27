@@ -385,5 +385,15 @@ def test_surrogate_test_detects_determinism():
     flagged = randomness.surrogate_determinism(cyc, n_sim=30)
     assert flagged["p_value"] <= 1 / 31 + 1e-9
 
-    fair = randomness.surrogate_determinism(d, n_sim=30)
-    assert fair["p_value"] > 0.05
+    # The fair direction is checked across three seeds rather than one.
+    # Analogue distances between 0/1 windows tie constantly, argpartition
+    # breaks ties platform-dependently, and a single fair sequence lands at
+    # the p floor ~3% of the time — CI caught exactly that. Under fairness
+    # the three p-values are ~independent uniforms, so all three below 0.1
+    # has probability ~0.001; under determinism all three pin to the floor,
+    # so the guard still separates the cases.
+    ps = [
+        randomness.surrogate_determinism(fake_draws(800, seed=sd), n_sim=20)["p_value"]
+        for sd in (20, 21, 22)
+    ]
+    assert max(ps) > 0.1, ps
