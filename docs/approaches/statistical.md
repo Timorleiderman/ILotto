@@ -265,16 +265,20 @@ noise, made visible.
 
 ## The scoreboard trap
 
-Two strategies sit near p = 0.05 in the run this page was written against (300-draw
-walk-forward, July 2026 archive). The numbers on the [live scoreboard](../results.md) are
-regenerated after every draw and will drift — which is itself the lesson of this section.
-It would be easy to write up the first row. Look at both:
+In the run this page was written against (300-draw walk-forward, July 2026 archive), the
+best and worst rows were:
 
 | Strategy | Matches | p |
 |---|---:|---:|
-| Hot numbers (last 100) | 1.067 | **0.053** |
+| Lag-1 persistence *(best that build)* | 1.067 | **0.053** |
 | … | | |
-| Neural (transformer) | 0.853 | **0.013** |
+| Neural (transformer) *(worst that build)* | 0.853 | **0.013** |
+
+The [live scoreboard](../results.md) regenerates after every draw, and the *identity* of the
+top row shuffles between rebuilds — in an earlier build these same 1.067 / 0.053 belonged to
+hot numbers, not lag-1. A leaderboard whose winner changes when nothing changed but the
+evaluation window is telling you what it is measuring. It would still be easy to write up
+whichever row is on top today. Look at both ends instead:
 
 The **most statistically extreme result on the board is a model performing significantly
 _worse_ than chance** — and at a smaller p-value than the best one. Nobody would propose the

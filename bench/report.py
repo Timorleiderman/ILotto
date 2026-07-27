@@ -308,7 +308,7 @@ Year-by-year detail</summary>
 <h2>2. Is there anything to predict?</h2>
 <p>Before fitting anything, test the sequence for exploitable structure. Each test below is
 a different way for a lottery machine to be unfair; a small p&#8209;value would mean the draws
-carry structure a model could exploit. Because seven tests run at once, significance is judged
+carry structure a model could exploit. Because {len(tests)} tests run at once, significance is judged
 after a Holm&ndash;Bonferroni correction.</p>
 {_table(["Test", "Statistic", "p-value", "After correction"], test_rows, numeric_from=1)}
 <figure>{freq_chart}
@@ -426,21 +426,48 @@ def dump_markdown(
             else '<span class="pill ok">no signal</span>'
         )
 
+    n_test = results[0].summary["n_test" if "n_test" in results[0].summary else "n_draws"]
+    se = float(np.sqrt(metrics.BASELINE_MATCH_VAR / n_test))
+    band_lo, band_hi = metrics.BASELINE_MATCHES - 2 * se, metrics.BASELINE_MATCHES + 2 * se
+
     lines = [
         "# Results",
         "",
         "!!! info \"Generated output\"",
         "",
         f"    Rebuilt {now} UTC from {len(draws):,} draws through {last_date}. "
-        "Do not edit by hand — `scripts/build_report.py` overwrites this page.",
+        "Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, "
+        "so the numbers below shuffle from build to build. That shuffling is not a bug in the "
+        "strategies; it is what a table of noise looks like when you keep re-rolling it.",
         "",
         "## Strategy scoreboard",
         "",
-        "Walk-forward over the last "
-        f"{results[0].summary['n_draws']} draws. A random ticket averages "
-        f"**{metrics.BASELINE_MATCHES:.4f}** matches; a uniform guess scores "
-        f"**{metrics.BASELINE_LOGLOSS:.4f}** log loss. Log loss is shown only where the "
-        "strategy emits genuine inclusion probabilities.",
+        f"Every strategy was asked to pick 6 numbers for each of the last **{n_test} draws**, "
+        "seeing only the draws before each one. The columns:",
+        "",
+        "| Column | Meaning | What counts as unremarkable |",
+        "|---|---|---|",
+        "| **Mean matches** | Of the 6 numbers picked, how many were actually drawn, averaged "
+        f"over the {n_test} test draws | A random ticket averages 6×6/37 = "
+        f"**{metrics.BASELINE_MATCHES:.4f}**. For this window, anything in "
+        f"**{band_lo:.3f} – {band_hi:.3f}** is within ±2 standard errors of chance |",
+        "| **Lift** | Mean matches relative to chance, as a percentage | "
+        f"±{200 * se / metrics.BASELINE_MATCHES:.0f}% is the ±2-standard-error band — "
+        "single-digit lifts are noise at this sample size |",
+        "| **z** | How many standard errors the mean sits from chance | \\|z\\| < 2 is "
+        f"unremarkable, and with {len(results)} strategies the *largest* \\|z\\| is expected "
+        "to exceed 2 by chance alone |",
+        "| **p** | Probability that a skill-less strategy would score at least this far from "
+        "chance | **Not** the probability the strategy works. One row near "
+        f"p ≈ {1 / len(results):.2f} is expected among {len(results)} rows |",
+        "| **Log loss** | Grades the full probability distribution the strategy assigned, not "
+        f"just its top 6. A uniform guess scores exactly ln 37 = "
+        f"**{metrics.BASELINE_LOGLOSS:.4f}**; *below* that means real information | “—” means "
+        "the strategy outputs ranks, not probabilities, so this score would be meaningless "
+        "for it |",
+        "| **Verdict** | Significance after Holm–Bonferroni correction across all "
+        f"{len(results)} rows | “no signal” is the expected outcome; a genuine “signal” would "
+        "survive the correction *and* recur in the next rebuild |",
         "",
         "| Strategy | Mean matches | Lift | z | p | Log loss | Verdict |",
         "|---|---:|---:|---:|---:|---:|---|",
@@ -456,13 +483,21 @@ def dump_markdown(
 
     lines += [
         "",
-        "Verdicts apply Holm–Bonferroni across all "
-        f"{len(results)} strategies. For scale, the luckiest of "
-        f"{null_dist['n_trials']:,} purely random strategies scored "
-        f"**{null_dist['max']:.3f}** over the same draws — against the best strategy here at "
-        f"**{results[0].summary['mean_matches']:.3f}**.",
+        "Two rulers for the table above. First, the luckiest of "
+        f"{null_dist['n_trials']:,} **purely random** strategies scored "
+        f"**{null_dist['max']:.3f}** over these same draws — against the best real strategy's "
+        f"**{results[0].summary['mean_matches']:.3f}** — so topping this table is well within "
+        "what luck alone produces. Second, note both tails: strategies land *below* chance as "
+        "often as above it, and a low row is exactly as (un)meaningful as a high one.",
         "",
         "## Randomness tests",
+        "",
+        "Each row asks a different way the machine could be unfair: biased ball frequencies, "
+        "memory between draws, pairs that travel together, drift over the years, a compressible "
+        "generating pattern. **Statistic** is each test's own measure (a chi-square, a KS "
+        "distance, bits/draw, …) — the values are not comparable *between* rows; the p-value is "
+        "the comparable column. Small p would mean structure a model could exploit. Because "
+        "many tests run at once, the verdict column applies Holm–Bonferroni across the family.",
         "",
         "| Test | Statistic | p | After correction |",
         "|---|---:|---:|---|",
@@ -489,6 +524,16 @@ def dump_markdown(
             "| Model | DKRR (in-sample) | In-sample log loss | Walk-forward matches | p |",
             "|---|---:|---:|---:|---:|",
         ]
+        lines[-2:-2] = [
+            "Column guide: **DKRR** — matched numbers when asked about dates it was trained "
+            "on (6.000 = perfect recall); **in-sample log loss** — same idea for the full "
+            "distribution (lower = more memorised; a uniform guess scores "
+            f"{metrics.BASELINE_LOGLOSS:.4f}); **walk-forward matches** — the honest column, "
+            "on draws it had never seen (chance "
+            f"{metrics.BASELINE_MATCHES:.4f}). Read each row left to right as "
+            "\"how impressive it looks\" versus \"what it is worth\".",
+            "",
+        ]
         for m in memorisation:
             lines.append(
                 f"| {m['name']} | {m['dkrr_matches']:.3f} / 6 | {m['dkrr_log_loss']:.4f} | "
@@ -508,7 +553,9 @@ def dump_markdown(
             "## Next-draw picks",
             "",
             "Published because they were asked for. These have exactly the same chance as "
-            "any other six numbers.",
+            "any other six numbers. **For draw of** — most strategies condition on the "
+            "history, so their pick simply applies to whichever draw comes next; the "
+            "date-conditioned model needs an actual date, so it names the next scheduled one.",
             "",
             "| Strategy | For draw of | Numbers | Strong |",
             "|---|---|---|---:|",

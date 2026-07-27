@@ -115,7 +115,7 @@ Each corresponds to a bug that made the old pipeline report ~30% top-10 "accurac
    `bench/` predicts the drawn *set* (37-way multi-hot, BCE).
 4. **Baselines are stated, not implied.** `BASELINE_MATCHES = 6*6/37 = 0.9730` (hypergeometric
    mean), `BASELINE_LOGLOSS = ln 37 = 3.6109`.
-5. **Holm–Bonferroni over every family**, both the strategy table and the 7 randomness tests. The
+5. **Holm–Bonferroni over every family**, both the strategy table and the randomness tests. The
    report's headline verdict reads both.
 
 ## The date-conditioned model is a special case
