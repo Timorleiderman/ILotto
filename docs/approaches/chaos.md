@@ -107,9 +107,10 @@ flowchart LR
 
 First, proof the instrument works: on a deterministic 7-cycle control it scores a perfect
 **6.000 / 6** — where similar pasts genuinely have similar futures, this method finds them.
-On the real archive it scores **0.957** over 300 evaluation draws, against chance of 0.973.
-Its twenty "nearest analogues" are nearest by coincidence, and their successors are just
-twenty random draws.
+On the real archive, the shipped predictor scores **0.923** over the 300-draw scoreboard
+window, against chance of 0.973 (the exact value reshuffles with every rebuild — the
+[scoreboard](../results.md) carries the current one). Its twenty "nearest analogues" are
+nearest by coincidence, and their successors are just twenty random draws.
 
 It runs on the [scoreboard](../results.md) as a full participant, with honest probabilities
 (smoothed successor frequencies, summing to exactly 6).
@@ -151,7 +152,7 @@ see the thing the mathematics needs.
 | Instrument | Chaos would show | Measured |
 |---|---|---|
 | Correlation dimension | saturation at low D₂ | climbs like noise, no attractor |
-| Method of analogues | skill above chance | 0.957 vs 0.973 — chance |
+| Method of analogues | skill above chance | 0.923 vs 0.973 on the current build — chance |
 | Surrogate data | real ordering beats shuffles | p = 0.85 — indistinguishable |
 
 Three instruments, each validated on a control where chaos (or determinism) is genuinely
