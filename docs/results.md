@@ -2,7 +2,7 @@
 
 !!! info "Generated output"
 
-    Rebuilt 2026-07-27 20:50 UTC from 1,629 draws through 2026-07-25. Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
+    Rebuilt 2026-08-05 20:27 UTC from 1,629 draws through 2026-07-25. Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
 
 ## Strategy scoreboard
 
@@ -12,16 +12,17 @@ Every strategy was asked to pick 6 numbers for each of the last **300 draws**, s
 |---|---|---|
 | **Mean matches** | Of the 6 numbers picked, how many were actually drawn, averaged over the 300 test draws | A random ticket averages 6×6/37 = **0.9730**. For this window, anything in **0.876 – 1.070** is within ±2 standard errors of chance |
 | **Lift** | Mean matches relative to chance, as a percentage | ±10% is the ±2-standard-error band — single-digit lifts are noise at this sample size |
-| **z** | How many standard errors the mean sits from chance | \|z\| < 2 is unremarkable, and with 18 strategies the *largest* \|z\| is expected to exceed 2 by chance alone |
-| **p** | Probability that a skill-less strategy would score at least this far from chance | **Not** the probability the strategy works. One row near p ≈ 0.06 is expected among 18 rows |
+| **z** | How many standard errors the mean sits from chance | \|z\| < 2 is unremarkable, and with 20 strategies the *largest* \|z\| is expected to exceed 2 by chance alone |
+| **p** | Probability that a skill-less strategy would score at least this far from chance | **Not** the probability the strategy works. One row near p ≈ 0.05 is expected among 20 rows |
 | **Log loss** | Grades the full probability distribution the strategy assigned, not just its top 6. A uniform guess scores exactly ln 37 = **3.6109**. Genuine information would show up as a value *consistently* below that across rebuilds — a hair below it on one window is sampling noise, and no significance test is applied to this column | “—” means the strategy outputs ranks, not probabilities, so this score would be meaningless for it |
-| **Verdict** | Significance after Holm–Bonferroni correction across all 18 rows | “no signal” is the expected outcome; a genuine “signal” would survive the correction *and* recur in the next rebuild |
+| **Verdict** | Significance after Holm–Bonferroni correction across all 20 rows | “no signal” is the expected outcome; a genuine “signal” would survive the correction *and* recur in the next rebuild |
 
 | Strategy | Mean matches | Lift | z | p | Log loss | Verdict |
 |---|---:|---:|---:|---:|---:|---|
 | Lag-1 persistence | 1.0667 | +9.6% | +1.94 | 0.053 | 3.6126 | <span class="pill ok">no signal</span> |
 | Hot numbers (last 100 draws) | 1.0567 | +8.6% | +1.73 | 0.084 | 3.6353 | <span class="pill ok">no signal</span> |
 | Perfect-fit function (DFT) | 1.0467 | +7.6% | +1.52 | 0.128 | — | <span class="pill ok">no signal</span> |
+| Golden ratio (Kronecker schedule) | 1.0367 | +6.5% | +1.32 | 0.188 | — | <span class="pill ok">no signal</span> |
 | EWMA frequency (half-life 50) | 1.0267 | +5.5% | +1.11 | 0.267 | 3.6297 | <span class="pill ok">no signal</span> |
 | Rank ensemble | 1.0133 | +4.1% | +0.83 | 0.404 | — | <span class="pill ok">no signal</span> |
 | Overdue (longest absence) | 1.0000 | +2.8% | +0.56 | 0.576 | — | <span class="pill ok">no signal</span> |
@@ -31,6 +32,7 @@ Every strategy was asked to pick 6 numbers for each of the last **300 draws**, s
 | Perfect-fit function (polynomial) | 0.9900 | +1.7% | +0.35 | 0.725 | — | <span class="pill ok">no signal</span> |
 | Neural (gru, set prediction) | 0.9867 | +1.4% | +0.28 | 0.777 | 3.6200 | <span class="pill ok">no signal</span> |
 | Pairwise co-occurrence (Markov) | 0.9733 | +0.0% | +0.01 | 0.994 | — | <span class="pill ok">no signal</span> |
+| Fibonacci ticket (control) | 0.9700 | -0.3% | -0.06 | 0.951 | — | <span class="pill ok">no signal</span> |
 | Cold numbers (all-time) | 0.9667 | -0.6% | -0.13 | 0.896 | — | <span class="pill ok">no signal</span> |
 | Random ticket | 0.9333 | -4.1% | -0.82 | 0.413 | — | <span class="pill ok">no signal</span> |
 | Date-conditioned generative (CB-6/37) | 0.9333 | -4.1% | -0.82 | 0.413 | 3.6349 | <span class="pill ok">no signal</span> |

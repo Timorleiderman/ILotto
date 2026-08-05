@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-07-27T20:50:16+00:00",
+  "generated_utc": "2026-08-05T20:27:34+00:00",
   "n_draws": 1629,
   "last_draw_date": "2026-07-25",
   "randomness_tests": [
@@ -126,6 +126,25 @@
       "seconds": 0.02
     },
     {
+      "name": "Golden ratio (Kronecker schedule)",
+      "description": "Six numbers placed by the golden angle at the next draw's index \u2014 the phyllotaxis construction mapped onto the board. phi's low-discrepancy property makes this the most uniformly spread fixed schedule possible, i.e. a random ticket with extra steps.",
+      "n_draws": 300,
+      "mean_matches": 1.0366666666666666,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": 6.546296296296283,
+      "match_se": 0.04837259012129297,
+      "z_score": 1.3167310977969833,
+      "p_value": 0.18792877582679723,
+      "mean_log_loss": null,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 3,
+      "hit_3plus_rate": 0.03666666666666667,
+      "strong_accuracy": 0.15,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 0.0
+    },
+    {
       "name": "EWMA frequency (half-life 50)",
       "description": "Frequency count where a draw 50 draws ago carries half the weight of the latest one. Smoothly interpolates between 'hot recently' and 'hot all-time'.",
       "n_draws": 300,
@@ -161,7 +180,7 @@
       "strong_accuracy": 0.15666666666666668,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.29
+      "seconds": 0.28
     },
     {
       "name": "Overdue (longest absence)",
@@ -237,7 +256,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 1.42
+      "seconds": 1.35
     },
     {
       "name": "Perfect-fit function (polynomial)",
@@ -275,7 +294,7 @@
       "strong_accuracy": 0.17,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 48.92
+      "seconds": 48.94
     },
     {
       "name": "Pairwise co-occurrence (Markov)",
@@ -295,6 +314,25 @@
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
       "seconds": 0.02
+    },
+    {
+      "name": "Fibonacci ticket (control)",
+      "description": "The fixed ticket 2-3-5-8-13-21. Same odds as any six numbers, but Fibonacci picks are famously popular with humans, so the pari-mutuel share is worse than average.",
+      "n_draws": 300,
+      "mean_matches": 0.97,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": -0.3055555555555589,
+      "match_se": 0.04837259012129297,
+      "z_score": -0.061459867365348926,
+      "p_value": 0.9509929751580308,
+      "mean_log_loss": null,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 4,
+      "hit_3plus_rate": 0.05,
+      "strong_accuracy": 0.11333333333333333,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 0.0
     },
     {
       "name": "Cold numbers (all-time)",
@@ -351,7 +389,7 @@
       "strong_accuracy": 0.16,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 2.86
+      "seconds": 2.8
     },
     {
       "name": "Sum-targeted combination",
@@ -389,7 +427,7 @@
       "strong_accuracy": 0.17,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.11
+      "seconds": 0.12
     },
     {
       "name": "Neural (transformer, set prediction)",
@@ -408,7 +446,7 @@
       "strong_accuracy": 0.13,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 34.97
+      "seconds": 36.12
     }
   ],
   "monte_carlo_null": {

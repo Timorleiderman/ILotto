@@ -304,6 +304,7 @@ ILotto/
 │   ├── generative.py     # date-conditioned generative model
 │   ├── spacetime.py      # perfect-fit interpolator controls (DFT, spline, polynomial)
 │   ├── chaos.py          # Takens embedding, correlation dimension, method of analogues
+│   ├── golden.py         # golden-ratio schedules, Fibonacci controls, φ-as-unpopularity
 │   ├── metrics.py        # Order-invariant scoring, exact nulls, Holm–Bonferroni
 │   ├── backtest.py       # Walk-forward harness + Monte-Carlo null
 │   ├── charts.py         # Dependency-free inline SVG

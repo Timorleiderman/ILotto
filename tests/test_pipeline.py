@@ -397,3 +397,65 @@ def test_surrogate_test_detects_determinism():
         for sd in (20, 21, 22)
     ]
     assert max(ps) > 0.1, ps
+
+
+# --- golden ratio (bench/golden.py) ------------------------------------------
+
+
+def test_golden_schedule_is_valid_and_deterministic():
+    from bench import golden
+
+    for t in (0, 1, 1629, 99999):
+        a, b = golden.golden_ticket(t), golden.golden_ticket(t)
+        assert a == b and len(set(a)) == 6
+        assert all(1 <= v <= 37 for v in a)
+
+
+def test_golden_schedule_is_equidistributed():
+    """phi's one superpower, verified: the long-run pick rate of every number
+    converges to exactly 6/37 — the schedule is a random ticket with extra steps."""
+    from bench import golden
+
+    counts = np.zeros(37)
+    n = 8000
+    for t in range(n):
+        for v in golden.golden_ticket(t):
+            counts[v - 1] += 1
+    rates = counts / n
+    assert abs(rates - 6 / 37).max() < 0.01
+
+
+def test_golden_predictors_walk_forward_at_chance():
+    from bench.golden import golden_suite
+
+    d = fake_draws(700, seed=23)
+    for p in golden_suite():
+        r = backtest.walk_forward(p, d, n_test=150, min_history=400)
+        se = np.sqrt(metrics.BASELINE_MATCH_VAR / 150)
+        assert abs(r.summary["mean_matches"] - metrics.BASELINE_MATCHES) < 4 * se, p.name
+
+
+def test_fibonacci_numbers_are_not_special_in_the_archive():
+    """The folk hypothesis, pinned against the real data: Fibonacci appearances
+    must sit within noise of their 8/37 share."""
+    from bench import golden
+
+    d = data.load(clean_csv=None)
+    obs = np.isin(d.balls, np.array(golden.FIBONACCI)).sum()
+    n = len(d)
+    exp = n * 6 * len(golden.FIBONACCI) / 37
+    sd = np.sqrt(n * 6 * (len(golden.FIBONACCI) / 37) * (1 - len(golden.FIBONACCI) / 37))
+    assert abs(obs - exp) < 3 * sd
+
+
+def test_golden_tickets_never_contain_arithmetic_runs():
+    """The three-distance theorem, checked empirically: golden-angle tickets
+    cannot contain arithmetic progressions of length 4 — the crowd-favourite
+    pattern. This is the property behind their measured unpopularity edge."""
+    from bench import golden
+
+    for t in range(3000):
+        ticket = golden.golden_ticket(t)
+        for i in range(len(ticket) - 3):
+            a, b, c, d_ = ticket[i : i + 4]
+            assert not (b - a == c - b == d_ - c), (t, ticket)

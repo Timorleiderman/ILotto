@@ -6,6 +6,7 @@ __all__ = [
     "chaos",
     "data",
     "generative",
+    "golden",
     "metrics",
     "nn",
     "predictors",
