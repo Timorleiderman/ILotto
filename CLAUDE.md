@@ -67,6 +67,15 @@ resolvable but **untested** — nobody working on this has an Intel Mac — and 
 3.0 rather than 3.x-latest, so treat a bug report from that platform as plausible rather
 than surprising.
 
+## Operational fact: CI cannot reach pais.co.il
+
+The scheduled publish runs `--refresh`, but the download times out from GitHub's runners
+(geo/cloud-IP blocking) and falls back to the committed archive — so **new draws only land
+when someone runs `uv run python scripts/build_report.py --refresh` locally and commits
+`input/`**. The workflow prints archive freshness to the job summary and warns past 7 days;
+the generated pages carry the same warning. Do not "fix" the fallback by making the
+download fatal: the site must still rebuild when the source is down.
+
 ## Two parallel stacks
 
 This is the single most important structural fact. They share the `input/` data and nothing

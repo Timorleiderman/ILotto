@@ -2,7 +2,7 @@
 
 !!! info "Generated output"
 
-    Rebuilt 2026-08-05 20:27 UTC from 1,629 draws through 2026-07-25. Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
+    Rebuilt 2026-08-05 20:38 UTC from 1,632 draws through 2026-08-04. Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
 
 ## Strategy scoreboard
 
@@ -19,28 +19,28 @@ Every strategy was asked to pick 6 numbers for each of the last **300 draws**, s
 
 | Strategy | Mean matches | Lift | z | p | Log loss | Verdict |
 |---|---:|---:|---:|---:|---:|---|
-| Lag-1 persistence | 1.0667 | +9.6% | +1.94 | 0.053 | 3.6126 | <span class="pill ok">no signal</span> |
-| Hot numbers (last 100 draws) | 1.0567 | +8.6% | +1.73 | 0.084 | 3.6353 | <span class="pill ok">no signal</span> |
-| Perfect-fit function (DFT) | 1.0467 | +7.6% | +1.52 | 0.128 | — | <span class="pill ok">no signal</span> |
-| Golden ratio (Kronecker schedule) | 1.0367 | +6.5% | +1.32 | 0.188 | — | <span class="pill ok">no signal</span> |
-| EWMA frequency (half-life 50) | 1.0267 | +5.5% | +1.11 | 0.267 | 3.6297 | <span class="pill ok">no signal</span> |
-| Rank ensemble | 1.0133 | +4.1% | +0.83 | 0.404 | — | <span class="pill ok">no signal</span> |
-| Overdue (longest absence) | 1.0000 | +2.8% | +0.56 | 0.576 | — | <span class="pill ok">no signal</span> |
-| Hot numbers (all-time) | 0.9967 | +2.4% | +0.49 | 0.624 | 3.6123 | <span class="pill ok">no signal</span> |
-| Unpopular numbers (EV-aware) | 0.9967 | +2.4% | +0.49 | 0.624 | — | <span class="pill ok">no signal</span> |
-| Perfect-fit function (spline) | 0.9967 | +2.4% | +0.49 | 0.624 | — | <span class="pill ok">no signal</span> |
-| Perfect-fit function (polynomial) | 0.9900 | +1.7% | +0.35 | 0.725 | — | <span class="pill ok">no signal</span> |
-| Neural (gru, set prediction) | 0.9867 | +1.4% | +0.28 | 0.777 | 3.6200 | <span class="pill ok">no signal</span> |
-| Pairwise co-occurrence (Markov) | 0.9733 | +0.0% | +0.01 | 0.994 | — | <span class="pill ok">no signal</span> |
-| Fibonacci ticket (control) | 0.9700 | -0.3% | -0.06 | 0.951 | — | <span class="pill ok">no signal</span> |
-| Cold numbers (all-time) | 0.9667 | -0.6% | -0.13 | 0.896 | — | <span class="pill ok">no signal</span> |
-| Random ticket | 0.9333 | -4.1% | -0.82 | 0.413 | — | <span class="pill ok">no signal</span> |
-| Date-conditioned generative (CB-6/37) | 0.9333 | -4.1% | -0.82 | 0.413 | 3.6349 | <span class="pill ok">no signal</span> |
-| Sum-targeted combination | 0.9300 | -4.4% | -0.89 | 0.374 | — | <span class="pill ok">no signal</span> |
-| Method of analogues (chaos) | 0.9233 | -5.1% | -1.03 | 0.305 | 3.7195 | <span class="pill ok">no signal</span> |
-| Neural (transformer, set prediction) | 0.8533 | -12.3% | -2.47 | 0.013 | 3.6194 | <span class="pill ok">no signal</span> |
+| Hot numbers (last 100 draws) | 1.0567 | +8.6% | +1.73 | 0.084 | 3.6360 | <span class="pill ok">no signal</span> |
+| Lag-1 persistence | 1.0533 | +8.3% | +1.66 | 0.097 | 3.6129 | <span class="pill ok">no signal</span> |
+| Perfect-fit function (DFT) | 1.0433 | +7.2% | +1.45 | 0.146 | — | <span class="pill ok">no signal</span> |
+| Golden ratio (Kronecker schedule) | 1.0333 | +6.2% | +1.25 | 0.212 | — | <span class="pill ok">no signal</span> |
+| EWMA frequency (half-life 50) | 1.0267 | +5.5% | +1.11 | 0.267 | 3.6302 | <span class="pill ok">no signal</span> |
+| Neural (transformer, set prediction) | 1.0200 | +4.8% | +0.97 | 0.331 | 3.6152 | <span class="pill ok">no signal</span> |
+| Random ticket | 1.0167 | +4.5% | +0.90 | 0.366 | — | <span class="pill ok">no signal</span> |
+| Unpopular numbers (EV-aware) | 1.0067 | +3.5% | +0.70 | 0.486 | — | <span class="pill ok">no signal</span> |
+| Rank ensemble | 1.0033 | +3.1% | +0.63 | 0.530 | — | <span class="pill ok">no signal</span> |
+| Perfect-fit function (spline) | 1.0000 | +2.8% | +0.56 | 0.576 | — | <span class="pill ok">no signal</span> |
+| Perfect-fit function (polynomial) | 0.9933 | +2.1% | +0.42 | 0.674 | — | <span class="pill ok">no signal</span> |
+| Hot numbers (all-time) | 0.9900 | +1.7% | +0.35 | 0.725 | 3.6125 | <span class="pill ok">no signal</span> |
+| Overdue (longest absence) | 0.9867 | +1.4% | +0.28 | 0.777 | — | <span class="pill ok">no signal</span> |
+| Cold numbers (all-time) | 0.9700 | -0.3% | -0.06 | 0.951 | — | <span class="pill ok">no signal</span> |
+| Pairwise co-occurrence (Markov) | 0.9667 | -0.6% | -0.13 | 0.896 | — | <span class="pill ok">no signal</span> |
+| Fibonacci ticket (control) | 0.9600 | -1.3% | -0.27 | 0.789 | — | <span class="pill ok">no signal</span> |
+| Date-conditioned generative (CB-6/37) | 0.9200 | -5.4% | -1.10 | 0.273 | 3.6347 | <span class="pill ok">no signal</span> |
+| Method of analogues (chaos) | 0.9167 | -5.8% | -1.16 | 0.244 | 3.7187 | <span class="pill ok">no signal</span> |
+| Neural (gru, set prediction) | 0.9067 | -6.8% | -1.37 | 0.170 | 3.6207 | <span class="pill ok">no signal</span> |
+| Sum-targeted combination | 0.8900 | -8.5% | -1.72 | 0.086 | — | <span class="pill ok">no signal</span> |
 
-Two rulers for the table above. First, the luckiest of 5,000 **purely random** strategies scored **1.147** over these same draws — against this build's top row at **1.067** — so topping this table is well within what luck alone produces. Second, note both tails: strategies land *below* chance as often as above it, and a low row is exactly as (un)meaningful as a high one.
+Two rulers for the table above. First, the luckiest of 5,000 **purely random** strategies scored **1.187** over these same draws — against this build's top row at **1.057** — so topping this table is well within what luck alone produces. Second, note both tails: strategies land *below* chance as often as above it, and a low row is exactly as (un)meaningful as a high one.
 
 ## Randomness tests
 
@@ -48,15 +48,15 @@ Each row asks a different way the machine could be unfair: biased ball frequenci
 
 | Test | Statistic | p | After correction |
 |---|---:|---:|---|
-| Ball frequency uniformity (chi-square) | 35.25 | 0.5038 | <span class="pill ok">no signal</span> |
-| Strong-number uniformity (chi-square) | 2.70 | 0.8449 | <span class="pill ok">no signal</span> |
-| Lag-1 serial independence (hot/due folklore) | 1.01 | 0.3151 | <span class="pill ok">no signal</span> |
-| Appearance-gap distribution vs geometric | 11.14 | 0.4317 | <span class="pill ok">no signal</span> |
-| Pairwise co-occurrence (666 pairs, Sidak-corrected) | 3.73 | 0.1217 | <span class="pill ok">no signal</span> |
-| Draw-sum distribution (two-sample KS vs simulated fair draws) | 0.02 | 0.7096 | <span class="pill ok">no signal</span> |
-| First half vs second half frequency drift | 26.92 | 0.8634 | <span class="pill ok">no signal</span> |
+| Ball frequency uniformity (chi-square) | 35.11 | 0.5106 | <span class="pill ok">no signal</span> |
+| Strong-number uniformity (chi-square) | 2.48 | 0.8704 | <span class="pill ok">no signal</span> |
+| Lag-1 serial independence (hot/due folklore) | 0.90 | 0.3440 | <span class="pill ok">no signal</span> |
+| Appearance-gap distribution vs geometric | 11.22 | 0.4247 | <span class="pill ok">no signal</span> |
+| Pairwise co-occurrence (666 pairs, Sidak-corrected) | 3.71 | 0.1285 | <span class="pill ok">no signal</span> |
+| Draw-sum distribution (two-sample KS vs simulated fair draws) | 0.02 | 0.7328 | <span class="pill ok">no signal</span> |
+| First half vs second half frequency drift | 27.48 | 0.8452 | <span class="pill ok">no signal</span> |
 | Incompressibility (no generating function within compressor reach) | 24.05 | 1.0000 | <span class="pill ok">no signal</span> |
-| Surrogate-data determinism (method of analogues vs shuffles) | 0.88 | 0.8537 | <span class="pill ok">no signal</span> |
+| Surrogate-data determinism (method of analogues vs shuffles) | 0.88 | 0.9512 | <span class="pill ok">no signal</span> |
 
 ## Memorisation vs prediction
 
@@ -66,8 +66,8 @@ Column guide: **DKRR** — matched numbers when asked about dates it was trained
 
 | Model | DKRR (in-sample) | In-sample log loss | Walk-forward matches | p |
 |---|---:|---:|---:|---:|
-| Date-conditioned generative (CB-6/37) | 1.263 / 6 | 3.5930 | 0.9333 | 0.413 |
-| Date lookup table (memorisation control) | 6.000 / 6 | 1.8001 | 0.9300 | 0.374 |
+| Date-conditioned generative (CB-6/37) | 1.259 / 6 | 3.5930 | 0.9200 | 0.273 |
+| Date lookup table (memorisation control) | 6.000 / 6 | 1.8001 | 0.9133 | 0.218 |
 
 Chance is **0.9730** matched numbers and **3.6109** log loss. The lookup control reconstructs every training draw perfectly and is worth nothing on a date it has not seen. That gap is the entire point of the exercise.
 
@@ -78,10 +78,10 @@ Published because they were asked for. These have exactly the same chance as any
 | Strategy | For draw of | Numbers | Strong |
 |---|---|---|---:|
 | Random ticket | next draw | 1 · 4 · 5 · 9 · 24 · 26 | 3 |
-| Lag-1 persistence | next draw | 11 · 20 · 25 · 26 · 27 · 29 | 1 |
-| Neural (gru, set prediction) | next draw | 5 · 8 · 9 · 26 · 28 · 29 | 3 |
+| Hot numbers (last 100 draws) | next draw | 5 · 7 · 8 · 18 · 19 · 21 | 2 |
+| Neural (gru, set prediction) | next draw | 3 · 5 · 8 · 9 · 11 · 29 | 3 |
 | Unpopular numbers (EV-aware) | next draw | 32 · 33 · 34 · 35 · 36 · 37 | 1 |
-| Date-conditioned generative (CB-6/37) | 2026-07-28 | 11 · 13 · 27 · 28 · 34 · 35 | 5 |
+| Date-conditioned generative (CB-6/37) | 2026-08-06 | 26 · 27 · 28 · 30 · 34 · 35 | 4 |
 
 ---
 

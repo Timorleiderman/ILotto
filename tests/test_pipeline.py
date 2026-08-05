@@ -459,3 +459,28 @@ def test_golden_tickets_never_contain_arithmetic_runs():
         for i in range(len(ticket) - 3):
             a, b, c, d_ = ticket[i : i + 4]
             assert not (b - a == c - b == d_ - c), (t, ticket)
+
+
+def test_stale_archive_is_declared_in_generated_pages(tmp_path):
+    """A stale archive must announce itself rather than publish silently.
+
+    CI cannot reach the upstream source, so builds can be green while the data
+    ages; the generated pages carry the warning. Synthetic draws end in 2012,
+    which is maximally stale relative to any wall clock this test runs under.
+    """
+    from bench import report
+
+    d = fake_draws(300, seed=6)
+    results = backtest.run_suite([predictors.UniformRandom(seed=1)], d, n_test=30)
+    null = {"n_trials": 10, "mean": 0.97, "std": 0.05, "p95": 1.05, "max": 1.1,
+            "samples": np.full(10, 0.97)}
+    report.dump_markdown(str(tmp_path / "r.md"), d, [], results, null, [])
+    text = (tmp_path / "r.md").read_text()
+    assert "days old" in text and "not reachable" in text
+
+
+def test_next_draw_date_is_never_in_the_past():
+    """Even on a stale archive, a published 'next draw' date must be current."""
+    d = fake_draws(300, seed=7)  # dates end in 2014 — very stale
+    nxt = data.next_draw_date(d)
+    assert nxt >= np.datetime64("today", "D")

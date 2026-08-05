@@ -182,10 +182,15 @@ def next_draw_date(draws: Draws, lookback: int = 200) -> np.datetime64:
     weekday = (recent.astype(int) + 3) % 7  # Monday == 0
     counts = np.bincount(weekday, minlength=7)
     scheduled = set(np.flatnonzero(counts >= 0.1 * len(recent)).tolist())
-    if not scheduled:  # pathological history; fall back to a week later
-        return draws.dates[-1].astype("datetime64[D]") + np.timedelta64(7, "D")
 
-    day = draws.dates[-1].astype("datetime64[D]")
+    # Floored at today: when the archive is stale (the upstream download is
+    # unreachable from CI), "next draw after the last on record" is a date in
+    # the past, and a past date published as a prediction is worse than none.
+    today = np.datetime64("today", "D")
+    day = max(draws.dates[-1].astype("datetime64[D]"), today)
+
+    if not scheduled:  # pathological history; fall back to a week later
+        return day + np.timedelta64(7, "D")
     for _ in range(1, 15):
         day = day + np.timedelta64(1, "D")
         if int((day.astype(int) + 3) % 7) in scheduled:
