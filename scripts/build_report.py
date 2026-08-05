@@ -39,9 +39,10 @@ def main() -> int:
         logger.info("  p=%.4f  %s", t["p_value"], t["test"])
 
     from bench.chaos import chaos_suite
+    from bench.golden import golden_suite
     from bench.spacetime import spacetime_suite
 
-    suite = predictors.statistical_suite() + spacetime_suite() + chaos_suite()
+    suite = predictors.statistical_suite() + spacetime_suite() + chaos_suite() + golden_suite()
     if not args.quick:
         suite += predictors.generative_suite()
         from bench.nn import NeuralPredictor

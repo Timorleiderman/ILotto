@@ -82,6 +82,7 @@ nav:
       - Date-conditioned generative: approaches/date-conditioned.md
       - The perfect-fit function: approaches/perfect-fit.md
       - Chaos theory: approaches/chaos.md
+      - The golden ratio: approaches/golden-ratio.md
       - The four legacy models: approaches/legacy-models.md
       - Ticket generators: approaches/ticket-generators.md
   - Results: results.md

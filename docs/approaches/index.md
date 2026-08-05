@@ -12,18 +12,20 @@ flowchart TB
   CAL["Calendar date"] --> DC["<b>Date-conditioned generative</b><br/>p(draw | date)"]
   H --> PF["<b>Perfect-fit functions</b><br/>exact interpolation, extrapolated"]
   H --> CH["<b>Chaos theory</b><br/>attractors and analogues"]
+  H --> GR["<b>Golden ratio</b><br/>φ schedules and Fibonacci"]
 
   S --> B["the same walk-forward harness"]
   DC --> B
   PF --> B
   CH --> B
+  GR --> B
   N --> B
   L --> B
   G --> B
   B --> V["matches vs 0.973 · log loss vs ln 37"]
 
   class H,CAL data
-  class S,N,L,G,DC,PF,CH learn
+  class S,N,L,G,DC,PF,CH,GR learn
   class B op
   class V out
   classDef data fill:none,stroke:#8a8a85,stroke-width:1.5px
@@ -42,6 +44,7 @@ flowchart TB
 | [Date-conditioned generative](date-conditioned.md) | the draw is a function of *when* it happened | No — but it reconstructs past draws perfectly, which is an instructive failure |
 | [The perfect-fit function](perfect-fit.md) | one function through all past draws, extrapolated | No — three exact fits disagree about the future, and the archive contains 0 of the 23.96 bits/draw that choosing between them requires |
 | [Chaos theory](chaos.md) | the machine is deterministic, so dynamics tools can recover structure | No — the premise is *true*, but the reset between draws erases the state Takens' theorem needs; no attractor, analogues at chance, surrogates indistinguishable |
+| [The golden ratio](golden-ratio.md) | nature's constant marks the numbers | No — φ is the constant of maximal pattern *avoidance*; its one honest job here is designing unpopular tickets, and it measurably does that |
 
 ## The one honest edge
 

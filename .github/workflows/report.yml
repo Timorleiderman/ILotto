@@ -80,6 +80,26 @@ jobs:
             --n-test "$N_TEST" \
             --out-dir docs
 
+      # pais.co.il is not reachable from GitHub's runners (connect timeout —
+      # likely geo/cloud-IP blocking), so --refresh above silently falls back to
+      # the committed archive. Surface that instead of letting green runs hide
+      # a stale site: the end date goes in the job summary, with a warning
+      # annotation once it is more than a week old.
+      - name: Report data freshness
+        run: |
+          uv run python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import numpy as np
+          from datetime import date
+          from bench import data
+          d = data.load(clean_csv=None)
+          last = d.dates[-1].astype("datetime64[D]")
+          age = (np.datetime64(date.today()) - last).astype(int)
+          print(f"**Archive freshness:** {len(d)} draws, newest {last} ({age} days old)")
+          if age > 7:
+              print(f"::warning title=Stale draw archive::newest draw is {age} days old; "
+                    "pais.co.il is unreachable from CI — refresh locally and push")
+          EOF
+
       # build_report.py writes docs/benchmark/index.html and docs/results.md;
       # MkDocs then renders the whole docs/ tree (copying the standalone report
       # through verbatim) into site/, which is what gets published.

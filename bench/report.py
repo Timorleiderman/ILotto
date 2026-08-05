@@ -138,6 +138,9 @@ def build(
 ) -> str:
     now = datetime.now(timezone.utc)
     last_date = np.datetime_as_string(draws.dates[-1], unit="D")
+    stale_days = int(
+        (np.datetime64(now.strftime("%Y-%m-%d")) - draws.dates[-1].astype("datetime64[D]")).astype(int)
+    )
     best = results[0]
 
     # --- randomness tests, family-corrected -------------------------------
@@ -282,6 +285,10 @@ rebuilt {_e(now.strftime("%Y-%m-%d %H:%M"))} UTC</p>
     <div class="n">after multiple-testing correction</div></div>
 </div>
 
+{f'<div class="note"><p><strong>Data staleness.</strong> The most recent draw in this build is '
+  f'{stale_days} days old. The upstream archive at pais.co.il is not reachable from the CI runners '
+  f'that rebuild this page, so new draws only arrive when the archive is refreshed from a machine '
+  f'that can reach it.</p></div>' if stale_days > 7 else ''}
 <div class="note"><p><strong>The headline.</strong> Across every test on this page, the draw
 history is indistinguishable from a fair random process, and no strategy beats a randomly
 filled ticket by a margin that survives correcting for the number of strategies tried.
@@ -426,6 +433,10 @@ def dump_markdown(
             else '<span class="pill ok">no signal</span>'
         )
 
+    stale_md = int(
+        (np.datetime64(datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+         - draws.dates[-1].astype("datetime64[D]")).astype(int)
+    )
     n_test = results[0].summary["n_test" if "n_test" in results[0].summary else "n_draws"]
     se = float(np.sqrt(metrics.BASELINE_MATCH_VAR / n_test))
     band_lo, band_hi = metrics.BASELINE_MATCHES - 2 * se, metrics.BASELINE_MATCHES + 2 * se
@@ -436,7 +447,13 @@ def dump_markdown(
         "!!! info \"Generated output\"",
         "",
         f"    Rebuilt {now} UTC from {len(draws):,} draws through {last_date}. "
-        "Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, "
+        + (
+            f"**Note: the newest draw here is {stale_md} days old** — the upstream archive is "
+            "not reachable from the CI runners, so new draws arrive only via a local refresh. "
+            if stale_md > 7
+            else ""
+        )
+        + "Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, "
         "so the numbers below shuffle from build to build. That shuffling is not a bug in the "
         "strategies; it is what a table of noise looks like when you keep re-rolling it.",
         "",
