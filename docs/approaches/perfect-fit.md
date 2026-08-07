@@ -10,8 +10,9 @@
     the whole history, a cubic spline, a window polynomial — and evaluate each at
     tomorrow's index.
 
-    **What it teaches.** All three reproduce the past perfectly and *disagree about the
-    future* — the prediction comes from the choice of basis, not from the data. Picking the
+    **What it teaches.** Each reproduces its fitted past perfectly — the DFT and spline
+    all 1,629 draws, the polynomial its recent window — and they *disagree about the
+    future*: the prediction comes from the choice of basis, not from the data. Picking the
     right continuation costs 23.96 bits per draw, and compressing the archive shows it
     contains ~none of them: a fair sequence is its own shortest description. Punchline: the
     smoothest function through fourteen years of draws predicts, as the next draw, the

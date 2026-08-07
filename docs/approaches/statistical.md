@@ -14,8 +14,8 @@
     **What it teaches.** A fair machine has no memory, so every counting rule rediscovers
     the same thing: binomial noise. The hottest numbers of one half of history performed
     *below average* in the other half, "due" numbers are no more likely after 15 absences
-    than after none, and a plain random ticket finished mid-table among the strategies
-    that claim to know something. The spread that makes numbers look hot is exactly the
+    than after none, and a plain random ticket has finished above several strategies
+    that claim to know something — the leaderboard reshuffles with every rebuild. The spread that makes numbers look hot is exactly the
     spread fairness produces.
 
 Eleven counting rules, in `bench/predictors.py`. None of them trains anything — each is a

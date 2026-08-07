@@ -5,9 +5,10 @@
     **The idea.** Treat prediction as sequence-to-sequence translation, like language
     models do: read ten past draws, emit the next one ball by ball.
 
-    **How it works.** Four architectures — Seq2Seq with attention, one-head-per-position,
-    a Transformer, and a set predictor — each read `(10 draws × 7 numbers)` and output a
-    probability distribution per ball position.
+    **How it works.** Four architectures read the same `(10 draws × 7 numbers)` input.
+    Three — Seq2Seq with attention, one-head-per-position, a Transformer — output a
+    probability distribution *per sorted ball position*; the fourth breaks with that
+    framing and outputs 37 independent probabilities for the unordered set.
 
     **What it teaches.** Three of the four were graded against balls in *ascending order*,
     and that leaks: position 1 is the minimum of six draws (almost always small), position
