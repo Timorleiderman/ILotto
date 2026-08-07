@@ -1,5 +1,21 @@
 # Ticket generators
 
+!!! abstract "The concept, in a minute"
+
+    **The idea.** You cannot change *whether* you win — every combination has identical
+    odds. But prizes are pots split among winners, so you can change *how much* you win by
+    holding a ticket nobody else holds.
+
+    **How it works.** Score candidate tickets by how unlike human picks they are: humans
+    play birthdays (1–31), visual patterns and arithmetic runs, so reward high numbers,
+    even spread, and no sequences. Play the least popular-looking ticket.
+
+    **What it teaches.** This is the single genuine edge in the repository — and it is a
+    fact about *players*, not about the machine. It raises the expected payout given a win
+    while leaving the odds untouched, and the expected value of a ticket stays negative
+    either way. Everything that claims to predict fails; the one thing that works does not
+    predict anything.
+
 In `smart_generator.py` and `predict.py`. These are the only approaches in the repo that can
 raise expected value — and they do it without predicting anything.
 

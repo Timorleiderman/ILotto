@@ -1,5 +1,23 @@
 # Chaos theory
 
+!!! abstract "The concept, in a minute"
+
+    **The idea.** The machine is not random at all — it is Newtonian physics. Chaos theory
+    exists precisely to find the hidden determinism in systems that look random.
+
+    **How it works.** Three standard instruments: embed the draw series and look for a
+    low-dimensional attractor (correlation dimension); find past moments that resemble the
+    present and predict from what followed them (Lorenz's method of analogues); shuffle
+    the sequence and check whether the true ordering predicts better than its shuffles
+    (surrogate data). Each instrument is first validated on a system where chaos is real.
+
+    **What it teaches.** These tools need successive states of *one evolving trajectory* —
+    and the lottery empties, reloads and resets the machine between draws. The chaos is
+    real but lives inside each draw, on millisecond timescales, and exponential
+    sensitivity is exactly what makes the reset total. Roulette *was* beaten with these
+    methods — by measuring the spin being bet on before betting closed. The lottery never
+    shows you the current draw's state, and that observation is the whole game.
+
 *The machine is deterministic. Balls obey Newton, not dice gods. Chaos theory was built for
 exactly this — deterministic systems that look random — so its tools should recover the
 structure that mere statistics misses.*
