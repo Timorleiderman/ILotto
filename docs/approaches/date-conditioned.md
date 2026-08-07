@@ -1,5 +1,23 @@
 # Date-conditioned generative model
 
+!!! abstract "The concept, in a minute"
+
+    **The idea.** The draw is a function of *when* it happens. Type in any date — past or
+    future — and generate that round's numbers.
+
+    **How it works.** A generative model assigns each of the 37 numbers a probability that
+    depends only on the date (season, weekday, long-term trend), normalised exactly over
+    all valid 6-number sets, with an exact sampler. Crucially the date enters through a
+    *linear* map — the one design that provably cannot memorise individual dates, because
+    adjusting the fit for one date moves all 1,600 others.
+
+    **What it teaches.** There is exactly one draw per date, so the date is a *unique key*:
+    an unconstrained model just stores a date→draw table and "predicts" the past perfectly.
+    Our deliberate lookup control scores **6/6** on any past date and exactly chance on
+    unseen ones. Reproducing the past is storage; only the walk-forward column is about the
+    future — and there, with 63 hypothesis tests finding no date effect, the model is
+    indistinguishable from a fair lottery.
+
 Type in a date — past or future — and this generates that round's ticket. It is the only
 model here that never looks at the preceding draws. It reads a calendar.
 

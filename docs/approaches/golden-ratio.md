@@ -1,5 +1,23 @@
 # The golden ratio
 
+!!! abstract "The concept, in a minute"
+
+    **The idea.** φ ≈ 1.618 genuinely organises sunflowers, pinecones and galaxies —
+    nature's favourite constant should leave fingerprints on the draws too.
+
+    **How it works.** Two ways: test whether φ already marks the archive (Fibonacci
+    numbers, golden gap ratios, golden-section positions), and build the best predictor φ
+    can offer — the golden-angle schedule, the same rule sunflowers use to place seeds.
+
+    **What it teaches.** An inversion. φ's real mathematical distinction is being the
+    *most irrational* number — the constant of maximal pattern **avoidance**, which is why
+    its schedule spreads picks more evenly than any other rule and therefore converges to
+    a plain random ticket. Nothing golden marks the archive. But avoidance is the one
+    thing worth buying in a lottery where prizes are split: golden-angle tickets measurably
+    beat random ones at being *unpopular* (they cannot contain the number-runs humans
+    love). Nature uses φ to keep seeds apart; a player can use it to keep away from other
+    players. Nobody gets to use it to see the future.
+
 *φ organises sunflower heads, pinecones, spiral galaxies and quasicrystals. Nature's
 favourite constant should leave fingerprints on other numbers too — find them in the draw
 history and you have an edge.*

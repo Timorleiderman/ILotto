@@ -1,5 +1,23 @@
 # The perfect-fit function
 
+!!! abstract "The concept, in a minute"
+
+    **The idea.** Somewhere there is a function whose curve passes through every past draw;
+    evaluate it one step further and you have the next one. Infinitely many functions fit
+    the past — but only one also fits the next draw, so find a way to pick it.
+
+    **How it works.** We build three genuinely exact fits — Fourier interpolation through
+    the whole history, a cubic spline, a window polynomial — and evaluate each at
+    tomorrow's index.
+
+    **What it teaches.** Each reproduces its fitted past perfectly — the DFT and spline
+    all 1,629 draws, the polynomial its recent window — and they *disagree about the
+    future*: the prediction comes from the choice of basis, not from the data. Picking the
+    right continuation costs 23.96 bits per draw, and compressing the archive shows it
+    contains ~none of them: a fair sequence is its own shortest description. Punchline: the
+    smoothest function through fourteen years of draws predicts, as the next draw, the
+    draw of 2012-01-03. A perfect fit is a lookup table wearing a curve.
+
 *There must exist a function over time that passes through every past draw — infinitely
 many, in fact. Only one of them also passes through the next draw. Find a way to describe
 that space, and you have a predictor.*

@@ -1,5 +1,21 @@
 # The four legacy models
 
+!!! abstract "The concept, in a minute"
+
+    **The idea.** Treat prediction as sequence-to-sequence translation, like language
+    models do: read ten past draws, emit the next one ball by ball.
+
+    **How it works.** Four architectures read the same `(10 draws × 7 numbers)` input.
+    Three — Seq2Seq with attention, one-head-per-position, a Transformer — output a
+    probability distribution *per sorted ball position*; the fourth breaks with that
+    framing and outputs 37 independent probabilities for the unordered set.
+
+    **What it teaches.** Three of the four were graded against balls in *ascending order*,
+    and that leaks: position 1 is the minimum of six draws (almost always small), position
+    6 the maximum (almost always large). A model can score well by learning how *sorting*
+    behaves while knowing nothing about the lottery — which is where the old "30% accuracy"
+    came from. The one sound variant predicts the unordered set, and lands on chance.
+
 In `models.py` and `ilotto.py`, trained via `train.py --model <name>`. All four take the
 same input — 10 previous draws as `(batch, 10, 7)` integer ball IDs — and, except for the
 last, emit `(batch, 7, 37)`: a probability distribution per output position.

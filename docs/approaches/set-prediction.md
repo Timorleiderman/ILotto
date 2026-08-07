@@ -1,5 +1,22 @@
 # Neural set prediction
 
+!!! abstract "The concept, in a minute"
+
+    **The idea.** Counting rules are crude — a neural network can find interactions and
+    patterns that no hand-written statistic would catch.
+
+    **How it works.** The last 20 draws are encoded order-free (a 37-slot yes/no vector
+    per draw, plus how long each number has been absent) and fed to a GRU or Transformer.
+    The output is 37 independent probabilities — "will this number be in the next draw?" —
+    trained against the drawn *set*, so the model can only score by knowing which numbers,
+    never by exploiting their published sort order.
+
+    **What it teaches.** The network converges to within **+0.75%** of the loss of a model
+    that learned only "each number appears with probability 6/37" — a floor you can compute
+    on paper. Its outputs are not flat, but the scatter around 6/37 reshuffles every refit:
+    confident-looking rankings, made of noise. More capacity does not help when there is
+    nothing to fit.
+
 In `bench/nn.py`. Three interchangeable encoders — GRU, Transformer, MLP — behind one input
 encoding and one dual output head. The architecture choice is deliberately the *only*
 variable, so the comparison says something about architectures rather than about
