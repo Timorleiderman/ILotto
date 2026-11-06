@@ -13,6 +13,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+from .seed_allocations import remote_ranges
 from .seed_search import (
     GENERATOR, MAX_SEED, Observation, _prefix_hash, search, validate_checkpoint, write_json,
 )
@@ -150,27 +151,31 @@ def continue_search(
                     or not start <= record.get("committed_until", start) <= stop):
                 raise ValueError("Invalid or overlapping ledger ranges")
             previous_stop = stop
-        for source in imports:
-            source = Path(source).resolve()
-            if str(source) in ledger["imports"]:
-                continue
-            state = _read(source, prefix)
-            start, stop = state["identity"]["start"], state["identity"]["stop"]
-            destination = directory / f"range_{start}_{stop}.json"
-            # Check overlap before writing; never overwrite an already-advanced range.
-            if any(r["checkpoint"] == str(destination) for r in ledger["ranges"]):
-                raise ValueError("Import duplicates an existing range from another source")
-            _reserve(ledger, destination, start, stop)
-            next(r for r in ledger["ranges"] if r["checkpoint"] == str(destination))[
-                "committed_until"
-            ] = state["next_seed"]
-            if destination.exists():
-                if _read(destination, prefix) != state:
-                    raise ValueError("Unregistered import file differs; manual inspection required")
-            else:
-                write_json(destination, state)
-            ledger["imports"][str(source)] = str(destination)
-            write_json(ledger_path, ledger)
+        with campaign_lock(Path(root) / "allocation.lock"):
+            for source in imports:
+                source = Path(source).resolve()
+                if str(source) in ledger["imports"]:
+                    continue
+                state = _read(source, prefix)
+                start, stop = state["identity"]["start"], state["identity"]["stop"]
+                destination = directory / f"range_{start}_{stop}.json"
+                # Check overlap before writing; never overwrite an already-advanced range.
+                if any(r["checkpoint"] == str(destination) for r in ledger["ranges"]):
+                    raise ValueError("Import duplicates an existing range from another source")
+                if any(max(start, r["start"]) < min(stop, r["stop"])
+                       for r in remote_ranges(root)):
+                    raise ValueError("Remote reservations remain owned by the coordinator; do not import them")
+                _reserve(ledger, destination, start, stop)
+                next(r for r in ledger["ranges"] if r["checkpoint"] == str(destination))[
+                    "committed_until"
+                ] = state["next_seed"]
+                if destination.exists():
+                    if _read(destination, prefix) != state:
+                        raise ValueError("Unregistered import file differs; manual inspection required")
+                else:
+                    write_json(destination, state)
+                ledger["imports"][str(source)] = str(destination)
+                write_json(ledger_path, ledger)
 
         states = {}
         # Missing registered checkpoints may be work reserved just before a crash.
@@ -209,28 +214,39 @@ def continue_search(
             if remaining_seconds <= 0:
                 reason = "time_limit"
                 break
-            frontier, selected = 0, None
-            for record in ledger["ranges"]:
-                if frontier < record["start"]:
-                    break
-                state = states.get(record["checkpoint"])
-                cursor = state["next_seed"] if state else record["start"]
-                if cursor < record["stop"]:
-                    selected = record
-                    break
-                frontier = record["stop"]
-            if selected is None:
-                if frontier == MAX_SEED:
-                    reason = "seed_space_exhausted"
-                    break
-                next_start = min((r["start"] for r in ledger["ranges"] if r["start"] > frontier),
-                                 default=MAX_SEED)
-                stop = min(frontier + candidates - tested, next_start)
-                path = directory / f"range_{frontier}_{stop}.json"
-                _reserve(ledger, path, frontier, stop)
-                # Reserve before executing so a crash cannot lose the active range.
-                write_json(ledger_path, ledger)
-                selected = next(r for r in ledger["ranges"] if r["checkpoint"] == str(path))
+            with campaign_lock(Path(root) / "allocation.lock"):
+                blocked = remote_ranges(root)
+                coverage = [dict(r, remote=False) for r in ledger["ranges"]]
+                coverage.extend(dict(r, remote=True) for r in blocked)
+                coverage.sort(key=lambda r: (r["start"], not r["remote"]))
+                frontier, selected = 0, None
+                for record in coverage:
+                    if record["stop"] <= frontier:
+                        continue
+                    if frontier < record["start"]:
+                        break
+                    if record["remote"]:
+                        frontier = record["stop"]
+                        continue
+                    state = states.get(record["checkpoint"])
+                    cursor = state["next_seed"] if state else record["start"]
+                    if cursor < record["stop"]:
+                        selected = next(r for r in ledger["ranges"]
+                                        if r["checkpoint"] == record["checkpoint"])
+                        break
+                    frontier = record["stop"]
+                if selected is None:
+                    if frontier == MAX_SEED:
+                        reason = "seed_space_exhausted"
+                        break
+                    next_start = min((r["start"] for r in coverage if r["start"] > frontier),
+                                     default=MAX_SEED)
+                    stop = min(frontier + candidates - tested, next_start)
+                    path = directory / f"range_{frontier}_{stop}.json"
+                    _reserve(ledger, path, frontier, stop)
+                    # Serialize this write with remote allocations, not remote work.
+                    write_json(ledger_path, ledger)
+                    selected = next(r for r in ledger["ranges"] if r["checkpoint"] == str(path))
             old = states.get(selected["checkpoint"])
             cursor = old["next_seed"] if old else selected["start"]
             runner = search if search_impl is None else search_impl

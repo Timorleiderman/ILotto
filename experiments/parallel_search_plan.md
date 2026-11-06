@@ -147,6 +147,13 @@ lock; they are not yet included in the running Mac job's totals. Do not restart
 those allocations from a different output directory. The second checkpoint
 retains the remainder of its finite reservation for safe continuation.
 
-The current cross-machine pilot uses explicit static assignments. A general
-distributed allocator and a supervised long GPU campaign remain future work;
-the local campaign lock alone does not coordinate separate computers.
+The initial cross-machine pilot used explicit static assignments. New remote
+work now uses `scripts/search_remote_seeds.py`: the Mac reserves ranges under a
+shared allocation lock, runs the Ubuntu CUDA executable over SSH, and commits
+all progress locally. It excludes entire existing CPU and GPU reservations;
+updated CPU campaigns also skip remote reservations. Resume uses an allocation
+ID and one canonical checkpoint, with per-allocation locking and a durable
+cursor to detect missing/regressed state. The original running Mac job remains
+bounded by its already reserved interval. See `native/cuda-search/README.md`
+for the new-run, resume, and graceful-stop commands. Arbitrary independent
+checkouts are not coordinators; keep allocation state on the original Mac.

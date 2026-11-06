@@ -13,11 +13,11 @@ from .seed_search import MAX_SEED, _prefix_hash
 
 
 class CudaWorker:
-    def __init__(self, binary: Path, timeout: float = 120):
+    def __init__(self, binary: Path, timeout: float = 120, *, command=None):
         self.timeout = timeout
         self.errors = tempfile.TemporaryFile(mode="w+t")
         try:
-            self.process = subprocess.Popen([str(Path(binary).resolve())], stdin=subprocess.PIPE,
+            self.process = subprocess.Popen(command or [str(Path(binary).resolve())], stdin=subprocess.PIPE,
                                             stdout=subprocess.PIPE, stderr=self.errors, text=True)
         except BaseException:
             self.errors.close()

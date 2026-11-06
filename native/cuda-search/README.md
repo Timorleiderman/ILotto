@@ -73,6 +73,48 @@ worker is still advancing. Do not run two machines against copies of one local
 ledger: its lock is not a distributed allocator.
 
 The Python benchmark entry point runs without third-party Python packages. The
-normal `search_seeds.py --engine rust` path remains CPU-only; this CUDA worker
-currently has its own finite benchmark driver. General distributed scheduling
-and a supervised long-duration GPU campaign are subsequent integration work.
+normal `search_seeds.py --engine rust` path remains CPU-only. The benchmark
+driver remains useful for explicitly allocated offline pilots. For new shared
+work, use the coordinator below.
+
+## Run new GPU work without overlapping the Mac
+
+Run this **on the Mac, from the original checkout with its existing history**:
+
+```bash
+.venv/bin/python scripts/search_remote_seeds.py \
+  --host timor@192.168.50.225 \
+  --remote-dir /home/timor/Developer/ILotto \
+  --count 30000000000 --seconds 10
+```
+
+It reserves 30 billion new seeds beyond every Mac reservation, both earlier
+GPU pilot reservations, and every new remote allocation. Ubuntu executes the
+GPU batches over one persistent SSH connection. The Mac owns the checkpoints
+and the registry at `experiments/seed_search_runs/campaigns/remote_allocations.json`.
+Git synchronizes code; it does not synchronize this ignored runtime state.
+Keep this Mac as the sole coordinator rather than launching the command from a
+fresh checkout or using a different `--run-root` to bypass history.
+
+The command prints an allocation ID. If the time limit or a connection failure
+interrupts it, resume the same allocation:
+
+```bash
+.venv/bin/python scripts/search_remote_seeds.py --resume ALLOCATION_ID --seconds 10
+```
+
+Resuming starts at the next committed seed. A completed allocation returns
+`already_complete` without contacting the GPU. Locks reject concurrent runs of
+the same allocation. Missing or regressed checkpoints fail rather than silently
+starting over. Future Mac CPU campaigns skip the entire remote reservation,
+including any unfinished tail. Remote checkpoints remain coordinator-owned and
+must not be manually imported into the CPU ledger.
+
+Progress lives in `experiments/seed_search_runs/remote_workers/ALLOCATION_ID/`:
+`status.json`, `checkpoint.json`, `committed.json`, and the frozen `manifest.json`.
+Create `STOP` in that directory to stop after the current batch; remove it before
+resuming. The time budget applies to searching after correctness validation.
+Only a batch interrupted before its result is committed can replay. Synthetic
+correctness fixtures intentionally repeat and are not counted as new historical
+search coverage. Explicit `--start/--stop` legacy tools do not consult this registry;
+use the coordinated runner and normal `--count` CPU campaigns for shared work.
