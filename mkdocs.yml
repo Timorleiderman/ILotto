@@ -74,6 +74,7 @@ extra_css:
 
 nav:
   - Home: index.md
+  - Progress and evidence: progress.md
   - How it is measured: evaluation.md
   - Approaches:
       - approaches/index.md

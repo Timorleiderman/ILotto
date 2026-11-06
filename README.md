@@ -16,6 +16,12 @@ next-draw picks.
 | [Results](https://timorleiderman.github.io/ILotto/results/) | the current scoreboard, regenerated each run |
 | [Benchmark report](https://timorleiderman.github.io/ILotto/benchmark/) | the full standalone report with charts |
 
+**[Consolidated progress report (2026-11-06)](docs/progress.md)** — completed work,
+all model and calibration tables, exact coverage results, performance measurements,
+seed-search totals, validation, and remaining research questions.
+[Download the research data bundle](docs/data/progress-data-2026-11-06.zip) for
+the full saved JSON results, draw archives, original reports, and a checksum manifest.
+
 **[Prediction and probability research (2026-11-06)](experiments/prediction_probability_research.md)**
 compares 20 forecasting models, probability calibration, and exact ten-ticket
 coverage. No predictive advantage was established. The new coverage generator
