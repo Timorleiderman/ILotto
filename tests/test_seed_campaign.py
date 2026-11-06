@@ -164,3 +164,69 @@ def test_inheritance_never_silently_discards_survivors(tmp_path):
     new = [*old, Observation("2020-01-10", 0)]
     with pytest.raises(ValueError, match="Surviving seeds"):
         inherit_rejections(old, new, root=tmp_path)
+
+
+@pytest.mark.parametrize("acquisition", [1, 2], ids=["imports", "reservation"])
+def test_lock_wait_cannot_overrun_the_time_budget(tmp_path, monkeypatch, acquisition):
+    """A held lock must return a summary at the deadline without changing coverage."""
+    from contextlib import ExitStack, contextmanager
+    from types import SimpleNamespace
+
+    from bench import seed_campaign
+
+    prefix = history()
+    root = tmp_path / "campaigns"
+    previous = continue_search(prefix, root=root, candidates=50, max_seconds=5)
+    ledger_path = Path(previous["ledger"])
+    ledger_before = ledger_path.read_bytes()
+    pending_import = tmp_path / "legacy.json"
+    search(prefix, start=100, stop=150, checkpoint=pending_import)
+
+    # Advance only lock-wait time, avoiding scheduler-dependent wall-clock assertions.
+    now = 0.0
+
+    def sleep(seconds):
+        nonlocal now
+        now += seconds
+
+    monkeypatch.setattr(seed_campaign, "time", SimpleNamespace(
+        monotonic=lambda: now, perf_counter=lambda: now, sleep=sleep))
+    real_lock = campaign_lock
+    attempts = 0
+
+    with ExitStack() as holders:
+        @contextmanager
+        def competing_lock(path, **kwargs):
+            nonlocal attempts
+            if path.name == "allocation.lock":
+                attempts += 1
+                if attempts == acquisition:
+                    holders.enter_context(real_lock(path))
+            with real_lock(path, **kwargs):
+                yield
+
+        monkeypatch.setattr(seed_campaign, "campaign_lock", competing_lock)
+        result = continue_search(
+            prefix, root=root, candidates=100, max_seconds=0.02,
+            imports=[pending_import] if acquisition == 1 else (),
+            search_impl=lambda *args, **kwargs: pytest.fail("Search started after the deadline"),
+        )
+
+    assert attempts == acquisition
+    assert now == pytest.approx(0.02)
+    assert result["elapsed_seconds"] == pytest.approx(0.02)
+    assert result["stop_reason"] == "time_limit"
+    assert result["new_seeds_tested"] == 0
+    assert result["previously_tested"] == result["total_unique_seeds_tested"] == 50
+    assert result["completed_ranges"] == [[0, 50]]
+    assert ledger_path.read_bytes() == ledger_before
+    assert json.loads((ledger_path.parent / "latest_summary.json").read_text()) == result
+
+
+def test_lock_timeout_before_search_deadline_still_raises(tmp_path, monkeypatch):
+    from bench import seed_campaign
+
+    monkeypatch.setattr(seed_campaign, "ALLOCATION_WAIT_SECONDS", 0.01)
+    with campaign_lock(tmp_path / "allocation.lock"):
+        with pytest.raises(seed_campaign.CampaignLockTimeout, match="already using"):
+            continue_search(history(), root=tmp_path, candidates=100, max_seconds=5)

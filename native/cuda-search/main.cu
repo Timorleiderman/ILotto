@@ -11,95 +11,15 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "sha_outcome.h"
 
-using U64 = unsigned long long;
-using U32 = unsigned int;
-constexpr U64 OUTCOMES = 16273488;
-constexpr U32 TAIL = 9050512; // 2^256 mod OUTCOMES
-constexpr unsigned CAP = 10000;
-constexpr char DOMAIN[] = "calendar-sha256-v1:";
-static_assert(sizeof(DOMAIN) - 1 == 19);
-struct Prepared { U32 words[16]; U32 expected; };
+// First-draw matches per batch: ~count/16.3M expected (about 1,230 at the
+// 2e10 batch cap). The buffer is sized for that with a wide margin.
+constexpr unsigned CAP = 1u << 16;
+constexpr U64 MAX_BATCH = 20000000000ULL;
 
 void check(cudaError_t status) {
     if (status != cudaSuccess) throw std::runtime_error(cudaGetErrorString(status));
-}
-
-__host__ __device__ inline U32 rotate(U32 x, unsigned n) {
-    return (x >> n) | (x << (32 - n));
-}
-
-__host__ __device__ inline bool reduce(const U32* h, U32& result) {
-    bool top = true;
-    for (int i = 0; i < 7; ++i) top &= h[i] == 0xffffffffU;
-    if (top && h[7] >= U32(0x100000000ULL - TAIL)) return false;
-    U64 r = 0;
-    #pragma unroll
-    for (int i = 0; i < 8; ++i) r = ((r << 32) | h[i]) % OUTCOMES;
-    result = U32(r);
-    return true;
-}
-
-__host__ __device__ U32 outcome(U64 seed, const Prepared& p) {
-    constexpr U32 k[64] = {
-        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
-        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
-        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
-        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
-        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
-        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
-        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
-        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2};
-    U32 counter = 0;
-    do {
-        U32 w[16];
-        #pragma unroll
-        for (int i = 0; i < 16; ++i) w[i] = p.words[i];
-        w[4] |= U32(seed >> 56);
-        w[5] = U32(seed >> 24);
-        w[6] |= U32(seed) << 8;
-        w[9] |= counter >> 8;
-        w[10] |= counter << 24;
-        U32 a=0x6a09e667, b=0xbb67ae85, c=0x3c6ef372, d=0xa54ff53a;
-        U32 e=0x510e527f, f=0x9b05688c, g=0x1f83d9ab, h=0x5be0cd19;
-        #pragma unroll
-        for (int i = 0; i < 64; ++i) {
-            if (i >= 16) {
-                U32 x=w[(i-15)&15], y=w[(i-2)&15];
-                w[i&15] += (rotate(x,7)^rotate(x,18)^(x>>3)) + w[(i-7)&15]
-                          + (rotate(y,17)^rotate(y,19)^(y>>10));
-            }
-            U32 t1=h+(rotate(e,6)^rotate(e,11)^rotate(e,25))+((e&f)^(~e&g))+k[i]+w[i&15];
-            U32 t2=(rotate(a,2)^rotate(a,13)^rotate(a,22))+((a&b)^(a&c)^(b&c));
-            h=g; g=f; f=e; e=d+t1; d=c; c=b; b=a; a=t1+t2;
-        }
-        U32 hash[8]={a+0x6a09e667,b+0xbb67ae85,c+0x3c6ef372,d+0xa54ff53a,
-                     e+0x510e527f,f+0x9b05688c,g+0x1f83d9ab,h+0x5be0cd19};
-        U32 result;
-        if (reduce(hash, result)) return result;
-    } while (++counter != 0);
-    return 0xffffffffU; // Exhaustion fails the batch instead of silently wrapping.
-}
-
-Prepared prepare(const std::string& date, U64 expected) {
-    if (date.size()!=10 || date[4]!='-' || date[7]!='-' || expected>=OUTCOMES)
-        throw std::runtime_error("Invalid date or outcome");
-    for (int i=0;i<10;++i)
-        if (i!=4 && i!=7 && (date[i]<'0' || date[i]>'9'))
-            throw std::runtime_error("Invalid date digits");
-    int year=std::stoi(date.substr(0,4)), month=std::stoi(date.substr(5,2)), day=std::stoi(date.substr(8,2));
-    constexpr int days[12]={31,28,31,30,31,30,31,31,30,31,30,31};
-    if (year<1 || month<1 || month>12 || day<1 ||
-        day>days[month-1]+(month==2 && year%4==0 && (year%100!=0 || year%400==0)))
-        throw std::runtime_error("Invalid calendar date");
-    unsigned char block[64]={};
-    std::memcpy(block,DOMAIN,19);
-    std::memcpy(block+27,date.data(),10);
-    block[41]=0x80; block[62]=1; block[63]=72; // 41*8 bits
-    Prepared p{}; p.expected=U32(expected);
-    for (int i=0;i<16;++i)
-        p.words[i]=(U32(block[4*i])<<24)|(U32(block[4*i+1])<<16)|(U32(block[4*i+2])<<8)|block[4*i+3];
-    return p;
 }
 
 __constant__ Prepared first;
@@ -153,6 +73,11 @@ int main() {
         Device<U64> hits(CAP); Device<unsigned> found(1), error(1);
         std::string command;
         while(std::cin>>command) {
+            if(command=="C") {  // capabilities: lets the driver size batches for this build
+                std::cout<<"{\"generator\":\"calendar-sha256-v1\",\"protocol\":2,\"max_batch\":"
+                         <<MAX_BATCH<<"}"<<std::endl;
+                continue;
+            }
             if(command=="V") {
                 unsigned n;
                 if(!(std::cin>>n)||!n||n>10000) throw std::runtime_error("Invalid vector count");
@@ -175,7 +100,7 @@ int main() {
             }
             if(command!="B") throw std::runtime_error("Unknown command");
             U64 start,count; unsigned threads,blocks,n;
-            if(!(std::cin>>start>>count>>threads>>blocks>>n) || !count || count>1000000000ULL ||
+            if(!(std::cin>>start>>count>>threads>>blocks>>n) || !count || count>MAX_BATCH ||
                count-1>std::numeric_limits<U64>::max()-start ||
                (threads!=64&&threads!=128&&threads!=256&&threads!=512) || !blocks || blocks>65535 || !n || n>10000)
                 throw std::runtime_error("Invalid batch bounds or launch configuration");

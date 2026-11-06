@@ -42,13 +42,14 @@ def reserve_remote(prefix, *, root: Path, run_root: Path, candidates: int, worke
     running campaign is safe only when its complete finite interval is already
     reserved, as with the original one-hour job. Its ledger is never edited here.
     """
-    from .seed_campaign import campaign_lock
+    from . import seed_campaign
 
     if not isinstance(candidates, int) or candidates < 1:
         raise ValueError("Candidate count must be positive")
     root, run_root = Path(root).resolve(), Path(run_root).resolve()
     prefix_hash = _prefix_hash(prefix)
-    with campaign_lock(root / "allocation.lock"):
+    with seed_campaign.campaign_lock(root / "allocation.lock",
+                                    wait=seed_campaign.ALLOCATION_WAIT_SECONDS):
         records = remote_ranges(root)
         ends = [r["stop"] for r in records]
         # Include other historical prefixes too; reusing a seed is unnecessary.

@@ -140,7 +140,7 @@ def main():
                                         "binary_sha256": binary_hash}
                 validate_checkpoint(state, prefix)
                 write_json(checkpoint, state)
-                chunk = max(1, min(1_000_000_000, int((b-a) / max(seconds, 1e-6) * 0.5)))
+                chunk = max(1, min(worker.max_batch, int((b-a) / max(seconds, 1e-6) * 0.5)))
             elapsed = time.perf_counter() - began
             trial = {"threads": threads, "blocks": blocks, "start": trial_start,
                      "stop": state["next_seed"], "tested": state["next_seed"] - trial_start,

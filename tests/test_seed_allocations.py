@@ -5,6 +5,7 @@ import json
 import pytest
 
 from bench.seed_allocations import get_remote, reserve_remote
+from bench import seed_campaign
 from bench.seed_campaign import campaign_lock, continue_search
 from bench.seed_search import Observation, _prefix_hash, world_outcome, write_json
 from scripts.search_remote_seeds import run_allocation, ssh_command
@@ -44,10 +45,32 @@ def test_cpu_skips_remote_reservation_including_unfinished_tail(tmp_path):
     assert result["new_seeds_tested"] == 100
 
 
-def test_allocation_lock_refuses_racing_reservations(tmp_path):
+def test_allocation_lock_refuses_racing_reservations(tmp_path, monkeypatch):
+    monkeypatch.setattr(seed_campaign, "ALLOCATION_WAIT_SECONDS", 0.2)
     with campaign_lock(tmp_path / "campaigns/allocation.lock"):
         with pytest.raises(ValueError, match="already using"):
             reserve(tmp_path)
+
+
+def test_allocation_lock_waits_for_a_momentary_holder(tmp_path):
+    """A reservation racing a brief holder must wait, not crash a long search."""
+    import threading
+
+    lock = tmp_path / "campaigns/allocation.lock"
+    held, release = threading.Event(), threading.Event()
+
+    def hold():
+        with campaign_lock(lock):
+            held.set()
+            release.wait(5)
+
+    holder = threading.Thread(target=hold)
+    holder.start()
+    held.wait(5)
+    threading.Timer(0.3, release.set).start()
+    allocation = reserve(tmp_path)  # blocks ~0.3 s, then succeeds
+    holder.join()
+    assert allocation["stop"] > allocation["start"]
 
 
 class FakeWorker:

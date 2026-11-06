@@ -31,6 +31,14 @@ jobs:
       - name: Ruff
         run: uv run ruff check bench scripts tests
 
+      # The runner image ships cargo. Building first lets the Python tests drive
+      # the real release binary, and the host-C++ test compiles the CUDA hash
+      # header with g++, so both native engines are checked on every push.
+      - name: Rust seed-search engine
+        run: |
+          cargo test --release --locked --manifest-path native/seed-search/Cargo.toml
+          cargo build --release --locked --manifest-path native/seed-search/Cargo.toml
+
       - name: Tests
         env:
           TF_CPP_MIN_LOG_LEVEL: "3"

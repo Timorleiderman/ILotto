@@ -46,13 +46,39 @@ struct Prepared {
     expected: u64,
 }
 
-fn prepare(day: &str, expected: u64) -> Result<Prepared, String> {
-    if day.len() != 10
-        || !day.is_ascii()
-        || day.as_bytes()[4] != b'-'
-        || day.as_bytes()[7] != b'-'
-        || expected >= OUTCOMES
+/// Canonical YYYY-MM-DD with a real calendar day, matching Python's
+/// `date.fromisoformat(value).isoformat() == value` and the CUDA worker.
+fn canonical_date(day: &str) -> bool {
+    let bytes = day.as_bytes();
+    if bytes.len() != 10 || bytes[4] != b'-' || bytes[7] != b'-' {
+        return false;
+    }
+    if !bytes
+        .iter()
+        .enumerate()
+        .all(|(i, b)| i == 4 || i == 7 || b.is_ascii_digit())
     {
+        return false;
+    }
+    let number = |range: std::ops::Range<usize>| {
+        bytes[range]
+            .iter()
+            .fold(0_u32, |n, b| n * 10 + u32::from(b - b'0'))
+    };
+    let (year, month, date) = (number(0..4), number(5..7), number(8..10));
+    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    let days = match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 if leap => 29,
+        2 => 28,
+        _ => return false,
+    };
+    year >= 1 && (1..=days).contains(&date)
+}
+
+fn prepare(day: &str, expected: u64) -> Result<Prepared, String> {
+    if !canonical_date(day) || expected >= OUTCOMES {
         return Err("Invalid canonical date or outcome".into());
     }
     let mut block = [0_u8; 64];
@@ -64,21 +90,33 @@ fn prepare(day: &str, expected: u64) -> Result<Prepared, String> {
     Ok(Prepared { block, expected })
 }
 
-fn reduce_hash(words: &[u32; 8]) -> Option<u64> {
-    // 2^256 mod OUTCOMES, calculated without any big-integer dependency.
-    let mut tail = 1_u64;
-    for _ in 0..8 {
-        tail = (tail << 32) % OUTCOMES;
+/// 2^(32k) mod OUTCOMES for k = 0..8. Entry 8 is 2^256 mod OUTCOMES, the size
+/// of the rejected tail. Computed at compile time, never in the hot loop.
+const POWERS: [u64; 9] = {
+    let mut powers = [1_u64; 9];
+    let mut k = 1;
+    while k < 9 {
+        powers[k] = (powers[k - 1] << 32) % OUTCOMES;
+        k += 1;
     }
+    powers
+};
+const TAIL: u64 = POWERS[8];
+
+#[inline]
+fn reduce_hash(words: &[u32; 8]) -> Option<u64> {
     // The rejected tail is smaller than 2^32, so its upper seven words are all ones.
-    if words[..7].iter().all(|&x| x == u32::MAX) && u64::from(words[7]) >= (1_u64 << 32) - tail {
+    if words[..7].iter().all(|&x| x == u32::MAX) && u64::from(words[7]) >= (1_u64 << 32) - TAIL {
         return None;
     }
-    let mut remainder = 0_u64;
-    for &word in words {
-        remainder = ((remainder << 32) | u64::from(word)) % OUTCOMES;
+    // sum(word_i * 2^(32*(7-i)) mod N) is congruent to the 256-bit value mod N.
+    // Each term is < 2^32 * 2^24 = 2^56, so eight of them sum below 2^59: one
+    // division replaces eight chained 64-bit divisions.
+    let mut sum = 0_u64;
+    for (i, &word) in words.iter().enumerate() {
+        sum += u64::from(word) * POWERS[7 - i];
     }
-    Some(remainder)
+    Some(sum % OUTCOMES)
 }
 
 #[inline]
@@ -243,12 +281,58 @@ mod tests {
         }
     }
 
+    /// The single-division reduction must equal the original chained reduction.
+    fn chained_reduce(words: &[u32; 8]) -> u64 {
+        let mut remainder = 0_u64;
+        for &word in words {
+            remainder = ((remainder << 32) | u64::from(word)) % OUTCOMES;
+        }
+        remainder
+    }
+
+    #[test]
+    fn single_division_reduction_matches_chained() {
+        let mut x = 0x9e37_79b9_7f4a_7c15_u64;
+        for _ in 0..200_000 {
+            let words: [u32; 8] = std::array::from_fn(|_| {
+                // splitmix64: deterministic, well-spread test words.
+                x = x.wrapping_add(0x9e37_79b9_7f4a_7c15);
+                let mut z = x;
+                z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+                z = (z ^ (z >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+                (z ^ (z >> 31)) as u32
+            });
+            assert_eq!(reduce_hash(&words), Some(chained_reduce(&words)));
+        }
+        let extremes = [
+            [0_u32; 8],
+            [u32::MAX; 8],
+            [u32::MAX, 0, u32::MAX, 0, 1, 2, 3, 4],
+        ];
+        for words in extremes {
+            if let Some(value) = reduce_hash(&words) {
+                assert_eq!(value, chained_reduce(&words));
+            }
+        }
+    }
+
+    #[test]
+    fn invalid_calendar_dates_are_rejected() {
+        for day in [
+            "2020-13-01",
+            "2021-02-29",
+            "2020-1a-01",
+            "2020/01/01",
+            "0000-01-01",
+        ] {
+            assert!(prepare(day, 0).is_err(), "{day} was accepted");
+        }
+        assert!(prepare("2020-02-29", 0).is_ok());
+    }
+
     #[test]
     fn rejection_boundary() {
-        let mut tail = 1_u64;
-        for _ in 0..8 {
-            tail = (tail << 32) % OUTCOMES;
-        }
+        let tail = TAIL;
         let mut words = [u32::MAX; 8];
         assert!(reduce_hash(&words).is_none());
         words[7] = ((1_u64 << 32) - tail) as u32;

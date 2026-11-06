@@ -19,7 +19,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from bench.cuda_seed_search import CudaWorker  # noqa: E402
+from bench.cuda_seed_search import MAX_BATCH, CudaWorker  # noqa: E402
 from bench.seed_allocations import get_remote, reserve_remote  # noqa: E402
 from bench.seed_campaign import campaign_lock  # noqa: E402
 from bench.seed_search import (  # noqa: E402
@@ -114,8 +114,10 @@ def run_allocation(manifest, *, run_root, seconds, worker_factory=None, validato
                     if wall-last_log >= 5:
                         print(json.dumps(status), flush=True)
                         last_log = wall
-                    chunk = max(1, min(1_000_000_000, int((b-a)/max(elapsed, 1e-6)
-                                                       * min(0.25, max(0.001, seconds-wall)))))
+                    # ~2 s per batch keeps the GPU busy relative to the SSH round trip and
+                    # the three fsync'd writes above; a crash replays at most one batch.
+                    chunk = max(1, min(getattr(worker, "max_batch", MAX_BATCH), int((b-a)/max(elapsed, 1e-6)
+                                                  * min(2.0, max(0.001, seconds-wall)))))
                 if state["next_seed"] == manifest["stop"]:
                     reason = "range_complete"
                 state["stop_reason"] = reason
