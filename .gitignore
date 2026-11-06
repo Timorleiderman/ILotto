@@ -14,3 +14,9 @@ __pycache__/
 
 # MkDocs build output
 site/
+
+# Local resumable search checkpoints and machine-specific pilot reports.
+experiments/seed_search_runs/
+native/seed-search/target/
+native/cuda-search/ilotto-cuda-search
+.cuda-*/
