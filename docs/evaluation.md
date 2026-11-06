@@ -16,7 +16,9 @@ page comes first.
 
 Every strategy implements one method, `scores(history) -> (ball_scores[37], strong_scores[7])`.
 The harness calls it once per draw in the test window, handing it **only the draws that came
-before**. There is no train/test split to get wrong, and no way to see the future.
+before**. This prevents direct target leakage through the history argument.
+Model selection and other state still need scrutiny: repeatedly tuning against
+the reported window can overfit it even when every history slice is correct.
 
 ```mermaid
 flowchart LR
@@ -57,6 +59,11 @@ lengths the harness produces, so a leak becomes a named test failure.
 
     That constant is the bar every bar chart is drawn against.
 
+    The finite-sample test convolves the per-draw hypergeometric probabilities.
+    It reports an upper-tail p-value and a doubled-inclusive-tail two-sided
+    p-value. The z-score remains a descriptive measure. These tests assume
+    independent fair draws and tickets chosen without seeing their outcomes.
+
 === "Log loss"
 
     A **proper** scoring rule: it grades the whole distribution a strategy assigns, not just
@@ -67,6 +74,9 @@ lengths the harness produces, so a leak becomes a named test failure.
     for all-negative scores it collapses to the uniform prior and would report exactly the
     baseline no matter how the numbers were ranked. Predictors declare this with
     `emits_probabilities`.
+
+    This scores normalized **marginal** ball probabilities, not the joint
+    likelihood of a complete six-number set.
 
 ## Why the old numbers looked good
 
@@ -113,12 +123,13 @@ windows that predict the past from the future.
 
 ## Guarding against the luckiest strategy
 
-Every strategy is backtested together. The highest of a dozen-odd noisy numbers is high by
-construction, so two corrections apply:
+Every strategy is backtested together. Choosing the highest noisy score creates
+selection bias. Holm–Bonferroni controls the family of tests within a run; the
+Monte Carlo comparison below illustrates how large random scores can become.
 
 ```mermaid
 flowchart LR
-  S["all strategies<br/>walk-forward"] --> P["p-value each<br/>(exact-null z-test)"]
+  S["all strategies<br/>walk-forward"] --> P["p-value each<br/>(convolved hypergeometric null)"]
   P --> H["Holm–Bonferroni<br/>across the family"]
   S2["5,000 random-ticket<br/>portfolios"] --> MC["empirical null<br/>distribution"]
   MC --> CMP["is the best strategy<br/>outside pure chance?"]
@@ -136,12 +147,27 @@ flowchart LR
   classDef flaw fill:#e3494826,stroke:#e34948,stroke-width:3px
 ```
 
-The Monte-Carlo null is the honest yardstick: the luckiest of 5,000 *purely random*
-strategies has outscored the best "real" one in every rebuild so far.
+The Monte Carlo maximum is an illustration, not a formal significance threshold.
+Neither a good historical score nor its position inside a simulated range proves
+that a model has, or lacks, predictive skill.
 
 The verdict covers **both** families — the strategy table and the randomness tests. A
-significant randomness test with no significant predictor is still a change in draw
-behaviour, and is exactly what this site exists to catch.
+significant randomness test with no significant predictor warrants investigation
+of the data and test assumptions. It does not by itself establish an exploitable
+change. Correction within each family does not control all past research choices
+or repeated decisions across report rebuilds.
+
+## Dependence within a draw
+
+Six balls are selected without replacement. Main-ball uniformity and frequency
+drift therefore use the corresponding indicator covariance instead of treating
+all ball appearances as independent categorical samples. Both references are
+asymptotic. Each pair's count across independent draws has an exact binomial
+null; its doubled inclusive tail is Bonferroni-adjusted across all 666 pairs,
+which remain dependent when they share balls.
+
+The gap, pooled serial, and sum tests retain approximate reference distributions.
+Treat their limitations and the sample's detection power as part of the result.
 
 ---
 

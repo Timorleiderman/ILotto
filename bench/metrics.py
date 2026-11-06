@@ -10,6 +10,8 @@ compared against the exact combinatorial baseline.
 
 from __future__ import annotations
 
+from functools import lru_cache
+
 import numpy as np
 from scipy import stats
 
@@ -22,6 +24,26 @@ BASELINE_MATCH_VAR = stats.hypergeom(N_NUMBERS, N_DRAWN, N_DRAWN).var()
 #: E[log p] for a uniform predictive distribution over the 37 numbers.
 BASELINE_LOGLOSS = float(np.log(N_NUMBERS))
 BASELINE_STRONG_ACC = 1.0 / N_STRONG
+
+
+@lru_cache(maxsize=8)
+def match_sum_distribution(n_draws: int) -> np.ndarray:
+    """Finite-sample null for total matches over independent fair draws.
+
+    A ticket chosen only from past data still has the same conditional
+    hypergeometric match law. Repeated convolution therefore also covers
+    adaptive past-only strategies. It does not excuse selection on test results.
+    """
+    if (not isinstance(n_draws, (int, np.integer)) or isinstance(n_draws, (bool, np.bool_))
+            or n_draws < 1):
+        raise ValueError("n_draws must be a positive integer")
+    single = stats.hypergeom.pmf(np.arange(N_DRAWN + 1), N_NUMBERS, N_DRAWN, N_DRAWN)
+    distribution = np.array([1.0])
+    for _ in range(n_draws):
+        distribution = np.convolve(distribution, single)
+    distribution /= distribution.sum()
+    distribution.setflags(write=False)
+    return distribution
 
 
 def top_k(scores: np.ndarray, k: int = N_DRAWN) -> np.ndarray:
@@ -65,8 +87,8 @@ def prize_tier(n_matched: int, strong_hit: bool) -> str:
         return "3rd (5+strong)" if strong_hit else "4th (5)"
     if n_matched == 4:
         return "5th (4+strong)" if strong_hit else "6th (4)"
-    if n_matched == 3 and strong_hit:
-        return "7th (3+strong)"
+    if n_matched == 3:
+        return "7th (3+strong)" if strong_hit else "8th (3)"
     return "no prize"
 
 
@@ -74,15 +96,27 @@ def summarise(
     match_counts: np.ndarray, losses: np.ndarray | None, strong_hits: np.ndarray
 ) -> dict:
     """Aggregate one predictor's walk-forward results with significance."""
+    match_counts = np.asarray(match_counts)
+    strong_hits = np.asarray(strong_hits)
+    if (match_counts.ndim != 1 or not match_counts.size or match_counts.dtype.kind not in "iu"
+            or np.any((match_counts < 0) | (match_counts > N_DRAWN))):
+        raise ValueError("match_counts must be a nonempty integer vector in 0..6")
+    if strong_hits.shape != match_counts.shape or not np.isin(strong_hits, [0, 1]).all():
+        raise ValueError("strong_hits must contain one binary outcome per draw")
+    if losses is not None:
+        losses = np.asarray(losses, dtype=float)
+        if losses.shape != match_counts.shape or not np.isfinite(losses).all() or np.any(losses < 0):
+            raise ValueError("losses must contain one finite nonnegative value per draw")
     n = len(match_counts)
     mean_matches = float(np.mean(match_counts))
 
-    # Under H0 (no skill) each draw's match count is hypergeometric and draws
-    # are independent, so the mean is asymptotically normal with known variance.
-    # This is an exact-null z-test; no need to bootstrap the baseline.
+    # Keep z as an effect-size diagnostic; test with the finite-sample null.
     se = float(np.sqrt(BASELINE_MATCH_VAR / n))
     z = (mean_matches - BASELINE_MATCHES) / se if se > 0 else 0.0
-    p_two_sided = float(2 * stats.norm.sf(abs(z)))
+    distribution = match_sum_distribution(n)
+    total = int(np.sum(match_counts))
+    p_greater = min(1.0, float(distribution[total:].sum()))
+    p_two_sided = min(1.0, 2 * min(float(distribution[:total + 1].sum()), p_greater))
 
     return {
         "n_draws": n,
@@ -92,6 +126,8 @@ def summarise(
         "match_se": se,
         "z_score": float(z),
         "p_value": p_two_sided,
+        "p_value_greater": p_greater,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
         # None for rank-only predictors: see `Predictor.emits_probabilities`.
         "mean_log_loss": None if losses is None else float(np.mean(losses)),
         "baseline_log_loss": BASELINE_LOGLOSS,
@@ -109,6 +145,8 @@ def holm_bonferroni(p_values: dict[str, float], alpha: float = 0.05) -> dict[str
     convince themselves they beat a lottery. Every headline claim in the report
     goes through this.
     """
+    if not 0 < alpha < 1 or any(not np.isfinite(p) or not 0 <= p <= 1 for p in p_values.values()):
+        raise ValueError("Require 0 < alpha < 1 and finite p-values in [0, 1]")
     ordered = sorted(p_values.items(), key=lambda kv: kv[1])
     m = len(ordered)
     verdict: dict[str, bool] = {}

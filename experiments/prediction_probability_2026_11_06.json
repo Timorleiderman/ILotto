@@ -1,0 +1,3605 @@
+{
+  "schema": 1,
+  "archive_sha256": "0034509bdfa510c3978abcff14baee705f6bebf85701c7e6978ac07ecc171560",
+  "n_draws": 1661,
+  "last_draw": "2026-11-03",
+  "prediction": {
+    "scope": "Retrospective; this archive was already used in earlier project experiments",
+    "primary_window": "Last 300 draws; four disjoint 300-draw blocks shown for stability",
+    "selection": "Every 50 draws, minimize prior 300 losses after a 200-prediction warmup",
+    "bootstrap": "4000 circular moving-block replicates, block length 20; exploratory intervals",
+    "adaptive_ball_choices_last300": {
+      "frequency window=50 prior_draws=2000": 39,
+      "frequency window=100 prior_draws=500": 200,
+      "frequency window=100 prior_draws=2000": 61
+    },
+    "baseline_ball_log_loss": 3.6109179126442243,
+    "baseline_strong_log_loss": 1.9459101490553132,
+    "rows": [
+      {
+        "name": "frequency window=50 prior_draws=0",
+        "n_draws": 300,
+        "mean_matches": 0.94,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": -3.388888888888897,
+        "match_se": 0.04837259012129297,
+        "z_score": -0.6816458016883991,
+        "p_value": 0.5195953266751231,
+        "p_value_greater": 0.7622036508332967,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6732526606489424,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.04,
+        "strong_accuracy": 0.14333333333333334,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13873996396396396,
+        "mean_strong_log_loss": 2.014730389075262,
+        "log_loss_difference_vs_uniform": 0.062334748004717305,
+        "paired_block_bootstrap_95_interval": [
+          0.04924184393150256,
+          0.07547295402571799
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.98,
+            "mean_ball_log_loss": 3.674393159958175,
+            "mean_strong_log_loss": 2.0156645210856654
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0166666666666666,
+            "mean_ball_log_loss": 3.6654508611027237,
+            "mean_strong_log_loss": 2.0027760816003273
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.99,
+            "mean_ball_log_loss": 3.669161139608818,
+            "mean_strong_log_loss": 2.0176561405198274
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 0.94,
+            "mean_ball_log_loss": 3.6732526606489424,
+            "mean_strong_log_loss": 2.014730389075262
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=50 prior_draws=100",
+        "n_draws": 300,
+        "mean_matches": 0.94,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": -3.388888888888897,
+        "match_se": 0.04837259012129297,
+        "z_score": -0.6816458016883991,
+        "p_value": 0.5195953266751231,
+        "p_value_greater": 0.7622036508332967,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.618313518313574,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.04,
+        "strong_accuracy": 0.14333333333333334,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13624950983415848,
+        "mean_strong_log_loss": 1.9563156206643866,
+        "log_loss_difference_vs_uniform": 0.007395605669350299,
+        "paired_block_bootstrap_95_interval": [
+          0.003581901506602621,
+          0.011367805384763403
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.98,
+            "mean_ball_log_loss": 3.6130436378408044,
+            "mean_strong_log_loss": 1.9558022363719927
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0166666666666666,
+            "mean_ball_log_loss": 3.6148452296659004,
+            "mean_strong_log_loss": 1.9454121362040109
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.99,
+            "mean_ball_log_loss": 3.616046962616698,
+            "mean_strong_log_loss": 1.9542782807755157
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 0.94,
+            "mean_ball_log_loss": 3.618313518313574,
+            "mean_strong_log_loss": 1.9563156206643866
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=50 prior_draws=500",
+        "n_draws": 300,
+        "mean_matches": 0.94,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": -3.388888888888897,
+        "match_se": 0.04837259012129297,
+        "z_score": -0.6816458016883991,
+        "p_value": 0.5195953266751231,
+        "p_value_greater": 0.7622036508332967,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.611830570423369,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.04,
+        "strong_accuracy": 0.14333333333333334,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13591335299740215,
+        "mean_strong_log_loss": 1.9477223871444267,
+        "log_loss_difference_vs_uniform": 0.0009126577791439712,
+        "paired_block_bootstrap_95_interval": [
+          -0.00013146033609457675,
+          0.0020049817197178347
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.98,
+            "mean_ball_log_loss": 3.610230907338287,
+            "mean_strong_log_loss": 1.9474173359982478
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0166666666666666,
+            "mean_ball_log_loss": 3.610735555397226,
+            "mean_strong_log_loss": 1.9441787707746547
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.99,
+            "mean_ball_log_loss": 3.611149109544572,
+            "mean_strong_log_loss": 1.9469819973548879
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 0.94,
+            "mean_ball_log_loss": 3.611830570423369,
+            "mean_strong_log_loss": 1.9477223871444267
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=50 prior_draws=2000",
+        "n_draws": 300,
+        "mean_matches": 0.94,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": -3.388888888888897,
+        "match_se": 0.04837259012129297,
+        "z_score": -0.6816458016883991,
+        "p_value": 0.5195953266751231,
+        "p_value_greater": 0.7622036508332967,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.611082194522694,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.04,
+        "strong_accuracy": 0.14333333333333334,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13587421615045597,
+        "mean_strong_log_loss": 1.9463225126771966,
+        "log_loss_difference_vs_uniform": 0.00016428187847026857,
+        "paired_block_bootstrap_95_interval": [
+          -0.00011672640441912244,
+          0.0004593214904570962
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.98,
+            "mean_ball_log_loss": 3.610639503278529,
+            "mean_strong_log_loss": 1.9462258523385927
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0166666666666666,
+            "mean_ball_log_loss": 3.6107749588988143,
+            "mean_strong_log_loss": 1.94532659756542
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.99,
+            "mean_ball_log_loss": 3.6108949469966016,
+            "mean_strong_log_loss": 1.9461109538060501
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 0.94,
+            "mean_ball_log_loss": 3.611082194522694,
+            "mean_strong_log_loss": 1.9463225126771966
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=100 prior_draws=0",
+        "n_draws": 300,
+        "mean_matches": 1.0733333333333333,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 10.314814814814799,
+        "match_se": 0.04837259012129297,
+        "z_score": 2.0747361286362653,
+        "p_value": 0.04299712339995087,
+        "p_value_greater": 0.021498561699975435,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6348822021139995,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.06333333333333334,
+        "strong_accuracy": 0.13333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13705266666666666,
+        "mean_strong_log_loss": 1.9694539346337043,
+        "log_loss_difference_vs_uniform": 0.023964289469775857,
+        "paired_block_bootstrap_95_interval": [
+          0.01563406684667091,
+          0.03243833810995102
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.91,
+            "mean_ball_log_loss": 3.6370801019837273,
+            "mean_strong_log_loss": 1.989471290021433
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 0.9733333333333334,
+            "mean_ball_log_loss": 3.642191740775213,
+            "mean_strong_log_loss": 1.971589412889187
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.9866666666666667,
+            "mean_ball_log_loss": 3.635429555882447,
+            "mean_strong_log_loss": 1.993774454073184
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0733333333333333,
+            "mean_ball_log_loss": 3.6348822021139995,
+            "mean_strong_log_loss": 1.9694539346337043
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=100 prior_draws=100",
+        "n_draws": 300,
+        "mean_matches": 1.0733333333333333,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 10.314814814814799,
+        "match_se": 0.04837259012129297,
+        "z_score": 2.0747361286362653,
+        "p_value": 0.04299712339995087,
+        "p_value_greater": 0.021498561699975435,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6158544594852424,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.06333333333333334,
+        "strong_accuracy": 0.13333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13611965558802047,
+        "mean_strong_log_loss": 1.9520342928231784,
+        "log_loss_difference_vs_uniform": 0.004936546841018002,
+        "paired_block_bootstrap_95_interval": [
+          0.000746278588394433,
+          0.009043052163198978
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.91,
+            "mean_ball_log_loss": 3.6159997564407704,
+            "mean_strong_log_loss": 1.9614328014305555
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 0.9733333333333334,
+            "mean_ball_log_loss": 3.618788729218947,
+            "mean_strong_log_loss": 1.9496645237034875
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.9866666666666667,
+            "mean_ball_log_loss": 3.6164956991921673,
+            "mean_strong_log_loss": 1.9618871738144057
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0733333333333333,
+            "mean_ball_log_loss": 3.6158544594852424,
+            "mean_strong_log_loss": 1.9520342928231784
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=100 prior_draws=500",
+        "n_draws": 300,
+        "mean_matches": 1.0733333333333333,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 10.314814814814799,
+        "match_se": 0.04837259012129297,
+        "z_score": 2.0747361286362653,
+        "p_value": 0.04299712339995087,
+        "p_value_greater": 0.021498561699975435,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6111028985572373,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.06333333333333334,
+        "strong_accuracy": 0.13333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13587484309985662,
+        "mean_strong_log_loss": 1.9467843514772076,
+        "log_loss_difference_vs_uniform": 0.0001849859130130138,
+        "paired_block_bootstrap_95_interval": [
+          -0.001244521536770821,
+          0.0015583037622831268
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.91,
+            "mean_ball_log_loss": 3.6110259875832456,
+            "mean_strong_log_loss": 1.9498192368123797
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 0.9733333333333334,
+            "mean_ball_log_loss": 3.611948778165845,
+            "mean_strong_log_loss": 1.945331440185328
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.9866666666666667,
+            "mean_ball_log_loss": 3.6113934780821677,
+            "mean_strong_log_loss": 1.9497261679311535
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0733333333333333,
+            "mean_ball_log_loss": 3.6111028985572373,
+            "mean_strong_log_loss": 1.9467843514772076
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=100 prior_draws=2000",
+        "n_draws": 300,
+        "mean_matches": 1.0733333333333333,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 10.314814814814799,
+        "match_se": 0.04837259012129297,
+        "z_score": 2.0747361286362653,
+        "p_value": 0.04299712339995087,
+        "p_value_greater": 0.021498561699975435,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.610822671663653,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.06333333333333334,
+        "strong_accuracy": 0.13333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13586053969137368,
+        "mean_strong_log_loss": 1.946042681027535,
+        "log_loss_difference_vs_uniform": -9.524098057186088e-05,
+        "paired_block_bootstrap_95_interval": [
+          -0.0005140364132100236,
+          0.0002987429254880279
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.91,
+            "mean_ball_log_loss": 3.6107895252922706,
+            "mean_strong_log_loss": 1.946901387545397
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 0.9733333333333334,
+            "mean_ball_log_loss": 3.61104935824904,
+            "mean_strong_log_loss": 1.9455593241775007
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.9866666666666667,
+            "mean_ball_log_loss": 3.610913904574057,
+            "mean_strong_log_loss": 1.9468537984977297
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0733333333333333,
+            "mean_ball_log_loss": 3.610822671663653,
+            "mean_strong_log_loss": 1.946042681027535
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=300 prior_draws=0",
+        "n_draws": 300,
+        "mean_matches": 1.0466666666666666,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 7.574074074074066,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.5234597425713332,
+        "p_value": 0.13817705166998473,
+        "p_value_greater": 0.06908852583499236,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.620193063932085,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 3,
+        "hit_3plus_rate": 0.043333333333333335,
+        "strong_accuracy": 0.16333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13634444244244245,
+        "mean_strong_log_loss": 1.9463563469753373,
+        "log_loss_difference_vs_uniform": 0.009275151287860542,
+        "paired_block_bootstrap_95_interval": [
+          0.0026445561437026355,
+          0.015570084220048429
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.03,
+            "mean_ball_log_loss": 3.614638049141046,
+            "mean_strong_log_loss": 1.9541854061624289
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0233333333333334,
+            "mean_ball_log_loss": 3.6223821061969077,
+            "mean_strong_log_loss": 1.9501988047692513
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.98,
+            "mean_ball_log_loss": 3.6215738324494207,
+            "mean_strong_log_loss": 1.9664333432958139
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0466666666666666,
+            "mean_ball_log_loss": 3.620193063932085,
+            "mean_strong_log_loss": 1.9463563469753373
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=300 prior_draws=100",
+        "n_draws": 300,
+        "mean_matches": 1.0466666666666666,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 7.574074074074066,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.5234597425713332,
+        "p_value": 0.13817705166998473,
+        "p_value_greater": 0.06908852583499236,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.615776163367647,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 3,
+        "hit_3plus_rate": 0.043333333333333335,
+        "strong_accuracy": 0.16333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13611654227538347,
+        "mean_strong_log_loss": 1.9451185267017521,
+        "log_loss_difference_vs_uniform": 0.0048582507234224285,
+        "paired_block_bootstrap_95_interval": [
+          -5.260493301574078e-05,
+          0.009549244890778456
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.03,
+            "mean_ball_log_loss": 3.611858066313022,
+            "mean_strong_log_loss": 1.950961766934752
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0233333333333334,
+            "mean_ball_log_loss": 3.617487334713472,
+            "mean_strong_log_loss": 1.947924496664065
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.98,
+            "mean_ball_log_loss": 3.6175729758864787,
+            "mean_strong_log_loss": 1.9590730305128523
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0466666666666666,
+            "mean_ball_log_loss": 3.615776163367647,
+            "mean_strong_log_loss": 1.9451185267017521
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=300 prior_draws=500",
+        "n_draws": 300,
+        "mean_matches": 1.0466666666666666,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 7.574074074074066,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.5234597425713332,
+        "p_value": 0.13817705166998473,
+        "p_value_greater": 0.06908852583499236,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.611788193069245,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 3,
+        "hit_3plus_rate": 0.043333333333333335,
+        "strong_accuracy": 0.16333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13590992750943512,
+        "mean_strong_log_loss": 1.9446697981277474,
+        "log_loss_difference_vs_uniform": 0.0008702804250204732,
+        "paired_block_bootstrap_95_interval": [
+          -0.0015641683143296226,
+          0.0031724541833768683
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.03,
+            "mean_ball_log_loss": 3.6100174663199223,
+            "mean_strong_log_loss": 1.9475820285236674
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0233333333333334,
+            "mean_ball_log_loss": 3.6127194708809633,
+            "mean_strong_log_loss": 1.9460050837923195
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.98,
+            "mean_ball_log_loss": 3.613267063411207,
+            "mean_strong_log_loss": 1.9508774976265015
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0466666666666666,
+            "mean_ball_log_loss": 3.611788193069245,
+            "mean_strong_log_loss": 1.9446697981277474
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=300 prior_draws=2000",
+        "n_draws": 300,
+        "mean_matches": 1.0466666666666666,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 7.574074074074066,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.5234597425713332,
+        "p_value": 0.13817705166998473,
+        "p_value_greater": 0.06908852583499236,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6108655914122467,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 3,
+        "hit_3plus_rate": 0.043333333333333335,
+        "strong_accuracy": 0.16333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13586260887331925,
+        "mean_strong_log_loss": 1.945285376777895,
+        "log_loss_difference_vs_uniform": -5.232123197770111e-05,
+        "paired_block_bootstrap_95_interval": [
+          -0.0008986734634102104,
+          0.0007398143437039903
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.03,
+            "mean_ball_log_loss": 3.6102935308801465,
+            "mean_strong_log_loss": 1.9462987920389443
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0233333333333334,
+            "mean_ball_log_loss": 3.611211427101254,
+            "mean_strong_log_loss": 1.9457319711893115
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.98,
+            "mean_ball_log_loss": 3.611516185300298,
+            "mean_strong_log_loss": 1.9472790180744195
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0466666666666666,
+            "mean_ball_log_loss": 3.6108655914122467,
+            "mean_strong_log_loss": 1.945285376777895
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=all prior_draws=0",
+        "n_draws": 300,
+        "mean_matches": 1.0266666666666666,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 5.5185185185185,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.1100024530226331,
+        "p_value": 0.2824692914172377,
+        "p_value_greater": 0.14123464570861885,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.612283257169129,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 3,
+        "hit_3plus_rate": 0.043333333333333335,
+        "strong_accuracy": 0.12666666666666668,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13593468242113307,
+        "mean_strong_log_loss": 1.946489411876352,
+        "log_loss_difference_vs_uniform": 0.0013653445249047385,
+        "paired_block_bootstrap_95_interval": [
+          -0.001300675700258357,
+          0.003996766618109409
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.01,
+            "mean_ball_log_loss": 3.611062337037048,
+            "mean_strong_log_loss": 1.9522235378152542
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 0.9266666666666666,
+            "mean_ball_log_loss": 3.616334867103892,
+            "mean_strong_log_loss": 1.9435762133055603
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.9766666666666667,
+            "mean_ball_log_loss": 3.613039442091511,
+            "mean_strong_log_loss": 1.9519077350438754
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0266666666666666,
+            "mean_ball_log_loss": 3.612283257169129,
+            "mean_strong_log_loss": 1.946489411876352
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=all prior_draws=100",
+        "n_draws": 300,
+        "mean_matches": 1.0266666666666666,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 5.5185185185185,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.1100024530226331,
+        "p_value": 0.2824692914172377,
+        "p_value_greater": 0.14123464570861885,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.612078175859477,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 3,
+        "hit_3plus_rate": 0.043333333333333335,
+        "strong_accuracy": 0.12666666666666668,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13592425292538848,
+        "mean_strong_log_loss": 1.9463910224974226,
+        "log_loss_difference_vs_uniform": 0.0011602632152532047,
+        "paired_block_bootstrap_95_interval": [
+          -0.0013355508217017425,
+          0.0036316466432705463
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.01,
+            "mean_ball_log_loss": 3.6104206985868554,
+            "mean_strong_log_loss": 1.9511040365200907
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 0.9266666666666666,
+            "mean_ball_log_loss": 3.615451445804629,
+            "mean_strong_log_loss": 1.943655829536206
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.9766666666666667,
+            "mean_ball_log_loss": 3.6127001248943227,
+            "mean_strong_log_loss": 1.9513333276930567
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0266666666666666,
+            "mean_ball_log_loss": 3.612078175859477,
+            "mean_strong_log_loss": 1.9463910224974226
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=all prior_draws=500",
+        "n_draws": 300,
+        "mean_matches": 1.0266666666666666,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 5.5185185185185,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.1100024530226331,
+        "p_value": 0.2824692914172377,
+        "p_value_greater": 0.14123464570861885,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6115596476632836,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 3,
+        "hit_3plus_rate": 0.043333333333333335,
+        "strong_accuracy": 0.12666666666666668,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13589786696233738,
+        "mean_strong_log_loss": 1.9461451807212033,
+        "log_loss_difference_vs_uniform": 0.0006417350190596002,
+        "paired_block_bootstrap_95_interval": [
+          -0.0013563756511257678,
+          0.002640540116655911
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.01,
+            "mean_ball_log_loss": 3.609749029786779,
+            "mean_strong_log_loss": 1.9489381137403332
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 0.9266666666666666,
+            "mean_ball_log_loss": 3.6135449358844465,
+            "mean_strong_log_loss": 1.944011637332433
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.9766666666666667,
+            "mean_ball_log_loss": 3.611903567762768,
+            "mean_strong_log_loss": 1.949816947926141
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0266666666666666,
+            "mean_ball_log_loss": 3.6115596476632836,
+            "mean_strong_log_loss": 1.9461451807212033
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "frequency window=all prior_draws=2000",
+        "n_draws": 300,
+        "mean_matches": 1.0266666666666666,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 5.5185185185185,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.1100024530226331,
+        "p_value": 0.2824692914172377,
+        "p_value_greater": 0.14123464570861885,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6110045114372125,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 3,
+        "hit_3plus_rate": 0.043333333333333335,
+        "strong_accuracy": 0.12666666666666668,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13586966598301953,
+        "mean_strong_log_loss": 1.9458964968954418,
+        "log_loss_difference_vs_uniform": 8.659879298813067e-05,
+        "paired_block_bootstrap_95_interval": [
+          -0.0010569912277324928,
+          0.0012376862135081562
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.01,
+            "mean_ball_log_loss": 3.6100522359548344,
+            "mean_strong_log_loss": 1.9470830343143768
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 0.9266666666666666,
+            "mean_ball_log_loss": 3.6118153141501548,
+            "mean_strong_log_loss": 1.944805434921283
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.9766666666666667,
+            "mean_ball_log_loss": 3.6111385949080175,
+            "mean_strong_log_loss": 1.9477955692878997
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.0266666666666666,
+            "mean_ball_log_loss": 3.6110045114372125,
+            "mean_strong_log_loss": 1.9458964968954418
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "uniform",
+        "n_draws": 300,
+        "mean_matches": 1.05,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 7.916666666666661,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.5923692908294516,
+        "p_value": 0.12104131151362105,
+        "p_value_greater": 0.060520655756810524,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6109179126442243,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.06333333333333334,
+        "strong_accuracy": 0.11333333333333333,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13586559532505477,
+        "mean_strong_log_loss": 1.9459101490553137,
+        "log_loss_difference_vs_uniform": 0.0,
+        "paired_block_bootstrap_95_interval": [
+          0.0,
+          0.0
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 1.0366666666666666,
+            "mean_ball_log_loss": 3.6109179126442243,
+            "mean_strong_log_loss": 1.9459101490553137
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0633333333333332,
+            "mean_ball_log_loss": 3.6109179126442243,
+            "mean_strong_log_loss": 1.9459101490553137
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.8633333333333333,
+            "mean_ball_log_loss": 3.6109179126442243,
+            "mean_strong_log_loss": 1.9459101490553137
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.05,
+            "mean_ball_log_loss": 3.6109179126442243,
+            "mean_strong_log_loss": 1.9459101490553137
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      },
+      {
+        "name": "adaptive past-loss selection",
+        "n_draws": 300,
+        "mean_matches": 1.05,
+        "baseline_matches": 0.972972972972973,
+        "lift_pct": 7.916666666666661,
+        "match_se": 0.04837259012129297,
+        "z_score": 1.5923692908294516,
+        "p_value": 0.12104131151362105,
+        "p_value_greater": 0.060520655756810524,
+        "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+        "mean_log_loss": 3.6113585513527173,
+        "baseline_log_loss": 3.6109179126442243,
+        "best_draw_matches": 4,
+        "hit_3plus_rate": 0.06333333333333334,
+        "strong_accuracy": 0.14333333333333334,
+        "baseline_strong_accuracy": 0.14285714285714285,
+        "mean_ball_brier": 0.13588831180987085,
+        "mean_strong_log_loss": 1.945681192097749,
+        "log_loss_difference_vs_uniform": 0.0004406387084922455,
+        "paired_block_bootstrap_95_interval": [
+          -0.0007227082970254378,
+          0.001571880332879769
+        ],
+        "folds": [
+          {
+            "start": "2016-04-16",
+            "end": "2018-12-04",
+            "mean_matches": 0.9633333333333334,
+            "mean_ball_log_loss": 3.610875621491764,
+            "mean_strong_log_loss": 1.9459101490553137
+          },
+          {
+            "start": "2018-12-08",
+            "end": "2021-08-21",
+            "mean_matches": 1.0166666666666666,
+            "mean_ball_log_loss": 3.611827806732872,
+            "mean_strong_log_loss": 1.9468152514195678
+          },
+          {
+            "start": "2021-08-24",
+            "end": "2024-04-11",
+            "mean_matches": 0.87,
+            "mean_ball_log_loss": 3.6111334536665542,
+            "mean_strong_log_loss": 1.9468862703148018
+          },
+          {
+            "start": "2024-04-13",
+            "end": "2026-11-03",
+            "mean_matches": 1.05,
+            "mean_ball_log_loss": 3.6113585513527173,
+            "mean_strong_log_loss": 1.945681192097749
+          }
+        ],
+        "accuracy_significant_after_holm": false
+      }
+    ]
+  },
+  "uniformity_power": {
+    "alpha": 0.05,
+    "n_draws": 1661,
+    "alternative": "Only ball 1 biased; conditional remaining balls uniform without replacement",
+    "note": "Individual-test power, before correction for the larger test family",
+    "rows": [
+      {
+        "ball1_inclusion_multiplier": 1.0,
+        "simulations": 512,
+        "uncorrected_rejection_rate": 0.01171875,
+        "corrected_rejection_rate": 0.05078125,
+        "corrected_wilson_95_interval": [
+          0.03488718106757213,
+          0.07336596118345534
+        ]
+      },
+      {
+        "ball1_inclusion_multiplier": 1.2,
+        "simulations": 512,
+        "uncorrected_rejection_rate": 0.166015625,
+        "corrected_rejection_rate": 0.390625,
+        "corrected_wilson_95_interval": [
+          0.349328706683909,
+          0.43355031925547166
+        ]
+      },
+      {
+        "ball1_inclusion_multiplier": 1.5,
+        "simulations": 512,
+        "uncorrected_rejection_rate": 1.0,
+        "corrected_rejection_rate": 1.0,
+        "corrected_wilson_95_interval": [
+          0.9925530242771171,
+          1.0
+        ]
+      }
+    ]
+  },
+  "single_ticket_odds": {
+    "no prize": {
+      "outcomes": 15594054,
+      "probability": 0.958249024425495
+    },
+    "7th (3+strong)": {
+      "outcomes": 89900,
+      "probability": 0.005524322751213507
+    },
+    "8th (3)": {
+      "outcomes": 539400,
+      "probability": 0.033145936507281044
+    },
+    "5th (4+strong)": {
+      "outcomes": 6975,
+      "probability": 0.00042861124793897905
+    },
+    "6th (4)": {
+      "outcomes": 41850,
+      "probability": 0.0025716674876338744
+    },
+    "3rd (5+strong)": {
+      "outcomes": 186,
+      "probability": 1.1429633278372774e-05
+    },
+    "4th (5)": {
+      "outcomes": 1116,
+      "probability": 6.857779967023665e-05
+    },
+    "1st (6+strong)": {
+      "outcomes": 1,
+      "probability": 6.144964128157406e-08
+    },
+    "2nd (6)": {
+      "outcomes": 6,
+      "probability": 3.686978476894443e-07
+    }
+  },
+  "coverage": {
+    "objective": "At least one prize (>=3 main matches), same ten-ticket budget",
+    "verification": "Exhaustive over all 2,324,784 main draws, not the optimization sample",
+    "optimizer": "512 candidates; 30,000 synthetic fair draws; greedy incremental coverage",
+    "rows": [
+      {
+        "method": "random",
+        "seed": 0,
+        "portfolio": [
+          [
+            2,
+            10,
+            12,
+            18,
+            22,
+            28,
+            7
+          ],
+          [
+            17,
+            21,
+            23,
+            26,
+            34,
+            37,
+            1
+          ],
+          [
+            2,
+            13,
+            19,
+            27,
+            28,
+            29,
+            4
+          ],
+          [
+            2,
+            3,
+            10,
+            15,
+            17,
+            36,
+            5
+          ],
+          [
+            9,
+            14,
+            17,
+            21,
+            26,
+            37,
+            5
+          ],
+          [
+            5,
+            14,
+            23,
+            24,
+            27,
+            32,
+            3
+          ],
+          [
+            3,
+            14,
+            17,
+            25,
+            32,
+            35,
+            3
+          ],
+          [
+            12,
+            15,
+            18,
+            20,
+            24,
+            28,
+            5
+          ],
+          [
+            2,
+            3,
+            13,
+            15,
+            30,
+            37,
+            1
+          ],
+          [
+            6,
+            12,
+            17,
+            20,
+            22,
+            31,
+            1
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          7,
+          159483,
+          1377865,
+          717702,
+          67861,
+          1856,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.9999969889675772,
+          "2": 0.9313957769840123,
+          "3": 0.33871060709296,
+          "4": 0.0299928939634822,
+          "5": 0.0008026552144199203,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.33871060709296,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7790382921230048,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_smart",
+        "seed": 0,
+        "portfolio": [
+          [
+            1,
+            10,
+            16,
+            24,
+            35,
+            37,
+            6
+          ],
+          [
+            1,
+            4,
+            11,
+            20,
+            32,
+            37,
+            5
+          ],
+          [
+            1,
+            8,
+            18,
+            24,
+            35,
+            37,
+            7
+          ],
+          [
+            1,
+            15,
+            19,
+            25,
+            32,
+            37,
+            5
+          ],
+          [
+            1,
+            6,
+            10,
+            24,
+            33,
+            37,
+            4
+          ],
+          [
+            1,
+            11,
+            22,
+            32,
+            34,
+            37,
+            3
+          ],
+          [
+            1,
+            14,
+            25,
+            30,
+            34,
+            37,
+            5
+          ],
+          [
+            1,
+            6,
+            8,
+            19,
+            32,
+            37,
+            4
+          ],
+          [
+            1,
+            11,
+            19,
+            32,
+            36,
+            37,
+            1
+          ],
+          [
+            1,
+            11,
+            23,
+            34,
+            36,
+            37,
+            7
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          3003,
+          517421,
+          1232295,
+          511590,
+          58644,
+          1821,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.99870826709062,
+          "2": 0.7761409231997467,
+          "3": 0.24607232327820563,
+          "4": 0.026013169395522336,
+          "5": 0.0007876000523059347,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.24607232327820563,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7766677080653608,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_coverage",
+        "seed": 0,
+        "portfolio": [
+          [
+            10,
+            24,
+            28,
+            30,
+            33,
+            34,
+            3
+          ],
+          [
+            6,
+            11,
+            23,
+            28,
+            34,
+            35,
+            2
+          ],
+          [
+            4,
+            5,
+            9,
+            24,
+            33,
+            36,
+            2
+          ],
+          [
+            1,
+            5,
+            6,
+            16,
+            34,
+            37,
+            6
+          ],
+          [
+            18,
+            21,
+            31,
+            33,
+            35,
+            37,
+            3
+          ],
+          [
+            2,
+            4,
+            23,
+            33,
+            35,
+            36,
+            4
+          ],
+          [
+            1,
+            11,
+            26,
+            33,
+            35,
+            36,
+            6
+          ],
+          [
+            2,
+            18,
+            32,
+            33,
+            36,
+            37,
+            3
+          ],
+          [
+            15,
+            24,
+            27,
+            32,
+            35,
+            37,
+            7
+          ],
+          [
+            4,
+            11,
+            17,
+            31,
+            32,
+            36,
+            7
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          462,
+          266922,
+          1310003,
+          677490,
+          68037,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.9998012718600954,
+          "2": 0.8849854438089733,
+          "3": 0.3214909428144722,
+          "4": 0.03007032051149698,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3214909428144722,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7684188750572503,
+        "optimization_seconds": null
+      },
+      {
+        "method": "greedy_3plus",
+        "seed": 0,
+        "portfolio": [
+          [
+            8,
+            9,
+            11,
+            13,
+            15,
+            21,
+            4
+          ],
+          [
+            1,
+            2,
+            12,
+            24,
+            30,
+            35,
+            7
+          ],
+          [
+            10,
+            23,
+            26,
+            27,
+            29,
+            34,
+            1
+          ],
+          [
+            4,
+            5,
+            17,
+            18,
+            25,
+            33,
+            2
+          ],
+          [
+            6,
+            20,
+            25,
+            28,
+            32,
+            37,
+            3
+          ],
+          [
+            5,
+            14,
+            15,
+            31,
+            32,
+            36,
+            6
+          ],
+          [
+            3,
+            4,
+            7,
+            16,
+            30,
+            34,
+            5
+          ],
+          [
+            3,
+            9,
+            12,
+            14,
+            19,
+            29,
+            4
+          ],
+          [
+            10,
+            17,
+            21,
+            22,
+            24,
+            37,
+            7
+          ],
+          [
+            7,
+            19,
+            28,
+            31,
+            33,
+            36,
+            1
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          18462,
+          1413558,
+          821180,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9920586170586171,
+          "3": 0.38402019284372224,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38402019284372224,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7713978749234229,
+        "optimization_seconds": 0.31266233301721513
+      },
+      {
+        "method": "random",
+        "seed": 1,
+        "portfolio": [
+          [
+            2,
+            6,
+            16,
+            17,
+            26,
+            34,
+            3
+          ],
+          [
+            9,
+            15,
+            21,
+            24,
+            28,
+            34,
+            4
+          ],
+          [
+            5,
+            11,
+            12,
+            16,
+            27,
+            28,
+            3
+          ],
+          [
+            1,
+            7,
+            10,
+            18,
+            28,
+            29,
+            7
+          ],
+          [
+            4,
+            11,
+            21,
+            24,
+            26,
+            32,
+            7
+          ],
+          [
+            5,
+            10,
+            14,
+            16,
+            18,
+            24,
+            7
+          ],
+          [
+            2,
+            14,
+            17,
+            19,
+            25,
+            32,
+            6
+          ],
+          [
+            7,
+            10,
+            13,
+            20,
+            28,
+            32,
+            6
+          ],
+          [
+            2,
+            3,
+            5,
+            19,
+            26,
+            29,
+            6
+          ],
+          [
+            3,
+            7,
+            8,
+            12,
+            17,
+            32,
+            4
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          28,
+          162454,
+          1348358,
+          742909,
+          69165,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.9999879558703089,
+          "2": 0.930108775697011,
+          "3": 0.3501159677630266,
+          "4": 0.030555526879056293,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3501159677630266,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.785185334039852,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_smart",
+        "seed": 1,
+        "portfolio": [
+          [
+            1,
+            10,
+            20,
+            23,
+            32,
+            37,
+            3
+          ],
+          [
+            1,
+            7,
+            12,
+            19,
+            32,
+            37,
+            7
+          ],
+          [
+            1,
+            12,
+            15,
+            26,
+            32,
+            37,
+            7
+          ],
+          [
+            1,
+            5,
+            20,
+            25,
+            34,
+            37,
+            4
+          ],
+          [
+            1,
+            13,
+            16,
+            30,
+            35,
+            37,
+            6
+          ],
+          [
+            1,
+            18,
+            20,
+            26,
+            34,
+            37,
+            4
+          ],
+          [
+            1,
+            5,
+            11,
+            19,
+            36,
+            37,
+            4
+          ],
+          [
+            2,
+            12,
+            17,
+            23,
+            32,
+            37,
+            7
+          ],
+          [
+            1,
+            9,
+            14,
+            24,
+            33,
+            36,
+            7
+          ],
+          [
+            1,
+            7,
+            8,
+            26,
+            32,
+            37,
+            6
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          84,
+          350111,
+          1329821,
+          580155,
+          62758,
+          1845,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.9999638676109265,
+          "2": 0.8493645000997943,
+          "3": 0.2773453361688656,
+          "4": 0.02779311970488441,
+          "5": 0.0007979235920412391,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.2773453361688656,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7707402498926967,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_coverage",
+        "seed": 1,
+        "portfolio": [
+          [
+            5,
+            16,
+            22,
+            33,
+            35,
+            36,
+            6
+          ],
+          [
+            17,
+            21,
+            30,
+            32,
+            34,
+            35,
+            5
+          ],
+          [
+            11,
+            21,
+            24,
+            25,
+            33,
+            36,
+            5
+          ],
+          [
+            3,
+            5,
+            14,
+            16,
+            34,
+            36,
+            5
+          ],
+          [
+            17,
+            27,
+            28,
+            31,
+            34,
+            36,
+            2
+          ],
+          [
+            17,
+            24,
+            27,
+            32,
+            33,
+            36,
+            2
+          ],
+          [
+            6,
+            24,
+            25,
+            26,
+            32,
+            34,
+            2
+          ],
+          [
+            12,
+            19,
+            22,
+            29,
+            35,
+            36,
+            6
+          ],
+          [
+            4,
+            14,
+            25,
+            34,
+            36,
+            37,
+            1
+          ],
+          [
+            8,
+            15,
+            29,
+            32,
+            35,
+            37,
+            4
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          84,
+          250687,
+          1332651,
+          671689,
+          67803,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.9999638676109265,
+          "2": 0.8921314840432487,
+          "3": 0.3188950027185321,
+          "4": 0.029969665999077764,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3188950027185321,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7729298749472946,
+        "optimization_seconds": null
+      },
+      {
+        "method": "greedy_3plus",
+        "seed": 1,
+        "portfolio": [
+          [
+            11,
+            13,
+            29,
+            32,
+            33,
+            34,
+            7
+          ],
+          [
+            5,
+            18,
+            21,
+            23,
+            26,
+            35,
+            2
+          ],
+          [
+            3,
+            12,
+            16,
+            31,
+            34,
+            36,
+            6
+          ],
+          [
+            2,
+            4,
+            6,
+            8,
+            25,
+            37,
+            5
+          ],
+          [
+            1,
+            10,
+            15,
+            22,
+            25,
+            27,
+            3
+          ],
+          [
+            9,
+            19,
+            23,
+            24,
+            28,
+            32,
+            1
+          ],
+          [
+            2,
+            5,
+            7,
+            13,
+            30,
+            31,
+            4
+          ],
+          [
+            17,
+            20,
+            23,
+            29,
+            30,
+            36,
+            7
+          ],
+          [
+            11,
+            14,
+            15,
+            26,
+            28,
+            30,
+            2
+          ],
+          [
+            1,
+            5,
+            6,
+            14,
+            16,
+            33,
+            6
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          28564,
+          1407196,
+          817404,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9877132671250318,
+          "3": 0.3824114412349707,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3824114412349707,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7707145831082016,
+        "optimization_seconds": 0.3118612498510629
+      },
+      {
+        "method": "random",
+        "seed": 2,
+        "portfolio": [
+          [
+            4,
+            9,
+            11,
+            15,
+            27,
+            31,
+            6
+          ],
+          [
+            2,
+            7,
+            11,
+            21,
+            30,
+            32,
+            2
+          ],
+          [
+            15,
+            16,
+            24,
+            34,
+            35,
+            36,
+            5
+          ],
+          [
+            2,
+            7,
+            12,
+            13,
+            33,
+            37,
+            6
+          ],
+          [
+            9,
+            11,
+            18,
+            31,
+            32,
+            33,
+            1
+          ],
+          [
+            7,
+            16,
+            19,
+            26,
+            31,
+            35,
+            3
+          ],
+          [
+            17,
+            18,
+            19,
+            21,
+            27,
+            32,
+            5
+          ],
+          [
+            3,
+            4,
+            16,
+            18,
+            26,
+            28,
+            2
+          ],
+          [
+            2,
+            4,
+            9,
+            18,
+            19,
+            26,
+            6
+          ],
+          [
+            13,
+            15,
+            22,
+            24,
+            29,
+            35,
+            2
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          84,
+          172518,
+          1362042,
+          719765,
+          68505,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.9999638676109265,
+          "2": 0.9257556831086243,
+          "3": 0.3398767369355605,
+          "4": 0.03027162953633542,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3398767369355605,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7760317078791559,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_smart",
+        "seed": 2,
+        "portfolio": [
+          [
+            1,
+            7,
+            19,
+            25,
+            32,
+            37,
+            2
+          ],
+          [
+            1,
+            4,
+            11,
+            21,
+            33,
+            37,
+            6
+          ],
+          [
+            1,
+            7,
+            16,
+            28,
+            36,
+            37,
+            4
+          ],
+          [
+            1,
+            4,
+            13,
+            26,
+            34,
+            37,
+            2
+          ],
+          [
+            1,
+            9,
+            19,
+            32,
+            33,
+            37,
+            1
+          ],
+          [
+            1,
+            15,
+            23,
+            32,
+            35,
+            37,
+            4
+          ],
+          [
+            1,
+            12,
+            17,
+            20,
+            34,
+            37,
+            2
+          ],
+          [
+            1,
+            9,
+            14,
+            30,
+            32,
+            37,
+            1
+          ],
+          [
+            1,
+            12,
+            26,
+            33,
+            36,
+            37,
+            3
+          ],
+          [
+            1,
+            5,
+            16,
+            18,
+            33,
+            37,
+            7
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          210,
+          413256,
+          1289173,
+          557581,
+          62702,
+          1852,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.999909669027316,
+          "2": 0.8221486383251089,
+          "3": 0.2676141095258742,
+          "4": 0.027772042477924832,
+          "5": 0.0008009346244640363,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.2676141095258742,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7748700000811368,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_coverage",
+        "seed": 2,
+        "portfolio": [
+          [
+            13,
+            15,
+            18,
+            25,
+            32,
+            35,
+            6
+          ],
+          [
+            16,
+            27,
+            30,
+            32,
+            33,
+            36,
+            1
+          ],
+          [
+            7,
+            20,
+            22,
+            32,
+            34,
+            37,
+            6
+          ],
+          [
+            2,
+            12,
+            22,
+            25,
+            34,
+            35,
+            1
+          ],
+          [
+            4,
+            27,
+            32,
+            34,
+            35,
+            36,
+            1
+          ],
+          [
+            14,
+            16,
+            23,
+            32,
+            34,
+            36,
+            6
+          ],
+          [
+            13,
+            15,
+            19,
+            22,
+            33,
+            37,
+            5
+          ],
+          [
+            8,
+            11,
+            14,
+            20,
+            33,
+            34,
+            4
+          ],
+          [
+            10,
+            14,
+            25,
+            31,
+            33,
+            35,
+            7
+          ],
+          [
+            10,
+            18,
+            26,
+            33,
+            36,
+            37,
+            5
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          210,
+          262057,
+          1310312,
+          682008,
+          68327,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.999909669027316,
+          "2": 0.8871865085100379,
+          "3": 0.3235590919414449,
+          "4": 0.030195063283298577,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3235590919414449,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7743185830768198,
+        "optimization_seconds": null
+      },
+      {
+        "method": "greedy_3plus",
+        "seed": 2,
+        "portfolio": [
+          [
+            4,
+            12,
+            20,
+            22,
+            23,
+            28,
+            3
+          ],
+          [
+            7,
+            15,
+            21,
+            27,
+            30,
+            31,
+            7
+          ],
+          [
+            9,
+            11,
+            16,
+            18,
+            24,
+            35,
+            4
+          ],
+          [
+            2,
+            5,
+            17,
+            19,
+            25,
+            34,
+            5
+          ],
+          [
+            3,
+            4,
+            5,
+            6,
+            36,
+            37,
+            2
+          ],
+          [
+            8,
+            14,
+            15,
+            17,
+            20,
+            29,
+            6
+          ],
+          [
+            1,
+            16,
+            19,
+            26,
+            28,
+            30,
+            1
+          ],
+          [
+            1,
+            11,
+            13,
+            31,
+            32,
+            33,
+            3
+          ],
+          [
+            2,
+            8,
+            10,
+            12,
+            30,
+            37,
+            7
+          ],
+          [
+            3,
+            9,
+            23,
+            24,
+            26,
+            27,
+            4
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          23766,
+          1410876,
+          818558,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9897771147771148,
+          "3": 0.3828923461276402,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3828923461276402,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7712884589564055,
+        "optimization_seconds": 0.31154012493789196
+      },
+      {
+        "method": "random",
+        "seed": 3,
+        "portfolio": [
+          [
+            3,
+            7,
+            9,
+            26,
+            30,
+            36,
+            4
+          ],
+          [
+            6,
+            10,
+            16,
+            20,
+            25,
+            28,
+            4
+          ],
+          [
+            7,
+            14,
+            15,
+            21,
+            23,
+            28,
+            5
+          ],
+          [
+            1,
+            11,
+            21,
+            23,
+            30,
+            34,
+            3
+          ],
+          [
+            2,
+            9,
+            18,
+            21,
+            23,
+            30,
+            5
+          ],
+          [
+            4,
+            9,
+            13,
+            17,
+            22,
+            25,
+            5
+          ],
+          [
+            8,
+            10,
+            11,
+            17,
+            26,
+            27,
+            5
+          ],
+          [
+            1,
+            8,
+            16,
+            23,
+            29,
+            33,
+            1
+          ],
+          [
+            14,
+            18,
+            19,
+            23,
+            29,
+            33,
+            3
+          ],
+          [
+            6,
+            10,
+            19,
+            21,
+            29,
+            37,
+            2
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          1,
+          124564,
+          1384858,
+          744623,
+          68868,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.999999569852511,
+          "2": 0.9464186780363251,
+          "3": 0.3507254867548985,
+          "4": 0.0304277730748319,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3507254867548985,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7810028339736164,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_smart",
+        "seed": 3,
+        "portfolio": [
+          [
+            1,
+            9,
+            20,
+            21,
+            32,
+            37,
+            3
+          ],
+          [
+            1,
+            10,
+            16,
+            23,
+            36,
+            37,
+            7
+          ],
+          [
+            1,
+            8,
+            21,
+            25,
+            35,
+            37,
+            7
+          ],
+          [
+            1,
+            10,
+            11,
+            21,
+            33,
+            37,
+            6
+          ],
+          [
+            1,
+            11,
+            14,
+            18,
+            32,
+            37,
+            2
+          ],
+          [
+            1,
+            2,
+            11,
+            23,
+            34,
+            37,
+            2
+          ],
+          [
+            1,
+            15,
+            22,
+            33,
+            36,
+            37,
+            5
+          ],
+          [
+            1,
+            3,
+            14,
+            23,
+            36,
+            37,
+            5
+          ],
+          [
+            1,
+            5,
+            18,
+            23,
+            36,
+            37,
+            1
+          ],
+          [
+            1,
+            8,
+            18,
+            33,
+            34,
+            37,
+            4
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          3003,
+          484537,
+          1241702,
+          532448,
+          61236,
+          1848,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.99870826709062,
+          "2": 0.7902858932270697,
+          "3": 0.2561708958767782,
+          "4": 0.027139725669137433,
+          "5": 0.0007992140345081521,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.2561708958767782,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7736045001074672,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_coverage",
+        "seed": 3,
+        "portfolio": [
+          [
+            2,
+            21,
+            24,
+            31,
+            34,
+            36,
+            6
+          ],
+          [
+            4,
+            15,
+            22,
+            29,
+            36,
+            37,
+            5
+          ],
+          [
+            20,
+            21,
+            33,
+            35,
+            36,
+            37,
+            7
+          ],
+          [
+            3,
+            11,
+            25,
+            31,
+            36,
+            37,
+            5
+          ],
+          [
+            3,
+            5,
+            23,
+            29,
+            33,
+            36,
+            1
+          ],
+          [
+            7,
+            13,
+            14,
+            30,
+            32,
+            37,
+            7
+          ],
+          [
+            2,
+            28,
+            29,
+            33,
+            34,
+            36,
+            5
+          ],
+          [
+            14,
+            15,
+            32,
+            33,
+            35,
+            36,
+            1
+          ],
+          [
+            9,
+            13,
+            20,
+            26,
+            34,
+            35,
+            5
+          ],
+          [
+            6,
+            7,
+            17,
+            20,
+            32,
+            36,
+            3
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          28,
+          216213,
+          1356003,
+          682450,
+          68220,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.9999879558703089,
+          "2": 0.906984476837418,
+          "3": 0.32370319135025016,
+          "4": 0.030149037501978677,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.32370319135025016,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7733491249382496,
+        "optimization_seconds": null
+      },
+      {
+        "method": "greedy_3plus",
+        "seed": 3,
+        "portfolio": [
+          [
+            7,
+            22,
+            24,
+            25,
+            30,
+            35,
+            7
+          ],
+          [
+            1,
+            11,
+            14,
+            27,
+            31,
+            32,
+            3
+          ],
+          [
+            4,
+            8,
+            17,
+            18,
+            34,
+            37,
+            6
+          ],
+          [
+            3,
+            12,
+            15,
+            21,
+            23,
+            36,
+            5
+          ],
+          [
+            2,
+            6,
+            7,
+            13,
+            26,
+            28,
+            1
+          ],
+          [
+            9,
+            14,
+            16,
+            23,
+            29,
+            34,
+            4
+          ],
+          [
+            11,
+            12,
+            17,
+            19,
+            24,
+            33,
+            2
+          ],
+          [
+            3,
+            5,
+            22,
+            29,
+            31,
+            33,
+            7
+          ],
+          [
+            4,
+            9,
+            10,
+            13,
+            21,
+            32,
+            3
+          ],
+          [
+            2,
+            5,
+            18,
+            19,
+            20,
+            30,
+            6
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          20347,
+          1408486,
+          824331,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9912477890419067,
+          "3": 0.3853910728910729,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3853910728910729,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7691027920227498,
+        "optimization_seconds": 0.31167366611771286
+      },
+      {
+        "method": "random",
+        "seed": 4,
+        "portfolio": [
+          [
+            18,
+            24,
+            30,
+            32,
+            34,
+            37,
+            3
+          ],
+          [
+            7,
+            20,
+            21,
+            25,
+            27,
+            33,
+            4
+          ],
+          [
+            5,
+            15,
+            28,
+            29,
+            35,
+            37,
+            7
+          ],
+          [
+            6,
+            11,
+            16,
+            19,
+            22,
+            27,
+            1
+          ],
+          [
+            17,
+            18,
+            19,
+            31,
+            33,
+            34,
+            2
+          ],
+          [
+            6,
+            18,
+            20,
+            23,
+            33,
+            35,
+            7
+          ],
+          [
+            1,
+            5,
+            17,
+            18,
+            24,
+            34,
+            6
+          ],
+          [
+            7,
+            14,
+            17,
+            18,
+            23,
+            36,
+            7
+          ],
+          [
+            2,
+            5,
+            14,
+            20,
+            28,
+            30,
+            4
+          ],
+          [
+            3,
+            10,
+            14,
+            28,
+            31,
+            33,
+            4
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          1,
+          129729,
+          1385207,
+          739136,
+          68841,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.999999569852511,
+          "2": 0.9441969662557897,
+          "3": 0.34835365350071235,
+          "4": 0.03041615909262968,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.34835365350071235,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7727088748943061,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_smart",
+        "seed": 4,
+        "portfolio": [
+          [
+            1,
+            7,
+            17,
+            28,
+            34,
+            37,
+            4
+          ],
+          [
+            1,
+            13,
+            19,
+            29,
+            34,
+            37,
+            3
+          ],
+          [
+            1,
+            4,
+            13,
+            23,
+            34,
+            37,
+            2
+          ],
+          [
+            1,
+            2,
+            15,
+            20,
+            32,
+            37,
+            2
+          ],
+          [
+            1,
+            17,
+            24,
+            28,
+            34,
+            37,
+            7
+          ],
+          [
+            1,
+            6,
+            14,
+            30,
+            32,
+            37,
+            3
+          ],
+          [
+            1,
+            6,
+            19,
+            22,
+            35,
+            37,
+            3
+          ],
+          [
+            1,
+            7,
+            14,
+            20,
+            36,
+            37,
+            7
+          ],
+          [
+            1,
+            10,
+            18,
+            19,
+            34,
+            37,
+            2
+          ],
+          [
+            1,
+            6,
+            19,
+            23,
+            36,
+            37,
+            3
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          1716,
+          491474,
+          1246340,
+          523872,
+          59561,
+          1811,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.9992618669089257,
+          "2": 0.7878555599143835,
+          "3": 0.2517455385102444,
+          "4": 0.02640331316801905,
+          "5": 0.0007832985774162245,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.2517455385102444,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.773775165900588,
+        "optimization_seconds": null
+      },
+      {
+        "method": "legacy_coverage",
+        "seed": 4,
+        "portfolio": [
+          [
+            6,
+            7,
+            10,
+            34,
+            35,
+            36,
+            7
+          ],
+          [
+            2,
+            10,
+            19,
+            32,
+            34,
+            37,
+            4
+          ],
+          [
+            12,
+            20,
+            21,
+            28,
+            34,
+            35,
+            6
+          ],
+          [
+            5,
+            13,
+            31,
+            32,
+            33,
+            35,
+            7
+          ],
+          [
+            7,
+            20,
+            26,
+            29,
+            35,
+            37,
+            3
+          ],
+          [
+            4,
+            7,
+            18,
+            31,
+            35,
+            36,
+            2
+          ],
+          [
+            5,
+            8,
+            25,
+            26,
+            32,
+            33,
+            6
+          ],
+          [
+            1,
+            27,
+            28,
+            33,
+            35,
+            37,
+            2
+          ],
+          [
+            13,
+            20,
+            25,
+            34,
+            35,
+            36,
+            6
+          ],
+          [
+            5,
+            6,
+            18,
+            23,
+            33,
+            37,
+            2
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          210,
+          242260,
+          1332006,
+          680395,
+          68043,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 0.999909669027316,
+          "2": 0.8957021383491972,
+          "3": 0.32274310215486685,
+          "4": 0.030072901396430807,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.32274310215486685,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7750007500872016,
+        "optimization_seconds": null
+      },
+      {
+        "method": "greedy_3plus",
+        "seed": 4,
+        "portfolio": [
+          [
+            4,
+            7,
+            9,
+            16,
+            32,
+            34,
+            7
+          ],
+          [
+            2,
+            8,
+            10,
+            22,
+            24,
+            25,
+            1
+          ],
+          [
+            11,
+            14,
+            28,
+            29,
+            31,
+            37,
+            5
+          ],
+          [
+            1,
+            3,
+            5,
+            12,
+            27,
+            37,
+            2
+          ],
+          [
+            19,
+            20,
+            21,
+            22,
+            23,
+            36,
+            3
+          ],
+          [
+            13,
+            15,
+            17,
+            26,
+            29,
+            34,
+            6
+          ],
+          [
+            6,
+            9,
+            10,
+            13,
+            21,
+            33,
+            4
+          ],
+          [
+            2,
+            6,
+            16,
+            30,
+            31,
+            35,
+            7
+          ],
+          [
+            14,
+            18,
+            19,
+            25,
+            26,
+            33,
+            1
+          ],
+          [
+            1,
+            15,
+            20,
+            24,
+            28,
+            35,
+            5
+          ]
+        ],
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          18438,
+          1410331,
+          824395,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9920689405983524,
+          "3": 0.385418602330367,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.385418602330367,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07,
+        "evaluation_seconds": 0.7732965829782188,
+        "optimization_seconds": 0.3122216670308262
+      }
+    ]
+  },
+  "null_benchmark": {
+    "previous_generate_and_sort": {
+      "median_seconds": 1.1630486249923706,
+      "mean": 0.9736453333333333,
+      "std": 0.049032329362030794
+    },
+    "direct_hypergeometric": {
+      "median_seconds": 0.08274579211138189,
+      "mean": 0.9721873333333333,
+      "std": 0.047637846947335666
+    },
+    "speedup": 14.055683018017666
+  }
+}

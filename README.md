@@ -2,7 +2,7 @@
 
 A machine learning project for analyzing Israeli Lotto patterns. Built as a learning exercise to explore different neural network architectures, with proper statistical analysis and evaluation metrics.
 
-> **Note:** Lottery numbers are random by design. No model can predict them. This project demonstrates ML concepts, not a winning strategy.
+> Under independent fair draws, past results do not improve next-draw odds. This project has not established a predictive advantage; it measures forecasts and ticket coverage separately.
 
 **📊 [Read the documentation site →](https://timorleiderman.github.io/ILotto/)** — rebuilt
 automatically after every draw. Diagrams and explanations for every approach in this repo,
@@ -16,12 +16,22 @@ next-draw picks.
 | [Results](https://timorleiderman.github.io/ILotto/results/) | the current scoreboard, regenerated each run |
 | [Benchmark report](https://timorleiderman.github.io/ILotto/benchmark/) | the full standalone report with charts |
 
+**[Prediction and probability research (2026-11-06)](experiments/prediction_probability_research.md)**
+compares 20 forecasting models, probability calibration, and exact ten-ticket
+coverage. No predictive advantage was established. The new coverage generator
+improves the chance of at least one prize for the tested portfolios; jackpot odds
+remain the same for an equal number of distinct full combinations.
+
+The [second review iteration](experiments/coverage_review_iteration2.md) adds
+exact improving swaps, faster exhaustive evaluation, and corrections to the
+statistical tests and report wording.
+
 ## Features
 
 - **4 Neural Network Architectures** - Seq2Seq, Multi-Output, Transformer, Set Prediction
 - **Hybrid Ticket Generator** - Combines model predictions with smart scoring
 - **Statistical Analysis** - Chi-square tests, runs test, serial correlation
-- **Smart Ticket Generator** - Avoids popular combinations to maximize payout if winning
+- **Smart Ticket Generator** - Experimental player-popularity scoring; payout gains are unverified
 - **Interactive Visualization** - Netron integration for model architecture exploration
 - **Comprehensive Metrics** - Proper evaluation against random baseline
 - **Leak-Free Benchmark** - Walk-forward harness with Holm–Bonferroni correction, published to GitHub Pages
@@ -49,13 +59,28 @@ uv sync --extra gpu
 > Apple Silicon and Linux resolve TensorFlow 2.19; Intel macOS resolves 2.16.2, the last
 > release upstream published a wheel for on that platform.
 
-### 2. Generate Lottery Predictions
+### 2. Generate Tickets and Predictions
 
-#### Option A: Hybrid Generator (Recommended)
-Combines neural network predictions with smart scoring for optimal tickets:
+#### Option A: Exact Portfolio Coverage
+
+Optimize for at least one prize at a fixed row count, then refine the portfolio
+with swaps that strictly improve coverage across every possible main draw.
+This does not improve jackpot odds
+over the same number of distinct full combinations or establish a profit advantage.
 
 ```bash
-# Using multi-output model (best results, no mode collapse)
+uv run python scripts/optimize_ticket_coverage.py --count 10 --seed 0 --out /tmp/lotto-coverage.json
+```
+
+Two exact refinement passes run by default. Use `--refine-passes 0` to reproduce
+the initial simulated search. The JSON records every accepted swap and its exact gain.
+
+#### Option B: Experimental Hybrid Generator
+Combines neural network outputs with heuristic ticket scoring. Its prediction and
+payout advantages have not been established:
+
+```bash
+# Using the multi-output model
 uv run python smart_generator.py --model multi_output --count 5
 
 # Using transformer model
@@ -68,7 +93,7 @@ uv run python smart_generator.py --model multi_output --model-weight 0.7
 uv run python smart_generator.py --model multi_output --temperature 2.0
 ```
 
-#### Option B: Smart Generator (No Model)
+#### Option C: Smart Generator (No Model)
 Pure heuristic-based ticket generation:
 
 ```bash
@@ -76,7 +101,7 @@ Pure heuristic-based ticket generation:
 uv run python smart_generator.py --count 10
 ```
 
-#### Option C: All-Model Predictions
+#### Option D: All-Model Predictions
 Generate predictions from ALL trained models into a single report:
 
 ```bash
@@ -95,7 +120,7 @@ This creates `PREDICTION.md` with:
 - Hybrid tickets (model + smart scoring)
 - Pure smart tickets for comparison
 
-#### Option D: Full Evaluation
+#### Option E: Full Evaluation
 Run complete evaluation with model predictions, metrics, and smart tickets:
 
 ```bash
@@ -136,6 +161,7 @@ uv run netron model/multi_output_functional.keras --host 0.0.0.0 --port 8080
 
 | Task | Command |
 |------|---------|
+| **Exact portfolio coverage** | `uv run python scripts/optimize_ticket_coverage.py --count 10 --seed 0` |
 | **All-model predictions** | `uv run python predict.py` |
 | **Get predictions** | `uv run python smart_generator.py --model multi_output --count 5` |
 | **Full evaluation** | `uv run python evaluate.py` |
@@ -239,32 +265,29 @@ each now guarded by a test in `tests/`:
 |---|---|
 | Rows filtered by **ball value ≤ 37** | A selection on the *outcome*, not a format filter — it deletes every historic draw containing a high number and keeps the low ones, biasing the surviving frequency table downward. It discarded ~2,000 of ~2,100 pre-2004 draws |
 | Draws consumed **newest-first** | Sequence windows trained models to predict the past from the future |
-| **Mixed game formats** | The archive spans 6/49-ish (to 2004), 6/34 with strong 1–10 (to 2008) and 6/37 (2009+). Only the 1,629 draws from 2012 on are one game |
+| **Mixed game formats** | The archive spans 6/49-ish (to 2004), 6/34 with strong 1–10 (to 2008) and 6/37 (2009+). The benchmark uses the compatible modern draws from 2012 onward |
 
 The era is now selected by **date**, which is unbiased. This matters for the conclusions:
 the previously reported chi-square on the main balls (p = 0.015, "minor bias") was an
-artifact of that filter. On clean single-era data it is **p = 0.50** — no bias at all.
+artifact of that filter. The main-ball and drift tests now account for drawing
+without replacement. Pair tests use exact binomial tails and a Bonferroni bound
+that does not require pairs to be independent.
 
-### Randomness tests (2012+, 1,629 draws)
+### Randomness tests
 
-| Test | P-Value | Result |
-|------|---------|--------|
-| Ball frequency uniformity (chi-square) | 0.504 | Uniform |
-| Strong-number uniformity (chi-square) | 0.845 | Uniform |
-| Lag-1 serial independence (hot/due) | 0.315 | Independent |
-| Appearance-gap distribution vs geometric | 0.432 | As expected |
-| Pairwise co-occurrence (666 pairs, Šidák) | 0.122 | No structure |
-| Draw-sum distribution (KS) | 0.710 | As expected |
-| First-half vs second-half drift | 0.863 | Stationary |
-
-Nothing fires, before or after Holm–Bonferroni correction.
+Current values are generated in [the results page](docs/results.md). Failure to
+detect a deviation is not proof of uniformity, independence, or stationarity.
+The [research report](experiments/prediction_probability_research.md) measures
+the uniformity test's power against explicit alternatives.
 
 ### Strategy benchmark
 
 Every strategy is evaluated walk-forward — for each draw it sees only the draws
 before it. A randomly filled ticket scores 6×6/37 = **0.973** matches per draw; that is the
-bar. **No strategy beats it after correcting for the number of strategies tried, and none
-beats uniform log-loss (ln 37 = 3.611)** — meaning none holds information even in principle.
+bar. The November 6 research run found **no significant predictive advantage after
+correction across 20 strategies**. Its probability-emitting models all had worse
+marginal log loss than uniform (ln 37 = 3.611). This is a result for that evaluation
+window, not a proof that every possible model lacks information.
 
 The instability is the finding: refreshing the archive by 93 draws completely reshuffled
 the leaderboard ("Hot last 100" fell from p = 0.007 to p = 0.084). For scale, the luckiest

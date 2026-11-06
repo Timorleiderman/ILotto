@@ -197,9 +197,8 @@ class SequentialMarkov(Predictor):
 class SumConstrained(Predictor):
     """Pick the combination whose sum sits at the mode of the sum distribution.
 
-    Does not change the probability of winning, but it does change *who else*
-    holds the same ticket. Included to make the point precisely: this is the
-    only lever that has ever mattered in a pari-mutuel game.
+    Under fair draws every main combination is equiprobable. This is a
+    combinatorial control; its effect on other players' choices is not measured.
     """
 
     name = "Sum-targeted combination"
@@ -229,17 +228,15 @@ class SumConstrained(Predictor):
 class UnpopularNumbers(Predictor):
     """Avoid numbers humans over-pick, to reduce the chance of splitting a jackpot.
 
-    This is the one strategy in the file with a real (if small) positive
-    expected-value story, and it works on *player* behaviour, not on the
-    machine. Calendar-driven picks mean 1-12 and 1-31 are heavily over-played,
-    so tickets weighted toward 32-37 are worth more conditional on winning.
+    The weights are a popularity hypothesis, not a fitted return model.
+    Submitted-ticket data and payout outcomes are needed to validate an edge.
     """
 
     name = "Unpopular numbers (EV-aware)"
     description = (
-        "Prefers 32-37 and other numbers rarely chosen by players. Win probability is identical "
-        "to a random ticket, but a winning ticket is less likely to be shared. This is the only "
-        "strategy here that can raise expected value, and it does so via player behaviour."
+        "Prefers 32-37 using a player-popularity heuristic. Single-ticket odds are unchanged "
+        "under fair draws. Reduced prize sharing and an expected-return advantage have not "
+        "been validated for these weights."
     )
 
     def scores(self, history: Draws) -> tuple[np.ndarray, np.ndarray]:

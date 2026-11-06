@@ -1,0 +1,6513 @@
+{
+  "schema": 1,
+  "configuration": {
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "count": 10,
+    "candidates": 512,
+    "simulations": 30000,
+    "refine_passes": 2
+  },
+  "environment": {
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "python": "3.12.7",
+    "numpy": "2.1.3"
+  },
+  "scope": "Exact fair-draw probabilities for fixed portfolios; not prediction or expected profit",
+  "summary": {
+    "mean_before": 0.38353550265314973,
+    "mean_after": 0.38577880783763135,
+    "mean_gain_percentage_points": 0.22433051844816557,
+    "min_before": 0.3819627974039739,
+    "max_before": 0.385418602330367,
+    "min_after": 0.38563496651731943,
+    "max_after": 0.38584874981933803,
+    "improved_portfolios": 20,
+    "warm_evaluator_speedup": 93.3305830169848,
+    "first_evaluation_seconds": 0.18273133388720453
+  },
+  "timing_note": "Warm evaluator medians remeasured alone after tests completed; first call includes lazy import/JIT cache load or compilation",
+  "evaluator_timings": {
+    "reference": {
+      "seconds": [
+        0.7730527501553297,
+        0.7566618339624256,
+        0.7570122091565281
+      ],
+      "median_seconds": 0.7570122091565281
+    },
+    "auto": {
+      "seconds": [
+        0.008168458938598633,
+        0.008111084112897515,
+        0.008077458012849092
+      ],
+      "median_seconds": 0.008111084112897515
+    }
+  },
+  "rows": [
+    {
+      "seed": 0,
+      "initial_portfolio": [
+        [
+          8,
+          9,
+          11,
+          13,
+          15,
+          21,
+          4
+        ],
+        [
+          1,
+          2,
+          12,
+          24,
+          30,
+          35,
+          7
+        ],
+        [
+          10,
+          23,
+          26,
+          27,
+          29,
+          34,
+          1
+        ],
+        [
+          4,
+          5,
+          17,
+          18,
+          25,
+          33,
+          2
+        ],
+        [
+          6,
+          20,
+          25,
+          28,
+          32,
+          37,
+          3
+        ],
+        [
+          5,
+          14,
+          15,
+          31,
+          32,
+          36,
+          6
+        ],
+        [
+          3,
+          4,
+          7,
+          16,
+          30,
+          34,
+          5
+        ],
+        [
+          3,
+          9,
+          12,
+          14,
+          19,
+          29,
+          4
+        ],
+        [
+          10,
+          17,
+          21,
+          22,
+          24,
+          37,
+          7
+        ],
+        [
+          7,
+          19,
+          28,
+          31,
+          33,
+          36,
+          1
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          6,
+          8,
+          11,
+          13,
+          15,
+          31,
+          4
+        ],
+        [
+          1,
+          2,
+          12,
+          23,
+          30,
+          35,
+          7
+        ],
+        [
+          18,
+          23,
+          26,
+          27,
+          29,
+          34,
+          1
+        ],
+        [
+          4,
+          5,
+          9,
+          18,
+          25,
+          33,
+          2
+        ],
+        [
+          16,
+          20,
+          25,
+          27,
+          28,
+          32,
+          3
+        ],
+        [
+          5,
+          14,
+          15,
+          26,
+          32,
+          36,
+          6
+        ],
+        [
+          3,
+          4,
+          7,
+          16,
+          30,
+          34,
+          5
+        ],
+        [
+          3,
+          9,
+          14,
+          19,
+          20,
+          29,
+          4
+        ],
+        [
+          10,
+          17,
+          21,
+          22,
+          24,
+          37,
+          7
+        ],
+        [
+          7,
+          19,
+          28,
+          31,
+          33,
+          36,
+          1
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          18462,
+          1413558,
+          821180,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9920586170586171,
+          "3": 0.38402019284372224,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38402019284372224,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          8640,
+          1419312,
+          825212,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9962835256952904,
+          "3": 0.38577003282885636,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38577003282885636,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 892764,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 9,
+            "added": 6,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 24,
+            "added": 23,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 10,
+            "added": 18,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 17,
+            "added": 9,
+            "newly_covered_outcomes": 188
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 37,
+            "added": 16,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 31,
+            "added": 26,
+            "newly_covered_outcomes": 3187
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 12,
+            "added": 20,
+            "newly_covered_outcomes": 124
+          },
+          {
+            "pass": 2,
+            "row": 0,
+            "removed": 21,
+            "added": 31,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 2,
+            "row": 4,
+            "removed": 6,
+            "added": 27,
+            "newly_covered_outcomes": 124
+          }
+        ],
+        "covered_outcomes_after": 896832
+      },
+      "generate_seconds": 0.32269316585734487,
+      "refine_seconds": 0.1575812918599695,
+      "evaluate_seconds": 0.18273133388720453,
+      "reference_verified": true
+    },
+    {
+      "seed": 1,
+      "initial_portfolio": [
+        [
+          11,
+          13,
+          29,
+          32,
+          33,
+          34,
+          7
+        ],
+        [
+          5,
+          18,
+          21,
+          23,
+          26,
+          35,
+          2
+        ],
+        [
+          3,
+          12,
+          16,
+          31,
+          34,
+          36,
+          6
+        ],
+        [
+          2,
+          4,
+          6,
+          8,
+          25,
+          37,
+          5
+        ],
+        [
+          1,
+          10,
+          15,
+          22,
+          25,
+          27,
+          3
+        ],
+        [
+          9,
+          19,
+          23,
+          24,
+          28,
+          32,
+          1
+        ],
+        [
+          2,
+          5,
+          7,
+          13,
+          30,
+          31,
+          4
+        ],
+        [
+          17,
+          20,
+          23,
+          29,
+          30,
+          36,
+          7
+        ],
+        [
+          11,
+          14,
+          15,
+          26,
+          28,
+          30,
+          2
+        ],
+        [
+          1,
+          5,
+          6,
+          14,
+          16,
+          33,
+          6
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          11,
+          13,
+          18,
+          29,
+          33,
+          34,
+          7
+        ],
+        [
+          3,
+          5,
+          18,
+          21,
+          26,
+          35,
+          2
+        ],
+        [
+          3,
+          12,
+          16,
+          31,
+          34,
+          36,
+          6
+        ],
+        [
+          2,
+          4,
+          8,
+          12,
+          21,
+          37,
+          5
+        ],
+        [
+          1,
+          10,
+          15,
+          22,
+          25,
+          27,
+          3
+        ],
+        [
+          9,
+          19,
+          23,
+          24,
+          28,
+          32,
+          1
+        ],
+        [
+          5,
+          6,
+          7,
+          13,
+          17,
+          31,
+          4
+        ],
+        [
+          17,
+          20,
+          29,
+          30,
+          35,
+          36,
+          7
+        ],
+        [
+          7,
+          11,
+          14,
+          15,
+          26,
+          30,
+          2
+        ],
+        [
+          1,
+          6,
+          14,
+          16,
+          20,
+          33,
+          6
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          28564,
+          1407196,
+          817404,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9877132671250318,
+          "3": 0.3824114412349707,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3824114412349707,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          8640,
+          1419312,
+          825212,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9962835256952904,
+          "3": 0.38577003282885636,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38577003282885636,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 889024,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 32,
+            "added": 18,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 23,
+            "added": 3,
+            "newly_covered_outcomes": 2436
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 25,
+            "added": 21,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 30,
+            "added": 17,
+            "newly_covered_outcomes": 2310
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 23,
+            "added": 35,
+            "newly_covered_outcomes": 188
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 28,
+            "added": 7,
+            "newly_covered_outcomes": 252
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 5,
+            "added": 20,
+            "newly_covered_outcomes": 2182
+          },
+          {
+            "pass": 2,
+            "row": 3,
+            "removed": 6,
+            "added": 12,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 2,
+            "row": 6,
+            "removed": 2,
+            "added": 6,
+            "newly_covered_outcomes": 124
+          }
+        ],
+        "covered_outcomes_after": 896832
+      },
+      "generate_seconds": 0.3038335000164807,
+      "refine_seconds": 0.15201374981552362,
+      "evaluate_seconds": 0.008333500009030104,
+      "reference_verified": true
+    },
+    {
+      "seed": 2,
+      "initial_portfolio": [
+        [
+          4,
+          12,
+          20,
+          22,
+          23,
+          28,
+          3
+        ],
+        [
+          7,
+          15,
+          21,
+          27,
+          30,
+          31,
+          7
+        ],
+        [
+          9,
+          11,
+          16,
+          18,
+          24,
+          35,
+          4
+        ],
+        [
+          2,
+          5,
+          17,
+          19,
+          25,
+          34,
+          5
+        ],
+        [
+          3,
+          4,
+          5,
+          6,
+          36,
+          37,
+          2
+        ],
+        [
+          8,
+          14,
+          15,
+          17,
+          20,
+          29,
+          6
+        ],
+        [
+          1,
+          16,
+          19,
+          26,
+          28,
+          30,
+          1
+        ],
+        [
+          1,
+          11,
+          13,
+          31,
+          32,
+          33,
+          3
+        ],
+        [
+          2,
+          8,
+          10,
+          12,
+          30,
+          37,
+          7
+        ],
+        [
+          3,
+          9,
+          23,
+          24,
+          26,
+          27,
+          4
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          4,
+          12,
+          18,
+          22,
+          23,
+          28,
+          3
+        ],
+        [
+          7,
+          10,
+          21,
+          27,
+          31,
+          35,
+          7
+        ],
+        [
+          6,
+          16,
+          18,
+          24,
+          25,
+          35,
+          4
+        ],
+        [
+          2,
+          5,
+          19,
+          22,
+          25,
+          34,
+          5
+        ],
+        [
+          3,
+          4,
+          5,
+          6,
+          36,
+          37,
+          2
+        ],
+        [
+          9,
+          14,
+          15,
+          17,
+          20,
+          29,
+          6
+        ],
+        [
+          16,
+          19,
+          26,
+          28,
+          30,
+          36,
+          1
+        ],
+        [
+          1,
+          11,
+          13,
+          31,
+          32,
+          33,
+          3
+        ],
+        [
+          2,
+          8,
+          10,
+          12,
+          30,
+          37,
+          7
+        ],
+        [
+          3,
+          8,
+          23,
+          24,
+          26,
+          34,
+          4
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          23766,
+          1410876,
+          818558,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9897771147771148,
+          "3": 0.3828923461276402,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3828923461276402,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          9000,
+          1418769,
+          825395,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9961286725992609,
+          "3": 0.38584874981933803,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38584874981933803,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 890142,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 20,
+            "added": 18,
+            "newly_covered_outcomes": 188
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 30,
+            "added": 35,
+            "newly_covered_outcomes": 2562
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 9,
+            "added": 6,
+            "newly_covered_outcomes": 3186
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 17,
+            "added": 22,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 8,
+            "added": 9,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 1,
+            "added": 36,
+            "newly_covered_outcomes": 250
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 9,
+            "added": 8,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 1,
+            "removed": 15,
+            "added": 10,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 2,
+            "row": 2,
+            "removed": 11,
+            "added": 25,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 9,
+            "removed": 27,
+            "added": 34,
+            "newly_covered_outcomes": 183
+          }
+        ],
+        "covered_outcomes_after": 897015
+      },
+      "generate_seconds": 0.30917608295567334,
+      "refine_seconds": 0.15819254191592336,
+      "evaluate_seconds": 0.008780542062595487,
+      "reference_verified": true
+    },
+    {
+      "seed": 3,
+      "initial_portfolio": [
+        [
+          7,
+          22,
+          24,
+          25,
+          30,
+          35,
+          7
+        ],
+        [
+          1,
+          11,
+          14,
+          27,
+          31,
+          32,
+          3
+        ],
+        [
+          4,
+          8,
+          17,
+          18,
+          34,
+          37,
+          6
+        ],
+        [
+          3,
+          12,
+          15,
+          21,
+          23,
+          36,
+          5
+        ],
+        [
+          2,
+          6,
+          7,
+          13,
+          26,
+          28,
+          1
+        ],
+        [
+          9,
+          14,
+          16,
+          23,
+          29,
+          34,
+          4
+        ],
+        [
+          11,
+          12,
+          17,
+          19,
+          24,
+          33,
+          2
+        ],
+        [
+          3,
+          5,
+          22,
+          29,
+          31,
+          33,
+          7
+        ],
+        [
+          4,
+          9,
+          10,
+          13,
+          21,
+          32,
+          3
+        ],
+        [
+          2,
+          5,
+          18,
+          19,
+          20,
+          30,
+          6
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          1,
+          22,
+          24,
+          25,
+          30,
+          35,
+          7
+        ],
+        [
+          11,
+          14,
+          15,
+          27,
+          31,
+          32,
+          3
+        ],
+        [
+          4,
+          8,
+          17,
+          27,
+          34,
+          37,
+          6
+        ],
+        [
+          3,
+          8,
+          12,
+          15,
+          23,
+          36,
+          5
+        ],
+        [
+          6,
+          7,
+          13,
+          16,
+          26,
+          28,
+          1
+        ],
+        [
+          1,
+          9,
+          14,
+          23,
+          29,
+          34,
+          4
+        ],
+        [
+          10,
+          11,
+          12,
+          17,
+          24,
+          33,
+          2
+        ],
+        [
+          3,
+          21,
+          29,
+          31,
+          33,
+          37,
+          7
+        ],
+        [
+          4,
+          9,
+          10,
+          21,
+          32,
+          36,
+          3
+        ],
+        [
+          2,
+          5,
+          18,
+          19,
+          20,
+          30,
+          6
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          20347,
+          1408486,
+          824331,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9912477890419067,
+          "3": 0.3853910728910729,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3853910728910729,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          9000,
+          1418769,
+          825395,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9961286725992609,
+          "3": 0.38584874981933803,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38584874981933803,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 895951,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 7,
+            "added": 1,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 1,
+            "added": 15,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 18,
+            "added": 27,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 21,
+            "added": 8,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 2,
+            "added": 16,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 5,
+            "added": 37,
+            "newly_covered_outcomes": 124
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 13,
+            "added": 36,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 5,
+            "removed": 16,
+            "added": 1,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 2,
+            "row": 6,
+            "removed": 19,
+            "added": 10,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 7,
+            "removed": 22,
+            "added": 21,
+            "newly_covered_outcomes": 183
+          }
+        ],
+        "covered_outcomes_after": 897015
+      },
+      "generate_seconds": 0.31038620811887085,
+      "refine_seconds": 0.15755370794795454,
+      "evaluate_seconds": 0.008353165816515684,
+      "reference_verified": true
+    },
+    {
+      "seed": 4,
+      "initial_portfolio": [
+        [
+          4,
+          7,
+          9,
+          16,
+          32,
+          34,
+          7
+        ],
+        [
+          2,
+          8,
+          10,
+          22,
+          24,
+          25,
+          1
+        ],
+        [
+          11,
+          14,
+          28,
+          29,
+          31,
+          37,
+          5
+        ],
+        [
+          1,
+          3,
+          5,
+          12,
+          27,
+          37,
+          2
+        ],
+        [
+          19,
+          20,
+          21,
+          22,
+          23,
+          36,
+          3
+        ],
+        [
+          13,
+          15,
+          17,
+          26,
+          29,
+          34,
+          6
+        ],
+        [
+          6,
+          9,
+          10,
+          13,
+          21,
+          33,
+          4
+        ],
+        [
+          2,
+          6,
+          16,
+          30,
+          31,
+          35,
+          7
+        ],
+        [
+          14,
+          18,
+          19,
+          25,
+          26,
+          33,
+          1
+        ],
+        [
+          1,
+          15,
+          20,
+          24,
+          28,
+          35,
+          5
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          4,
+          7,
+          9,
+          18,
+          32,
+          34,
+          7
+        ],
+        [
+          7,
+          8,
+          10,
+          17,
+          22,
+          25,
+          1
+        ],
+        [
+          8,
+          11,
+          14,
+          29,
+          32,
+          37,
+          5
+        ],
+        [
+          1,
+          3,
+          5,
+          12,
+          27,
+          37,
+          2
+        ],
+        [
+          4,
+          19,
+          21,
+          22,
+          23,
+          36,
+          3
+        ],
+        [
+          13,
+          17,
+          23,
+          26,
+          29,
+          34,
+          6
+        ],
+        [
+          9,
+          10,
+          11,
+          13,
+          21,
+          33,
+          4
+        ],
+        [
+          2,
+          6,
+          16,
+          30,
+          31,
+          35,
+          7
+        ],
+        [
+          14,
+          18,
+          19,
+          25,
+          26,
+          33,
+          1
+        ],
+        [
+          1,
+          15,
+          20,
+          24,
+          28,
+          36,
+          5
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          18438,
+          1410331,
+          824395,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9920689405983524,
+          "3": 0.385418602330367,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.385418602330367,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          9360,
+          1418409,
+          825395,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9959738195032313,
+          "3": 0.38584874981933803,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38584874981933803,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 896015,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 16,
+            "added": 18,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 2,
+            "added": 17,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 31,
+            "added": 8,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 20,
+            "added": 4,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 15,
+            "added": 23,
+            "newly_covered_outcomes": 124
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 6,
+            "added": 11,
+            "newly_covered_outcomes": 189
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 35,
+            "added": 36,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 2,
+            "row": 1,
+            "removed": 24,
+            "added": 7,
+            "newly_covered_outcomes": 122
+          },
+          {
+            "pass": 2,
+            "row": 2,
+            "removed": 28,
+            "added": 32,
+            "newly_covered_outcomes": 186
+          }
+        ],
+        "covered_outcomes_after": 897015
+      },
+      "generate_seconds": 0.3125256251078099,
+      "refine_seconds": 0.1598229999653995,
+      "evaluate_seconds": 0.008371916133910418,
+      "reference_verified": true
+    },
+    {
+      "seed": 5,
+      "initial_portfolio": [
+        [
+          3,
+          11,
+          23,
+          24,
+          26,
+          27,
+          3
+        ],
+        [
+          5,
+          7,
+          9,
+          20,
+          35,
+          36,
+          5
+        ],
+        [
+          1,
+          8,
+          18,
+          19,
+          21,
+          37,
+          2
+        ],
+        [
+          2,
+          15,
+          17,
+          25,
+          31,
+          32,
+          6
+        ],
+        [
+          12,
+          22,
+          27,
+          28,
+          29,
+          34,
+          7
+        ],
+        [
+          5,
+          10,
+          13,
+          15,
+          16,
+          29,
+          4
+        ],
+        [
+          6,
+          14,
+          19,
+          23,
+          30,
+          35,
+          1
+        ],
+        [
+          4,
+          7,
+          11,
+          18,
+          30,
+          34,
+          3
+        ],
+        [
+          13,
+          20,
+          21,
+          22,
+          25,
+          26,
+          5
+        ],
+        [
+          1,
+          12,
+          14,
+          16,
+          24,
+          33,
+          2
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          3,
+          8,
+          11,
+          23,
+          24,
+          27,
+          3
+        ],
+        [
+          7,
+          9,
+          20,
+          35,
+          36,
+          37,
+          5
+        ],
+        [
+          1,
+          8,
+          18,
+          19,
+          28,
+          37,
+          2
+        ],
+        [
+          2,
+          15,
+          17,
+          25,
+          31,
+          32,
+          6
+        ],
+        [
+          6,
+          12,
+          27,
+          28,
+          29,
+          34,
+          7
+        ],
+        [
+          3,
+          4,
+          5,
+          15,
+          16,
+          29,
+          4
+        ],
+        [
+          5,
+          6,
+          14,
+          19,
+          23,
+          30,
+          1
+        ],
+        [
+          4,
+          11,
+          18,
+          30,
+          33,
+          34,
+          3
+        ],
+        [
+          10,
+          13,
+          21,
+          22,
+          25,
+          26,
+          5
+        ],
+        [
+          1,
+          12,
+          14,
+          16,
+          24,
+          33,
+          2
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          19979,
+          1408917,
+          824268,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9914060833178481,
+          "3": 0.3853639735992677,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3853639735992677,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          9675,
+          1418094,
+          825395,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9958383230442054,
+          "3": 0.38584874981933803,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38584874981933803,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 895888,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 26,
+            "added": 8,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 5,
+            "added": 37,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 21,
+            "added": 28,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 22,
+            "added": 6,
+            "newly_covered_outcomes": 187
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 13,
+            "added": 3,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 35,
+            "added": 5,
+            "newly_covered_outcomes": 62
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 7,
+            "added": 33,
+            "newly_covered_outcomes": 186
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 20,
+            "added": 10,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 2,
+            "row": 5,
+            "removed": 10,
+            "added": 4,
+            "newly_covered_outcomes": 186
+          }
+        ],
+        "covered_outcomes_after": 897015
+      },
+      "generate_seconds": 0.31364175002090633,
+      "refine_seconds": 0.15851983311586082,
+      "evaluate_seconds": 0.008343500085175037,
+      "reference_verified": false
+    },
+    {
+      "seed": 6,
+      "initial_portfolio": [
+        [
+          10,
+          14,
+          18,
+          26,
+          28,
+          36,
+          5
+        ],
+        [
+          7,
+          11,
+          13,
+          19,
+          23,
+          35,
+          3
+        ],
+        [
+          5,
+          6,
+          8,
+          9,
+          24,
+          34,
+          4
+        ],
+        [
+          15,
+          16,
+          17,
+          31,
+          33,
+          37,
+          6
+        ],
+        [
+          1,
+          4,
+          14,
+          20,
+          29,
+          32,
+          7
+        ],
+        [
+          3,
+          12,
+          15,
+          22,
+          25,
+          26,
+          1
+        ],
+        [
+          6,
+          12,
+          20,
+          27,
+          30,
+          36,
+          2
+        ],
+        [
+          2,
+          3,
+          4,
+          7,
+          18,
+          21,
+          5
+        ],
+        [
+          9,
+          17,
+          21,
+          22,
+          28,
+          35,
+          3
+        ],
+        [
+          4,
+          8,
+          11,
+          25,
+          27,
+          37,
+          4
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          10,
+          14,
+          18,
+          26,
+          28,
+          36,
+          5
+        ],
+        [
+          2,
+          7,
+          11,
+          13,
+          19,
+          23,
+          3
+        ],
+        [
+          5,
+          6,
+          8,
+          24,
+          29,
+          34,
+          4
+        ],
+        [
+          2,
+          15,
+          16,
+          31,
+          33,
+          37,
+          6
+        ],
+        [
+          1,
+          9,
+          14,
+          20,
+          29,
+          32,
+          7
+        ],
+        [
+          3,
+          12,
+          22,
+          25,
+          26,
+          32,
+          1
+        ],
+        [
+          12,
+          17,
+          20,
+          27,
+          30,
+          36,
+          2
+        ],
+        [
+          1,
+          3,
+          4,
+          18,
+          21,
+          30,
+          5
+        ],
+        [
+          9,
+          17,
+          21,
+          22,
+          28,
+          35,
+          3
+        ],
+        [
+          4,
+          10,
+          25,
+          27,
+          35,
+          37,
+          4
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          19983,
+          1411222,
+          821959,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9914043627278921,
+          "3": 0.3843707630472336,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3843707630472336,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          9675,
+          1418094,
+          825395,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9958383230442054,
+          "3": 0.38584874981933803,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38584874981933803,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 893579,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 35,
+            "added": 1,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 9,
+            "added": 29,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 17,
+            "added": 2,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 4,
+            "added": 9,
+            "newly_covered_outcomes": 2245
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 15,
+            "added": 32,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 6,
+            "added": 17,
+            "newly_covered_outcomes": 61
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 2,
+            "added": 30,
+            "newly_covered_outcomes": 188
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 8,
+            "added": 10,
+            "newly_covered_outcomes": 189
+          },
+          {
+            "pass": 2,
+            "row": 1,
+            "removed": 1,
+            "added": 2,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 2,
+            "row": 7,
+            "removed": 7,
+            "added": 1,
+            "newly_covered_outcomes": 186
+          },
+          {
+            "pass": 2,
+            "row": 9,
+            "removed": 11,
+            "added": 35,
+            "newly_covered_outcomes": 186
+          }
+        ],
+        "covered_outcomes_after": 897015
+      },
+      "generate_seconds": 0.3152648750692606,
+      "refine_seconds": 0.1627473752014339,
+      "evaluate_seconds": 0.008427459048107266,
+      "reference_verified": false
+    },
+    {
+      "seed": 7,
+      "initial_portfolio": [
+        [
+          3,
+          12,
+          14,
+          18,
+          20,
+          32,
+          3
+        ],
+        [
+          7,
+          15,
+          16,
+          27,
+          29,
+          36,
+          1
+        ],
+        [
+          9,
+          13,
+          19,
+          21,
+          28,
+          33,
+          2
+        ],
+        [
+          8,
+          15,
+          30,
+          31,
+          34,
+          35,
+          6
+        ],
+        [
+          3,
+          5,
+          6,
+          11,
+          13,
+          24,
+          4
+        ],
+        [
+          2,
+          4,
+          18,
+          22,
+          23,
+          26,
+          5
+        ],
+        [
+          11,
+          16,
+          17,
+          25,
+          28,
+          37,
+          7
+        ],
+        [
+          1,
+          9,
+          10,
+          14,
+          26,
+          35,
+          3
+        ],
+        [
+          5,
+          9,
+          17,
+          23,
+          30,
+          36,
+          1
+        ],
+        [
+          1,
+          2,
+          12,
+          20,
+          31,
+          37,
+          2
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          3,
+          14,
+          18,
+          19,
+          20,
+          32,
+          3
+        ],
+        [
+          6,
+          7,
+          16,
+          27,
+          29,
+          36,
+          1
+        ],
+        [
+          12,
+          13,
+          19,
+          21,
+          28,
+          33,
+          2
+        ],
+        [
+          4,
+          8,
+          15,
+          31,
+          34,
+          35,
+          6
+        ],
+        [
+          3,
+          5,
+          10,
+          11,
+          13,
+          24,
+          4
+        ],
+        [
+          2,
+          18,
+          22,
+          23,
+          24,
+          26,
+          5
+        ],
+        [
+          11,
+          17,
+          22,
+          25,
+          28,
+          37,
+          7
+        ],
+        [
+          1,
+          9,
+          10,
+          14,
+          25,
+          26,
+          3
+        ],
+        [
+          5,
+          9,
+          17,
+          23,
+          30,
+          32,
+          1
+        ],
+        [
+          1,
+          2,
+          12,
+          20,
+          30,
+          37,
+          2
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          23200,
+          1411319,
+          818681,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9900205782558724,
+          "3": 0.3829452542687837,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3829452542687837,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          7344,
+          1420480,
+          825340,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9968409968409968,
+          "3": 0.38582509170744467,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38582509170744467,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 890265,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 12,
+            "added": 19,
+            "newly_covered_outcomes": 3313
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 15,
+            "added": 6,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 9,
+            "added": 12,
+            "newly_covered_outcomes": 2437
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 30,
+            "added": 4,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 6,
+            "added": 10,
+            "newly_covered_outcomes": 1
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 4,
+            "added": 24,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 16,
+            "added": 22,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 35,
+            "added": 25,
+            "newly_covered_outcomes": 188
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 36,
+            "added": 32,
+            "newly_covered_outcomes": 189
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 31,
+            "added": 30,
+            "newly_covered_outcomes": 251
+          }
+        ],
+        "covered_outcomes_after": 896960
+      },
+      "generate_seconds": 0.31495854211971164,
+      "refine_seconds": 0.16037112521007657,
+      "evaluate_seconds": 0.008393374970182776,
+      "reference_verified": false
+    },
+    {
+      "seed": 8,
+      "initial_portfolio": [
+        [
+          1,
+          3,
+          12,
+          18,
+          19,
+          23,
+          7
+        ],
+        [
+          13,
+          16,
+          21,
+          31,
+          32,
+          33,
+          6
+        ],
+        [
+          17,
+          22,
+          26,
+          27,
+          34,
+          35,
+          2
+        ],
+        [
+          5,
+          9,
+          11,
+          14,
+          29,
+          30,
+          4
+        ],
+        [
+          2,
+          15,
+          23,
+          31,
+          36,
+          37,
+          5
+        ],
+        [
+          6,
+          10,
+          17,
+          20,
+          28,
+          30,
+          3
+        ],
+        [
+          2,
+          8,
+          18,
+          21,
+          24,
+          35,
+          1
+        ],
+        [
+          4,
+          11,
+          12,
+          25,
+          28,
+          34,
+          7
+        ],
+        [
+          7,
+          8,
+          14,
+          23,
+          27,
+          32,
+          6
+        ],
+        [
+          12,
+          16,
+          22,
+          24,
+          29,
+          36,
+          2
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          1,
+          3,
+          13,
+          18,
+          19,
+          23,
+          7
+        ],
+        [
+          16,
+          21,
+          25,
+          31,
+          32,
+          33,
+          6
+        ],
+        [
+          5,
+          22,
+          26,
+          27,
+          34,
+          35,
+          2
+        ],
+        [
+          9,
+          11,
+          14,
+          15,
+          29,
+          33,
+          4
+        ],
+        [
+          2,
+          7,
+          15,
+          31,
+          36,
+          37,
+          5
+        ],
+        [
+          6,
+          10,
+          17,
+          20,
+          28,
+          30,
+          3
+        ],
+        [
+          2,
+          8,
+          9,
+          21,
+          24,
+          35,
+          1
+        ],
+        [
+          4,
+          11,
+          12,
+          25,
+          34,
+          37,
+          7
+        ],
+        [
+          4,
+          7,
+          8,
+          14,
+          27,
+          32,
+          6
+        ],
+        [
+          12,
+          16,
+          22,
+          24,
+          29,
+          36,
+          2
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          27880,
+          1405699,
+          819585,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.988007488007488,
+          "3": 0.3833495929084164,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3833495929084164,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          7344,
+          1420480,
+          825340,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9968409968409968,
+          "3": 0.38582509170744467,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38582509170744467,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 891205,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 12,
+            "added": 13,
+            "newly_covered_outcomes": 2563
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 17,
+            "added": 5,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 30,
+            "added": 15,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 23,
+            "added": 7,
+            "newly_covered_outcomes": 2373
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 18,
+            "added": 9,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 28,
+            "added": 37,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 23,
+            "added": 4,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 2,
+            "row": 1,
+            "removed": 13,
+            "added": 25,
+            "newly_covered_outcomes": 190
+          },
+          {
+            "pass": 2,
+            "row": 3,
+            "removed": 5,
+            "added": 33,
+            "newly_covered_outcomes": 60
+          }
+        ],
+        "covered_outcomes_after": 896960
+      },
+      "generate_seconds": 0.31816983316093683,
+      "refine_seconds": 0.15973216691054404,
+      "evaluate_seconds": 0.008508665952831507,
+      "reference_verified": false
+    },
+    {
+      "seed": 9,
+      "initial_portfolio": [
+        [
+          6,
+          9,
+          14,
+          15,
+          27,
+          36,
+          1
+        ],
+        [
+          5,
+          11,
+          17,
+          28,
+          34,
+          35,
+          6
+        ],
+        [
+          2,
+          3,
+          8,
+          21,
+          24,
+          26,
+          3
+        ],
+        [
+          1,
+          12,
+          19,
+          23,
+          33,
+          34,
+          2
+        ],
+        [
+          4,
+          13,
+          16,
+          25,
+          29,
+          37,
+          7
+        ],
+        [
+          17,
+          18,
+          20,
+          29,
+          30,
+          32,
+          5
+        ],
+        [
+          7,
+          8,
+          10,
+          22,
+          23,
+          35,
+          4
+        ],
+        [
+          4,
+          5,
+          9,
+          10,
+          31,
+          33,
+          1
+        ],
+        [
+          12,
+          13,
+          14,
+          19,
+          22,
+          31,
+          6
+        ],
+        [
+          3,
+          7,
+          11,
+          15,
+          20,
+          33,
+          3
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          1,
+          6,
+          9,
+          14,
+          27,
+          36,
+          1
+        ],
+        [
+          5,
+          11,
+          27,
+          28,
+          34,
+          35,
+          6
+        ],
+        [
+          2,
+          3,
+          8,
+          21,
+          24,
+          26,
+          3
+        ],
+        [
+          1,
+          19,
+          21,
+          23,
+          33,
+          34,
+          2
+        ],
+        [
+          4,
+          6,
+          13,
+          16,
+          25,
+          37,
+          7
+        ],
+        [
+          17,
+          18,
+          20,
+          29,
+          30,
+          32,
+          5
+        ],
+        [
+          7,
+          10,
+          22,
+          23,
+          35,
+          36,
+          4
+        ],
+        [
+          4,
+          5,
+          9,
+          10,
+          15,
+          31,
+          1
+        ],
+        [
+          12,
+          14,
+          19,
+          22,
+          28,
+          31,
+          6
+        ],
+        [
+          3,
+          7,
+          11,
+          12,
+          15,
+          33,
+          3
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          17582,
+          1416643,
+          818975,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9924371468489116,
+          "3": 0.38307171763054115,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38307171763054115,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          8640,
+          1419312,
+          825212,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9962835256952904,
+          "3": 0.38577003282885636,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38577003282885636,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 890559,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 15,
+            "added": 1,
+            "newly_covered_outcomes": 188
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 17,
+            "added": 2,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 12,
+            "added": 21,
+            "newly_covered_outcomes": 3209
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 29,
+            "added": 6,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 33,
+            "added": 15,
+            "newly_covered_outcomes": 2247
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 13,
+            "added": 28,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 20,
+            "added": 12,
+            "newly_covered_outcomes": 251
+          },
+          {
+            "pass": 2,
+            "row": 1,
+            "removed": 2,
+            "added": 27,
+            "newly_covered_outcomes": 1
+          },
+          {
+            "pass": 2,
+            "row": 6,
+            "removed": 8,
+            "added": 36,
+            "newly_covered_outcomes": 124
+          }
+        ],
+        "covered_outcomes_after": 896832
+      },
+      "generate_seconds": 0.3201776249334216,
+      "refine_seconds": 0.1586507500614971,
+      "evaluate_seconds": 0.008500916883349419,
+      "reference_verified": false
+    },
+    {
+      "seed": 10,
+      "initial_portfolio": [
+        [
+          7,
+          15,
+          23,
+          28,
+          33,
+          34,
+          4
+        ],
+        [
+          2,
+          19,
+          27,
+          32,
+          35,
+          37,
+          2
+        ],
+        [
+          1,
+          14,
+          16,
+          22,
+          25,
+          26,
+          7
+        ],
+        [
+          5,
+          13,
+          17,
+          18,
+          20,
+          21,
+          6
+        ],
+        [
+          4,
+          10,
+          12,
+          17,
+          31,
+          36,
+          5
+        ],
+        [
+          3,
+          6,
+          9,
+          25,
+          29,
+          30,
+          1
+        ],
+        [
+          3,
+          8,
+          11,
+          13,
+          28,
+          32,
+          3
+        ],
+        [
+          4,
+          11,
+          22,
+          24,
+          27,
+          30,
+          4
+        ],
+        [
+          10,
+          20,
+          26,
+          29,
+          34,
+          37,
+          2
+        ],
+        [
+          1,
+          5,
+          14,
+          15,
+          24,
+          31,
+          7
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          7,
+          15,
+          16,
+          23,
+          33,
+          34,
+          4
+        ],
+        [
+          2,
+          6,
+          19,
+          27,
+          32,
+          35,
+          2
+        ],
+        [
+          12,
+          14,
+          16,
+          18,
+          22,
+          26,
+          7
+        ],
+        [
+          5,
+          7,
+          17,
+          18,
+          20,
+          21,
+          6
+        ],
+        [
+          10,
+          12,
+          17,
+          23,
+          31,
+          36,
+          5
+        ],
+        [
+          1,
+          3,
+          6,
+          9,
+          25,
+          30,
+          1
+        ],
+        [
+          3,
+          8,
+          11,
+          13,
+          28,
+          32,
+          3
+        ],
+        [
+          4,
+          11,
+          22,
+          24,
+          27,
+          30,
+          4
+        ],
+        [
+          10,
+          20,
+          26,
+          29,
+          34,
+          37,
+          2
+        ],
+        [
+          5,
+          14,
+          15,
+          24,
+          29,
+          31,
+          7
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          18488,
+          1413934,
+          820778,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9920474332239038,
+          "3": 0.3838472735531559,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3838472735531559,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          19960,
+          1408120,
+          825084,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9914142561201384,
+          "3": 0.38571497395026805,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38571497395026805,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 892362,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 28,
+            "added": 16,
+            "newly_covered_outcomes": 254
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 37,
+            "added": 6,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 1,
+            "added": 12,
+            "newly_covered_outcomes": 3335
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 13,
+            "added": 7,
+            "newly_covered_outcomes": 128
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 4,
+            "added": 23,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 29,
+            "added": 1,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 1,
+            "added": 29,
+            "newly_covered_outcomes": 124
+          },
+          {
+            "pass": 2,
+            "row": 2,
+            "removed": 25,
+            "added": 18,
+            "newly_covered_outcomes": 186
+          }
+        ],
+        "covered_outcomes_after": 896704
+      },
+      "generate_seconds": 0.33167512505315244,
+      "refine_seconds": 0.15918895788490772,
+      "evaluate_seconds": 0.008543332805857062,
+      "reference_verified": false
+    },
+    {
+      "seed": 11,
+      "initial_portfolio": [
+        [
+          25,
+          30,
+          32,
+          34,
+          35,
+          36,
+          5
+        ],
+        [
+          5,
+          6,
+          15,
+          20,
+          23,
+          24,
+          4
+        ],
+        [
+          2,
+          12,
+          16,
+          17,
+          18,
+          27,
+          3
+        ],
+        [
+          3,
+          8,
+          9,
+          11,
+          19,
+          22,
+          6
+        ],
+        [
+          14,
+          19,
+          20,
+          21,
+          28,
+          37,
+          2
+        ],
+        [
+          1,
+          4,
+          6,
+          13,
+          27,
+          33,
+          7
+        ],
+        [
+          10,
+          15,
+          22,
+          29,
+          30,
+          31,
+          1
+        ],
+        [
+          10,
+          13,
+          18,
+          26,
+          32,
+          37,
+          5
+        ],
+        [
+          3,
+          7,
+          11,
+          16,
+          31,
+          35,
+          4
+        ],
+        [
+          4,
+          5,
+          17,
+          26,
+          33,
+          34,
+          3
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          8,
+          25,
+          30,
+          32,
+          35,
+          36,
+          5
+        ],
+        [
+          2,
+          5,
+          6,
+          20,
+          23,
+          24,
+          4
+        ],
+        [
+          2,
+          12,
+          14,
+          17,
+          18,
+          27,
+          3
+        ],
+        [
+          8,
+          9,
+          11,
+          12,
+          19,
+          22,
+          6
+        ],
+        [
+          1,
+          14,
+          20,
+          21,
+          28,
+          37,
+          2
+        ],
+        [
+          1,
+          6,
+          9,
+          13,
+          27,
+          33,
+          7
+        ],
+        [
+          10,
+          15,
+          22,
+          29,
+          30,
+          31,
+          1
+        ],
+        [
+          13,
+          18,
+          19,
+          23,
+          26,
+          37,
+          5
+        ],
+        [
+          3,
+          7,
+          11,
+          16,
+          31,
+          35,
+          4
+        ],
+        [
+          4,
+          5,
+          17,
+          26,
+          33,
+          34,
+          3
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          20997,
+          1414541,
+          817698,
+          69678,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9909681931740755,
+          "3": 0.3825069339775222,
+          "4": 0.030776192540898424,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3825069339775222,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          18045,
+          1410158,
+          824961,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.992237988561518,
+          "3": 0.38566206580912465,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38566206580912465,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 889246,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 34,
+            "added": 8,
+            "newly_covered_outcomes": 148
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 15,
+            "added": 2,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 16,
+            "added": 14,
+            "newly_covered_outcomes": 88
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 3,
+            "added": 12,
+            "newly_covered_outcomes": 3329
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 19,
+            "added": 1,
+            "newly_covered_outcomes": 166
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 4,
+            "added": 9,
+            "newly_covered_outcomes": 3164
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 10,
+            "added": 23,
+            "newly_covered_outcomes": 187
+          },
+          {
+            "pass": 2,
+            "row": 7,
+            "removed": 32,
+            "added": 19,
+            "newly_covered_outcomes": 127
+          }
+        ],
+        "covered_outcomes_after": 896581
+      },
+      "generate_seconds": 0.32191116618923843,
+      "refine_seconds": 0.1583700419869274,
+      "evaluate_seconds": 0.008528125006705523,
+      "reference_verified": false
+    },
+    {
+      "seed": 12,
+      "initial_portfolio": [
+        [
+          1,
+          7,
+          19,
+          29,
+          34,
+          35,
+          3
+        ],
+        [
+          5,
+          14,
+          15,
+          20,
+          21,
+          28,
+          4
+        ],
+        [
+          2,
+          9,
+          12,
+          13,
+          33,
+          36,
+          2
+        ],
+        [
+          3,
+          4,
+          18,
+          29,
+          31,
+          37,
+          5
+        ],
+        [
+          7,
+          8,
+          9,
+          16,
+          17,
+          23,
+          7
+        ],
+        [
+          3,
+          13,
+          22,
+          24,
+          26,
+          27,
+          1
+        ],
+        [
+          5,
+          6,
+          10,
+          11,
+          25,
+          33,
+          6
+        ],
+        [
+          12,
+          23,
+          27,
+          32,
+          34,
+          37,
+          3
+        ],
+        [
+          4,
+          7,
+          20,
+          26,
+          30,
+          32,
+          4
+        ],
+        [
+          10,
+          19,
+          21,
+          31,
+          32,
+          36,
+          2
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          13,
+          19,
+          29,
+          30,
+          34,
+          35,
+          3
+        ],
+        [
+          1,
+          14,
+          15,
+          20,
+          21,
+          28,
+          4
+        ],
+        [
+          2,
+          12,
+          13,
+          18,
+          24,
+          36,
+          2
+        ],
+        [
+          3,
+          4,
+          18,
+          29,
+          31,
+          37,
+          5
+        ],
+        [
+          7,
+          8,
+          9,
+          16,
+          17,
+          23,
+          7
+        ],
+        [
+          3,
+          22,
+          24,
+          26,
+          27,
+          35,
+          1
+        ],
+        [
+          5,
+          6,
+          10,
+          11,
+          25,
+          33,
+          6
+        ],
+        [
+          5,
+          12,
+          23,
+          27,
+          34,
+          37,
+          3
+        ],
+        [
+          2,
+          4,
+          20,
+          26,
+          30,
+          32,
+          4
+        ],
+        [
+          19,
+          21,
+          22,
+          31,
+          32,
+          36,
+          2
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          25037,
+          1408351,
+          819776,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9892303973186326,
+          "3": 0.3834317510788099,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3834317510788099,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          8700,
+          1419255,
+          825209,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9962577168459521,
+          "3": 0.3857687423863894,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3857687423863894,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 891396,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 7,
+            "added": 30,
+            "newly_covered_outcomes": 2436
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 5,
+            "added": 1,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 9,
+            "added": 18,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 13,
+            "added": 35,
+            "newly_covered_outcomes": 62
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 32,
+            "added": 5,
+            "newly_covered_outcomes": 2121
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 7,
+            "added": 2,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 10,
+            "added": 22,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 0,
+            "removed": 1,
+            "added": 13,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 2,
+            "removed": 33,
+            "added": 24,
+            "newly_covered_outcomes": 248
+          }
+        ],
+        "covered_outcomes_after": 896829
+      },
+      "generate_seconds": 0.32455737493000925,
+      "refine_seconds": 0.16244737501256168,
+      "evaluate_seconds": 0.008635499980300665,
+      "reference_verified": false
+    },
+    {
+      "seed": 13,
+      "initial_portfolio": [
+        [
+          8,
+          9,
+          10,
+          12,
+          15,
+          21,
+          1
+        ],
+        [
+          1,
+          2,
+          7,
+          18,
+          23,
+          26,
+          5
+        ],
+        [
+          3,
+          28,
+          29,
+          30,
+          31,
+          33,
+          6
+        ],
+        [
+          5,
+          14,
+          25,
+          34,
+          36,
+          37,
+          2
+        ],
+        [
+          19,
+          24,
+          27,
+          28,
+          32,
+          35,
+          3
+        ],
+        [
+          4,
+          6,
+          16,
+          18,
+          22,
+          30,
+          7
+        ],
+        [
+          2,
+          11,
+          13,
+          14,
+          17,
+          29,
+          4
+        ],
+        [
+          4,
+          11,
+          15,
+          26,
+          27,
+          34,
+          1
+        ],
+        [
+          5,
+          11,
+          12,
+          19,
+          20,
+          32,
+          5
+        ],
+        [
+          10,
+          17,
+          22,
+          31,
+          35,
+          37,
+          6
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          8,
+          9,
+          12,
+          15,
+          21,
+          24,
+          1
+        ],
+        [
+          1,
+          2,
+          7,
+          20,
+          23,
+          26,
+          5
+        ],
+        [
+          25,
+          28,
+          29,
+          31,
+          33,
+          36,
+          6
+        ],
+        [
+          1,
+          5,
+          14,
+          34,
+          36,
+          37,
+          2
+        ],
+        [
+          7,
+          13,
+          27,
+          28,
+          32,
+          35,
+          3
+        ],
+        [
+          3,
+          6,
+          16,
+          18,
+          22,
+          30,
+          7
+        ],
+        [
+          2,
+          4,
+          13,
+          14,
+          17,
+          29,
+          4
+        ],
+        [
+          4,
+          10,
+          11,
+          26,
+          27,
+          34,
+          1
+        ],
+        [
+          5,
+          11,
+          19,
+          20,
+          25,
+          32,
+          5
+        ],
+        [
+          10,
+          17,
+          19,
+          23,
+          35,
+          37,
+          6
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          22000,
+          1412730,
+          818470,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9905367552426376,
+          "3": 0.3828544931486108,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3828544931486108,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          7344,
+          1420480,
+          825340,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9968409968409968,
+          "3": 0.38582509170744467,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38582509170744467,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 890054,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 10,
+            "added": 24,
+            "newly_covered_outcomes": 252
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 18,
+            "added": 20,
+            "newly_covered_outcomes": 104
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 30,
+            "added": 25,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 25,
+            "added": 1,
+            "newly_covered_outcomes": 62
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 19,
+            "added": 13,
+            "newly_covered_outcomes": 3360
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 4,
+            "added": 3,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 11,
+            "added": 4,
+            "newly_covered_outcomes": 2309
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 15,
+            "added": 10,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 22,
+            "added": 19,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 2,
+            "row": 2,
+            "removed": 3,
+            "added": 36,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 2,
+            "row": 4,
+            "removed": 24,
+            "added": 7,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 2,
+            "row": 8,
+            "removed": 12,
+            "added": 25,
+            "newly_covered_outcomes": 190
+          },
+          {
+            "pass": 2,
+            "row": 9,
+            "removed": 31,
+            "added": 23,
+            "newly_covered_outcomes": 60
+          }
+        ],
+        "covered_outcomes_after": 896960
+      },
+      "generate_seconds": 0.3266603332012892,
+      "refine_seconds": 0.16627941699698567,
+      "evaluate_seconds": 0.008591291960328817,
+      "reference_verified": false
+    },
+    {
+      "seed": 14,
+      "initial_portfolio": [
+        [
+          20,
+          24,
+          25,
+          28,
+          29,
+          30,
+          7
+        ],
+        [
+          7,
+          15,
+          16,
+          22,
+          23,
+          27,
+          2
+        ],
+        [
+          2,
+          3,
+          5,
+          8,
+          12,
+          34,
+          3
+        ],
+        [
+          10,
+          14,
+          18,
+          31,
+          35,
+          37,
+          1
+        ],
+        [
+          1,
+          2,
+          4,
+          6,
+          26,
+          33,
+          4
+        ],
+        [
+          3,
+          9,
+          13,
+          17,
+          30,
+          31,
+          6
+        ],
+        [
+          11,
+          12,
+          16,
+          19,
+          24,
+          32,
+          5
+        ],
+        [
+          4,
+          5,
+          21,
+          27,
+          32,
+          37,
+          7
+        ],
+        [
+          6,
+          8,
+          10,
+          11,
+          15,
+          17,
+          2
+        ],
+        [
+          1,
+          3,
+          21,
+          25,
+          33,
+          36,
+          3
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          20,
+          25,
+          26,
+          28,
+          29,
+          30,
+          7
+        ],
+        [
+          7,
+          16,
+          22,
+          23,
+          27,
+          34,
+          2
+        ],
+        [
+          2,
+          5,
+          8,
+          12,
+          14,
+          34,
+          3
+        ],
+        [
+          10,
+          14,
+          18,
+          19,
+          35,
+          37,
+          1
+        ],
+        [
+          2,
+          4,
+          6,
+          18,
+          26,
+          33,
+          4
+        ],
+        [
+          3,
+          9,
+          13,
+          17,
+          30,
+          31,
+          6
+        ],
+        [
+          11,
+          12,
+          16,
+          19,
+          24,
+          32,
+          5
+        ],
+        [
+          4,
+          5,
+          15,
+          27,
+          32,
+          37,
+          7
+        ],
+        [
+          6,
+          7,
+          8,
+          10,
+          11,
+          15,
+          2
+        ],
+        [
+          1,
+          3,
+          21,
+          25,
+          33,
+          36,
+          3
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          22651,
+          1411931,
+          818618,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9902567292273174,
+          "3": 0.3829181549769785,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3829181549769785,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          17214,
+          1410927,
+          825023,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9925954411248529,
+          "3": 0.38568873495344086,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38568873495344086,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 890202,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 24,
+            "added": 26,
+            "newly_covered_outcomes": 190
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 15,
+            "added": 34,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 3,
+            "added": 36,
+            "newly_covered_outcomes": 2436
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 31,
+            "added": 19,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 1,
+            "added": 9,
+            "newly_covered_outcomes": 3250
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 21,
+            "added": 15,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 17,
+            "added": 7,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 2,
+            "removed": 36,
+            "added": 14,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 4,
+            "removed": 9,
+            "added": 18,
+            "newly_covered_outcomes": 62
+          }
+        ],
+        "covered_outcomes_after": 896643
+      },
+      "generate_seconds": 0.3146487500052899,
+      "refine_seconds": 0.15699070901609957,
+      "evaluate_seconds": 0.008389499969780445,
+      "reference_verified": false
+    },
+    {
+      "seed": 15,
+      "initial_portfolio": [
+        [
+          3,
+          5,
+          11,
+          21,
+          24,
+          32,
+          3
+        ],
+        [
+          6,
+          7,
+          15,
+          19,
+          28,
+          33,
+          1
+        ],
+        [
+          10,
+          12,
+          23,
+          27,
+          30,
+          31,
+          5
+        ],
+        [
+          1,
+          8,
+          26,
+          29,
+          34,
+          35,
+          7
+        ],
+        [
+          2,
+          7,
+          13,
+          14,
+          20,
+          35,
+          2
+        ],
+        [
+          2,
+          4,
+          8,
+          9,
+          17,
+          18,
+          6
+        ],
+        [
+          1,
+          13,
+          21,
+          22,
+          25,
+          36,
+          4
+        ],
+        [
+          4,
+          14,
+          16,
+          26,
+          28,
+          37,
+          3
+        ],
+        [
+          5,
+          6,
+          20,
+          22,
+          23,
+          26,
+          1
+        ],
+        [
+          3,
+          9,
+          15,
+          25,
+          34,
+          37,
+          5
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          5,
+          11,
+          21,
+          24,
+          29,
+          32,
+          3
+        ],
+        [
+          7,
+          15,
+          17,
+          19,
+          28,
+          33,
+          1
+        ],
+        [
+          10,
+          12,
+          23,
+          27,
+          30,
+          31,
+          5
+        ],
+        [
+          1,
+          6,
+          8,
+          29,
+          34,
+          35,
+          7
+        ],
+        [
+          2,
+          3,
+          13,
+          14,
+          20,
+          35,
+          2
+        ],
+        [
+          2,
+          4,
+          8,
+          9,
+          18,
+          36,
+          6
+        ],
+        [
+          1,
+          13,
+          16,
+          22,
+          25,
+          36,
+          4
+        ],
+        [
+          4,
+          14,
+          16,
+          26,
+          28,
+          37,
+          3
+        ],
+        [
+          5,
+          6,
+          18,
+          20,
+          22,
+          26,
+          1
+        ],
+        [
+          3,
+          9,
+          15,
+          25,
+          34,
+          37,
+          5
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          17936,
+          1413016,
+          822212,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9922848746378158,
+          "3": 0.3844795903619433,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3844795903619433,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          8640,
+          1419312,
+          825212,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9962835256952904,
+          "3": 0.38577003282885636,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38577003282885636,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 893832,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 3,
+            "added": 29,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 6,
+            "added": 17,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 26,
+            "added": 6,
+            "newly_covered_outcomes": 2310
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 7,
+            "added": 3,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 17,
+            "added": 36,
+            "newly_covered_outcomes": 62
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 21,
+            "added": 16,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 23,
+            "added": 18,
+            "newly_covered_outcomes": 251
+          }
+        ],
+        "covered_outcomes_after": 896832
+      },
+      "generate_seconds": 0.3141246249433607,
+      "refine_seconds": 0.15695004118606448,
+      "evaluate_seconds": 0.008422083221375942,
+      "reference_verified": false
+    },
+    {
+      "seed": 16,
+      "initial_portfolio": [
+        [
+          4,
+          17,
+          30,
+          31,
+          32,
+          33,
+          7
+        ],
+        [
+          10,
+          13,
+          14,
+          24,
+          34,
+          36,
+          5
+        ],
+        [
+          5,
+          6,
+          7,
+          16,
+          21,
+          23,
+          6
+        ],
+        [
+          2,
+          12,
+          19,
+          22,
+          29,
+          31,
+          2
+        ],
+        [
+          1,
+          3,
+          10,
+          11,
+          20,
+          35,
+          1
+        ],
+        [
+          15,
+          17,
+          18,
+          21,
+          25,
+          27,
+          3
+        ],
+        [
+          6,
+          8,
+          18,
+          23,
+          26,
+          37,
+          4
+        ],
+        [
+          8,
+          11,
+          15,
+          24,
+          28,
+          30,
+          7
+        ],
+        [
+          1,
+          5,
+          19,
+          26,
+          27,
+          32,
+          5
+        ],
+        [
+          4,
+          12,
+          15,
+          34,
+          35,
+          37,
+          6
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          4,
+          9,
+          17,
+          31,
+          32,
+          33,
+          7
+        ],
+        [
+          13,
+          14,
+          24,
+          25,
+          34,
+          36,
+          5
+        ],
+        [
+          5,
+          7,
+          9,
+          16,
+          21,
+          23,
+          6
+        ],
+        [
+          2,
+          7,
+          19,
+          22,
+          29,
+          31,
+          2
+        ],
+        [
+          3,
+          6,
+          10,
+          11,
+          20,
+          35,
+          1
+        ],
+        [
+          2,
+          12,
+          17,
+          18,
+          21,
+          27,
+          3
+        ],
+        [
+          18,
+          22,
+          23,
+          26,
+          33,
+          37,
+          4
+        ],
+        [
+          8,
+          11,
+          15,
+          24,
+          28,
+          30,
+          7
+        ],
+        [
+          1,
+          5,
+          19,
+          26,
+          27,
+          32,
+          5
+        ],
+        [
+          1,
+          4,
+          12,
+          16,
+          34,
+          37,
+          6
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          28131,
+          1408672,
+          816397,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9878995209877562,
+          "3": 0.3819627974039739,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.3819627974039739,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          12375,
+          1415394,
+          825395,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9946769248239836,
+          "3": 0.38584874981933803,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38584874981933803,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 887981,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 30,
+            "added": 9,
+            "newly_covered_outcomes": 2372
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 10,
+            "added": 25,
+            "newly_covered_outcomes": 1
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 6,
+            "added": 9,
+            "newly_covered_outcomes": 3352
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 12,
+            "added": 7,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 1,
+            "added": 6,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 15,
+            "added": 12,
+            "newly_covered_outcomes": 2372
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 6,
+            "added": 33,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 35,
+            "added": 1,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 5,
+            "removed": 25,
+            "added": 2,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 6,
+            "removed": 8,
+            "added": 22,
+            "newly_covered_outcomes": 186
+          },
+          {
+            "pass": 2,
+            "row": 9,
+            "removed": 15,
+            "added": 16,
+            "newly_covered_outcomes": 186
+          }
+        ],
+        "covered_outcomes_after": 897015
+      },
+      "generate_seconds": 0.31704883300699294,
+      "refine_seconds": 0.160991792101413,
+      "evaluate_seconds": 0.008376457961276174,
+      "reference_verified": false
+    },
+    {
+      "seed": 17,
+      "initial_portfolio": [
+        [
+          9,
+          13,
+          21,
+          23,
+          24,
+          26,
+          1
+        ],
+        [
+          7,
+          10,
+          17,
+          28,
+          32,
+          34,
+          6
+        ],
+        [
+          6,
+          8,
+          11,
+          19,
+          20,
+          37,
+          4
+        ],
+        [
+          2,
+          4,
+          5,
+          12,
+          18,
+          29,
+          3
+        ],
+        [
+          10,
+          15,
+          20,
+          22,
+          30,
+          33,
+          5
+        ],
+        [
+          3,
+          8,
+          16,
+          25,
+          28,
+          36,
+          2
+        ],
+        [
+          9,
+          18,
+          19,
+          31,
+          35,
+          36,
+          7
+        ],
+        [
+          1,
+          12,
+          14,
+          16,
+          23,
+          32,
+          1
+        ],
+        [
+          2,
+          7,
+          20,
+          24,
+          25,
+          27,
+          6
+        ],
+        [
+          3,
+          14,
+          22,
+          26,
+          29,
+          31,
+          4
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          4,
+          9,
+          13,
+          21,
+          23,
+          26,
+          1
+        ],
+        [
+          6,
+          7,
+          10,
+          17,
+          28,
+          34,
+          6
+        ],
+        [
+          6,
+          8,
+          11,
+          19,
+          24,
+          37,
+          4
+        ],
+        [
+          4,
+          5,
+          11,
+          12,
+          18,
+          29,
+          3
+        ],
+        [
+          10,
+          15,
+          20,
+          30,
+          33,
+          37,
+          5
+        ],
+        [
+          5,
+          8,
+          15,
+          25,
+          28,
+          36,
+          2
+        ],
+        [
+          1,
+          9,
+          18,
+          31,
+          35,
+          36,
+          7
+        ],
+        [
+          1,
+          12,
+          14,
+          16,
+          23,
+          32,
+          1
+        ],
+        [
+          2,
+          7,
+          20,
+          24,
+          25,
+          27,
+          6
+        ],
+        [
+          3,
+          14,
+          22,
+          26,
+          29,
+          31,
+          4
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          24204,
+          1407256,
+          821704,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9895887101769455,
+          "3": 0.384261075437546,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.384261075437546,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          21473,
+          1406793,
+          824898,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9907634429693253,
+          "3": 0.38563496651731943,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38563496651731943,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 893324,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 24,
+            "added": 4,
+            "newly_covered_outcomes": 190
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 32,
+            "added": 6,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 20,
+            "added": 24,
+            "newly_covered_outcomes": 2436
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 2,
+            "added": 11,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 22,
+            "added": 37,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 16,
+            "added": 5,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 19,
+            "added": 1,
+            "newly_covered_outcomes": 62
+          },
+          {
+            "pass": 2,
+            "row": 5,
+            "removed": 3,
+            "added": 15,
+            "newly_covered_outcomes": 62
+          }
+        ],
+        "covered_outcomes_after": 896518
+      },
+      "generate_seconds": 0.3144913329742849,
+      "refine_seconds": 0.15710820816457272,
+      "evaluate_seconds": 0.008387750014662743,
+      "reference_verified": false
+    },
+    {
+      "seed": 18,
+      "initial_portfolio": [
+        [
+          3,
+          8,
+          14,
+          16,
+          27,
+          37,
+          7
+        ],
+        [
+          4,
+          10,
+          11,
+          13,
+          30,
+          33,
+          6
+        ],
+        [
+          1,
+          5,
+          6,
+          20,
+          25,
+          36,
+          3
+        ],
+        [
+          9,
+          12,
+          19,
+          30,
+          31,
+          35,
+          1
+        ],
+        [
+          2,
+          15,
+          17,
+          22,
+          28,
+          29,
+          5
+        ],
+        [
+          7,
+          11,
+          21,
+          24,
+          26,
+          37,
+          2
+        ],
+        [
+          10,
+          12,
+          20,
+          23,
+          32,
+          34,
+          4
+        ],
+        [
+          4,
+          15,
+          18,
+          21,
+          25,
+          35,
+          7
+        ],
+        [
+          10,
+          16,
+          18,
+          26,
+          28,
+          36,
+          6
+        ],
+        [
+          5,
+          22,
+          24,
+          29,
+          33,
+          34,
+          3
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          2,
+          3,
+          8,
+          14,
+          16,
+          27,
+          7
+        ],
+        [
+          3,
+          4,
+          11,
+          13,
+          17,
+          33,
+          6
+        ],
+        [
+          1,
+          5,
+          6,
+          7,
+          13,
+          36,
+          3
+        ],
+        [
+          9,
+          19,
+          30,
+          31,
+          35,
+          37,
+          1
+        ],
+        [
+          1,
+          2,
+          15,
+          17,
+          28,
+          29,
+          5
+        ],
+        [
+          7,
+          11,
+          12,
+          21,
+          24,
+          26,
+          2
+        ],
+        [
+          10,
+          12,
+          20,
+          23,
+          32,
+          34,
+          4
+        ],
+        [
+          4,
+          6,
+          15,
+          18,
+          21,
+          25,
+          7
+        ],
+        [
+          10,
+          18,
+          22,
+          26,
+          28,
+          36,
+          6
+        ],
+        [
+          5,
+          22,
+          24,
+          25,
+          29,
+          33,
+          3
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          20397,
+          1414332,
+          818471,
+          69714,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9912262816674582,
+          "3": 0.38285492329609977,
+          "4": 0.03079167785050138,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38285492329609977,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          8640,
+          1419312,
+          825212,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9962835256952904,
+          "3": 0.38577003282885636,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38577003282885636,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 890055,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 37,
+            "added": 2,
+            "newly_covered_outcomes": 40
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 10,
+            "added": 17,
+            "newly_covered_outcomes": 2499
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 25,
+            "added": 7,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 12,
+            "added": 37,
+            "newly_covered_outcomes": 127
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 22,
+            "added": 1,
+            "newly_covered_outcomes": 3358
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 37,
+            "added": 12,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 35,
+            "added": 6,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 1,
+            "row": 8,
+            "removed": 16,
+            "added": 22,
+            "newly_covered_outcomes": 188
+          },
+          {
+            "pass": 1,
+            "row": 9,
+            "removed": 34,
+            "added": 25,
+            "newly_covered_outcomes": 124
+          },
+          {
+            "pass": 2,
+            "row": 1,
+            "removed": 30,
+            "added": 3,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 2,
+            "row": 2,
+            "removed": 20,
+            "added": 13,
+            "newly_covered_outcomes": 124
+          }
+        ],
+        "covered_outcomes_after": 896832
+      },
+      "generate_seconds": 0.3146757499780506,
+      "refine_seconds": 0.16302162501960993,
+      "evaluate_seconds": 0.008401875151321292,
+      "reference_verified": false
+    },
+    {
+      "seed": 19,
+      "initial_portfolio": [
+        [
+          1,
+          2,
+          19,
+          22,
+          31,
+          36,
+          2
+        ],
+        [
+          3,
+          9,
+          13,
+          15,
+          18,
+          21,
+          1
+        ],
+        [
+          12,
+          14,
+          20,
+          24,
+          30,
+          35,
+          7
+        ],
+        [
+          5,
+          7,
+          26,
+          29,
+          34,
+          37,
+          4
+        ],
+        [
+          4,
+          8,
+          16,
+          18,
+          23,
+          25,
+          5
+        ],
+        [
+          1,
+          13,
+          27,
+          30,
+          33,
+          37,
+          3
+        ],
+        [
+          4,
+          6,
+          11,
+          17,
+          28,
+          31,
+          6
+        ],
+        [
+          2,
+          10,
+          21,
+          23,
+          24,
+          32,
+          2
+        ],
+        [
+          9,
+          11,
+          19,
+          22,
+          26,
+          32,
+          1
+        ],
+        [
+          3,
+          14,
+          28,
+          34,
+          35,
+          36,
+          7
+        ]
+      ],
+      "refined_portfolio": [
+        [
+          1,
+          2,
+          12,
+          22,
+          31,
+          36,
+          2
+        ],
+        [
+          1,
+          3,
+          13,
+          15,
+          20,
+          21,
+          1
+        ],
+        [
+          5,
+          12,
+          20,
+          24,
+          30,
+          35,
+          7
+        ],
+        [
+          5,
+          7,
+          15,
+          29,
+          34,
+          37,
+          4
+        ],
+        [
+          7,
+          8,
+          16,
+          18,
+          23,
+          25,
+          5
+        ],
+        [
+          13,
+          14,
+          27,
+          30,
+          33,
+          37,
+          3
+        ],
+        [
+          4,
+          6,
+          10,
+          11,
+          17,
+          31,
+          6
+        ],
+        [
+          2,
+          21,
+          24,
+          27,
+          28,
+          32,
+          2
+        ],
+        [
+          9,
+          11,
+          19,
+          22,
+          26,
+          32,
+          1
+        ],
+        [
+          3,
+          14,
+          28,
+          34,
+          35,
+          36,
+          7
+        ]
+      ],
+      "before": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          20113,
+          1415771,
+          817352,
+          69678,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9913484435543259,
+          "3": 0.38235810294633826,
+          "4": 0.030776192540898424,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38235810294633826,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "after": {
+        "assumption": "Independent uniform fair draws; fixed portfolio for one draw",
+        "tickets": 10,
+        "distinct_full_tickets": 10,
+        "distinct_main_tickets": 10,
+        "total_main_outcomes": 2324784,
+        "best_match_counts": [
+          0,
+          13407,
+          1414734,
+          825023,
+          69750,
+          1860,
+          10
+        ],
+        "p_at_least_matches": {
+          "1": 1.0,
+          "2": 0.9942330126153656,
+          "3": 0.38568873495344086,
+          "4": 0.030807163160104338,
+          "5": 0.0008043758043758043,
+          "6": 4.301474889710184e-06
+        },
+        "p_any_prize": 0.38568873495344086,
+        "jackpot_covered_outcomes": 10,
+        "total_full_outcomes": 16273488,
+        "p_jackpot": 6.144964128157406e-07
+      },
+      "refinement": {
+        "objective": "At least three main matches",
+        "max_passes": 2,
+        "passes": 2,
+        "covered_outcomes_before": 888900,
+        "swaps": [
+          {
+            "pass": 1,
+            "row": 0,
+            "removed": 19,
+            "added": 12,
+            "newly_covered_outcomes": 3462
+          },
+          {
+            "pass": 1,
+            "row": 1,
+            "removed": 9,
+            "added": 20,
+            "newly_covered_outcomes": 254
+          },
+          {
+            "pass": 1,
+            "row": 2,
+            "removed": 14,
+            "added": 5,
+            "newly_covered_outcomes": 3272
+          },
+          {
+            "pass": 1,
+            "row": 3,
+            "removed": 26,
+            "added": 15,
+            "newly_covered_outcomes": 190
+          },
+          {
+            "pass": 1,
+            "row": 4,
+            "removed": 4,
+            "added": 7,
+            "newly_covered_outcomes": 64
+          },
+          {
+            "pass": 1,
+            "row": 5,
+            "removed": 1,
+            "added": 14,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 1,
+            "row": 6,
+            "removed": 28,
+            "added": 10,
+            "newly_covered_outcomes": 63
+          },
+          {
+            "pass": 1,
+            "row": 7,
+            "removed": 23,
+            "added": 28,
+            "newly_covered_outcomes": 126
+          },
+          {
+            "pass": 2,
+            "row": 1,
+            "removed": 18,
+            "added": 1,
+            "newly_covered_outcomes": 125
+          },
+          {
+            "pass": 2,
+            "row": 7,
+            "removed": 10,
+            "added": 27,
+            "newly_covered_outcomes": 62
+          }
+        ],
+        "covered_outcomes_after": 896643
+      },
+      "generate_seconds": 0.3152638750616461,
+      "refine_seconds": 0.16030795802362263,
+      "evaluate_seconds": 0.008315625134855509,
+      "reference_verified": false
+    }
+  ]
+}

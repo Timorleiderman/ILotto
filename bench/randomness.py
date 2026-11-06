@@ -2,8 +2,8 @@
 
 Before trying to model a sequence it is worth asking whether it contains
 anything to model. Each test returns a p-value under the null "the machine is
-fair and draws are independent". If none of these fire, no architecture will
-help, and the honest report says so.
+fair and draws are independent". Nonsignificance is not proof of randomness:
+power depends on the sample size and the particular alternative being tested.
 """
 
 from __future__ import annotations
@@ -15,15 +15,23 @@ from .data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 
 
 def uniformity(draws: Draws) -> dict:
-    """Chi-square goodness-of-fit on the marginal frequency of each number."""
+    """Marginal uniformity, adjusted for drawing six balls without replacement.
+
+    Pearson's statistic has asymptotic distribution (N-k)/(N-1) * chi2(N-1),
+    not chi2(N-1): each draw's indicators have negative covariance. See Genest,
+    Lockhart and Stephens (2002), https://doi.org/10.1111/1467-9884.00315.
+    """
     counts = np.bincount(draws.balls.ravel(), minlength=N_NUMBERS + 1)[1:]
-    res = stats.chisquare(counts)
+    pearson = stats.chisquare(counts).statistic
+    corrected = pearson * (N_NUMBERS - 1) / (N_NUMBERS - N_DRAWN)
     return {
-        "test": "Ball frequency uniformity (chi-square)",
-        "statistic": float(res.statistic),
+        "test": "Ball frequency uniformity (without-replacement chi-square)",
+        "statistic": float(corrected),
         "dof": N_NUMBERS - 1,
-        "p_value": float(res.pvalue),
-        "detail": f"counts range {counts.min()}-{counts.max()}, expected {len(draws) * N_DRAWN / N_NUMBERS:.1f}",
+        "p_value": float(stats.chi2.sf(corrected, N_NUMBERS - 1)),
+        "detail": (f"counts range {counts.min()}-{counts.max()}, "
+                   f"expected {len(draws) * N_DRAWN / N_NUMBERS:.1f}; "
+                   f"Pearson statistic multiplied by {(N_NUMBERS - 1) / (N_NUMBERS - N_DRAWN):.6f}"),
     }
 
 
@@ -102,9 +110,10 @@ def pair_independence(draws: Draws) -> dict:
 
     Marginal uniformity would not reveal a machine that keeps two balls near
     each other. 666 pairs are tested at once, so the reported p-value is the
-    smallest one after a Sidak correction for the whole family.
+    smallest exact doubled-tail binomial p-value with a Bonferroni correction.
+    Shared-ball pairs are dependent; this correction does not need independence.
     """
-    m = draws.multi_hot
+    m = draws.multi_hot.astype(np.int64)
     n = len(draws)
     co = m.T @ m
     iu = np.triu_indices(N_NUMBERS, k=1)
@@ -115,15 +124,16 @@ def pair_independence(draws: Draws) -> dict:
     exp = n * p_pair
     sd = np.sqrt(n * p_pair * (1 - p_pair))
     z = (observed - exp) / sd
-    worst = int(np.argmax(np.abs(z)))
-    p_single = 2 * stats.norm.sf(abs(z[worst]))
+    p_single = np.minimum(1.0, 2 * np.minimum(stats.binom.cdf(observed, n, p_pair),
+                                             stats.binom.sf(observed - 1, n, p_pair)))
+    worst = int(np.argmin(p_single))
     n_tests = len(observed)
-    p_family = 1 - (1 - p_single) ** n_tests
+    p_family = min(1.0, n_tests * p_single[worst])
     return {
-        "test": f"Pairwise co-occurrence ({n_tests} pairs, Sidak-corrected)",
+        "test": f"Pairwise co-occurrence ({n_tests} pairs, exact-binomial Bonferroni)",
         "statistic": float(z[worst]),
         "dof": None,
-        "p_value": float(min(p_family, 1.0)),
+        "p_value": float(p_family),
         "detail": (
             f"most extreme pair {iu[0][worst] + 1}&{iu[1][worst] + 1}: "
             f"{int(observed[worst])} co-occurrences vs {exp:.1f} expected (z={z[worst]:.2f})"
@@ -161,15 +171,25 @@ def drift(draws: Draws) -> dict:
     likely be non-stationary, which a whole-history chi-square would dilute.
     """
     half = len(draws) // 2
+    if half < 1:
+        raise ValueError("Frequency drift needs at least two draws")
     a = np.bincount(draws.balls[:half].ravel(), minlength=N_NUMBERS + 1)[1:]
     b = np.bincount(draws.balls[half:].ravel(), minlength=N_NUMBERS + 1)[1:]
-    chi2, p, _, _ = stats.chi2_contingency(np.vstack([a, b]))
+    # Under independent fair draws, the difference of frequency vectors has
+    # the same without-replacement covariance as uniformity(), scaled by
+    # 1/n_a + 1/n_b. Its sum-zero subspace has 36 equal eigenvalues.
+    n_b = len(draws) - half
+    p_hit = N_DRAWN / N_NUMBERS
+    variance = p_hit * (1 - p_hit) * N_NUMBERS / (N_NUMBERS - 1) * (1 / half + 1 / n_b)
+    difference = a / half - b / n_b
+    chi2 = float(difference @ difference / variance)
+    p = stats.chi2.sf(chi2, N_NUMBERS - 1)
     return {
-        "test": "First half vs second half frequency drift",
+        "test": "First half vs second half frequency drift (without-replacement Wald)",
         "statistic": float(chi2),
         "dof": N_NUMBERS - 1,
         "p_value": float(p),
-        "detail": f"{half} vs {len(draws) - half} draws",
+        "detail": f"{half} vs {n_b} draws; asymptotic covariance under independent uniform 6/37 draws",
     }
 
 

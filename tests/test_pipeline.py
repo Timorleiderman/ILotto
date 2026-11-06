@@ -175,6 +175,10 @@ def test_verdict_covers_randomness_tests_too(tmp_path):
         out_path=str(tmp_path / "report.html"),
     )
     assert "signal detected" in html and "no signal detected" not in html
+    assert "At least one family-corrected test flagged a deviation" in html
+    assert "indistinguishable from a fair random process" not in html
+    assert "every bar sits inside" not in html
+    assert "even in principle" not in html
 
 
 def test_neural_predictor_end_to_end():

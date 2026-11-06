@@ -14,8 +14,10 @@ same exact null.
 Every strategy in this repository — counting heuristics, Markov models, GRU and Transformer
 networks, a date-conditioned generative model, exact interpolators over the whole history,
 and chaos-theoretic analogues — is backtested walk-forward against 1,600+ draws. **None beats a randomly filled ticket by a
-margin that survives correcting for the number of strategies tried, and none beats a uniform
-guess on log loss**, meaning none holds information about the next draw even in principle.
+margin that survived multiple-testing correction in the November 6 research run**.
+Its probability-emitting models also had worse marginal log loss than uniform.
+These results have not established a prediction advantage; they do not prove
+the absence of every possible signal.
 
 That is the expected answer. The value here is the measurement:
 
@@ -61,15 +63,16 @@ flowchart LR
 
 </div>
 
-## The one real edge
+## What portfolio coverage improves
 
-Nothing predicts the draw. But prizes are split among winners and players over-pick calendar
-dates, so a ticket weighted toward 32–37 wins no more often and *shares less when it does*.
-That is a payout effect, not a prediction effect — see
-[ticket generators](approaches/ticket-generators.md).
+At a fixed ticket count, choosing complementary rows can increase the probability
+of at least one smaller prize. The coverage optimizer verifies every accepted
+refinement against all possible main draws. Jackpot odds still depend on the
+number of distinct full combinations. See [ticket generators](approaches/ticket-generators.md)
+for exact results, the command, and the distinction from unvalidated prize-sharing heuristics.
 
-!!! warning "Not gambling advice"
+!!! note "Scope of the evidence"
 
-    The expected value of a Lotto ticket is negative regardless of which numbers are on it.
-    This project concludes that the game is fair and unpredictable; it is published as a
-    worked example of measuring that claim properly.
+    Passing a randomness test does not prove perfect randomness. A smaller-prize
+    win does not necessarily cover the cost of the portfolio, and neither the
+    prediction models nor the coverage optimizer establish positive net returns.

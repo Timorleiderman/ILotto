@@ -1,5 +1,11 @@
 # Statistical strategies
 
+!!! info "Historical examples"
+
+    The numerical examples on this page describe the July 2026 analysis. They
+    are not the current scoreboard. See [Results](../results.md) for the latest
+    generated values and [evaluation](../evaluation.md) for the corrected tests.
+
 !!! abstract "The concept, in a minute"
 
     **The idea.** The draw history is a record, and records have tendencies: some numbers
@@ -201,8 +207,10 @@ expected — **z = +3.73**, a naive p of 0.0002. That looks like a finding.
 
 It is not, because you did not pick that pair in advance; you picked the most extreme of 666.
 Drawing 666 pure-noise values and taking the largest gives **|z| ≈ 3.33** on average. Our
-"striking" 3.73 is barely beyond what noise hands you by construction. Šidák-corrected across
-the family: **p = 0.122**.
+"striking" 3.73 needs a family correction. The earlier analysis reported a
+normal approximation with a Šidák correction, but overlapping pairs are
+dependent. The current test uses exact binomial tails and a Bonferroni bound;
+its current value appears in [Results](../results.md).
 
 !!! quote "Measured"
     **0.980** matches, p = 0.884.

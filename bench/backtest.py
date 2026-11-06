@@ -85,20 +85,24 @@ def walk_forward(
 def random_ticket_null(draws: Draws, n_test: int, n_trials: int = 5000, seed: int = 7) -> dict:
     """Empirical distribution of mean-matches for random tickets.
 
-    The z-test in `metrics.summarise` assumes asymptotic normality; this
-    Monte-Carlo null confirms it and gives the report a concrete "how good would
+    This Monte-Carlo null complements the finite-sample test in
+    `metrics.summarise` and gives the report a concrete "how good would
     the luckiest of 5000 random strategies have looked?" number, which is the
     right yardstick when a dozen strategies are being compared.
     """
+    if (any(not isinstance(x, (int, np.integer)) or isinstance(x, (bool, np.bool_))
+            for x in (n_test, n_trials)) or not 1 <= n_test <= len(draws) or n_trials < 1):
+        raise ValueError("Require 1 <= n_test <= number of draws and positive n_trials")
     rng = np.random.default_rng(seed)
-    actual = draws.balls[-n_test:]
-    hot = np.zeros((n_test, metrics.N_NUMBERS), dtype=bool)
-    hot[np.repeat(np.arange(n_test), 6), actual.ravel() - 1] = True
-
+    # Conditional on any actual six-number draw, a random ticket's overlap is
+    # hypergeometric. Sampling this law avoids generating and sorting 37 scores
+    # per ticket; chunking keeps memory bounded for large experiments.
     means = np.empty(n_trials)
-    for t in range(n_trials):
-        picks = rng.random((n_test, metrics.N_NUMBERS)).argsort(axis=1)[:, :6]
-        means[t] = np.take_along_axis(hot, picks, axis=1).sum(axis=1).mean()
+    for start in range(0, n_trials, 1024):
+        stop = min(start + 1024, n_trials)
+        counts = rng.hypergeometric(metrics.N_DRAWN, metrics.N_NUMBERS - metrics.N_DRAWN,
+                                    metrics.N_DRAWN, size=(stop - start, n_test))
+        means[start:stop] = counts.mean(axis=1)
 
     return {
         "n_trials": n_trials,
