@@ -15,7 +15,9 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from bench.portfolio import greedy_coverage_tickets, portfolio_odds, refine_coverage_tickets  # noqa: E402
+from bench.portfolio import (  # noqa: E402
+    greedy_coverage_tickets, portfolio_odds, refine_coverage_tickets, search_coverage_tickets,
+)
 
 
 def main():
@@ -27,23 +29,35 @@ def main():
     parser.add_argument("--simulations", type=int, default=30_000)
     parser.add_argument("--refine-passes", type=int, default=2,
                         help="Exact one-ball exchange passes (default: 2; 0 reproduces the initial search)")
+    parser.add_argument("--search-steps", type=int, default=0,
+                        help="Optional basin-hopping proposals after refinement (0 disables; maximum 500)")
+    parser.add_argument("--search-seed", type=int, default=70106,
+                        help="Seed for the optional basin-hopping search (default: 70106)")
     parser.add_argument("--out", type=Path, help="Optional JSON destination; otherwise print JSON")
     args = parser.parse_args()
     if args.refine_passes < 0:
         parser.error("refine-passes must be nonnegative")
+    if not 0 <= args.search_steps <= 500 or args.search_seed < 0:
+        parser.error("search-steps must be in 0..500 and search-seed must be nonnegative")
     try:
         tickets = greedy_coverage_tickets(args.count, candidates=args.candidates,
                                           simulations=args.simulations, seed=args.seed)
         tickets, refinement = refine_coverage_tickets(tickets, max_passes=args.refine_passes)
+        search = None
+        if args.search_steps:
+            tickets, search = search_coverage_tickets(tickets, steps=args.search_steps, seed=args.search_seed)
     except ValueError as exc:
         parser.error(str(exc))
     result = {
         "objective": "At least one prize, not net profit or higher jackpot probability per ticket",
-        "optimizer": "Greedy simulation followed by exact improving exchanges; no global optimum claimed",
+        "optimizer": ("Greedy simulation, exact improving exchanges, optional basin hopping; "
+                      "no global optimum claimed"),
         "configuration": {"count": args.count, "seed": args.seed, "candidates": args.candidates,
                           "simulations": args.simulations, "min_matches": 3,
-                          "refine_passes": args.refine_passes},
+                          "refine_passes": args.refine_passes,
+                          "search_steps": args.search_steps, "search_seed": args.search_seed},
         "refinement": refinement,
+        "search": search,
         "portfolio": tickets,
         "exact_odds": portfolio_odds(tickets),
     }

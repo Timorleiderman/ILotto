@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "scope": "Exploratory retrospective study on the already-inspected archive. Settings written before running this new experiment; not a preregistered or fresh holdout claim.",
+  "archive_sha256": "0034509bdfa510c3978abcff14baee705f6bebf85701c7e6978ac07ecc171560",
+  "min_history": 200,
+  "primary_test_draws": 300,
+  "primary_method": "static_joint_mixture",
+  "secondary_method": "fixed_share_joint_mixture",
+  "fixed_share_rate": 0.01,
+  "sparse_prior_draws": 100,
+  "dense_windows": [50, 100, 300, null],
+  "dense_prior_draws": [100, 500, 2000],
+  "family_prior_mass": {"uniform": 0.5, "single_ball": 0.2, "single_strong": 0.1, "dense": 0.2},
+  "primary_score": "Mean negative log probability of the full unordered six-ball set and strong number; compare with log(7*C(37,6))",
+  "secondary_scores": ["main matches", "strong accuracy", "marginal ball log loss", "four disjoint 300-draw blocks", "exploratory historical likelihood-ratio paths"],
+  "synthetic": {
+    "replicates_per_scenario": 64,
+    "draws": 1661,
+    "seed": 61106,
+    "scenarios": [
+      {"name": "fair", "multiplier": 1.0, "bias_starts": 0},
+      {"name": "weak_single_ball", "multiplier": 1.2, "bias_starts": 0},
+      {"name": "persistent_single_ball", "multiplier": 1.5, "bias_starts": 0},
+      {"name": "late_single_ball", "multiplier": 1.5, "bias_starts": 830}
+    ],
+    "construction": "Ball 1 included with probability multiplier*6/37 after bias_starts; remaining balls uniform conditional on inclusion; strong number uniform.",
+    "diagnostic_threshold": 20,
+    "interpretation": "Finite Monte Carlo sensitivity and null checks for each fixed detector, not a claim about bias in real draws. Historical archive ratios are exploratory; formal future monitoring requires freezing the algorithm before future outcomes."
+  },
+  "coverage_probe": {"seeds": 5, "additional_exact_passes": 10, "purpose": "Check whether the previous two-pass cap leaves easy coverage gains; not simulated annealing or a global-optimum claim."},
+  "limits": ["No archive refresh", "No remote compute or seed campaign", "No ticket purchases", "Do not select or retune settings based on the new real-data results", "Keep production prediction defaults unchanged until prospective evidence"]
+}

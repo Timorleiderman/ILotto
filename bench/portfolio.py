@@ -165,6 +165,68 @@ def greedy_coverage_tickets(count=10, *, candidates=512, simulations=30_000, min
             for i, index in enumerate(selected)]
 
 
+def search_coverage_tickets(tickets, *, steps=20, seed=0, start_temperature=1000.0, end_temperature=10.0,
+                            perturbations=2, local_passes=2):
+    """Experimental discrete basin hopping with exact coverage and best retention.
+
+    By default perturb two numbers, locally refine for two passes, then accept by a
+    Metropolis rule. Temperatures are measured in covered main outcomes.
+    Occasional worse intermediate states allow escape from one-exchange optima;
+    only the best observed portfolio is returned. No history or forecasts enter
+    this fixed-ticket-budget optimization, and global optimality is not claimed.
+    """
+    rows = _full_tickets(tickets)
+    if (not _integer(steps) or not 1 <= steps <= 500 or not _integer(seed) or seed < 0
+            or not _integer(perturbations) or not 1 <= perturbations <= 100
+            or not _integer(local_passes) or not 0 <= local_passes <= 20
+            or any(isinstance(t, (bool, np.bool_)) or not np.isfinite(t) or t <= 0
+                   for t in (start_temperature, end_temperature))
+            or start_temperature < end_temperature):
+        raise ValueError("Require steps in 1..500, perturbations in 1..100, local_passes in 0..20, "
+                         "nonnegative seed, and finite decreasing positive temperatures")
+    current = [list(row) for row in rows]
+    best = [row.copy() for row in current]
+
+    def count(portfolio):
+        histogram = best_match_counts([row[:N_DRAWN] for row in portfolio])
+        return int(histogram[3:].sum())
+
+    current_count = best_count = initial_count = count(current)
+    rng = np.random.default_rng(seed)
+    proposals = []
+    for step, temperature in enumerate(np.geomspace(start_temperature, end_temperature, steps)):
+        candidate = [row.copy() for row in current]
+        changes = []
+        for _ in range(perturbations):
+            row_index = int(rng.integers(len(candidate)))
+            position = int(rng.integers(N_DRAWN))
+            old = candidate[row_index][position]
+            available = sorted(set(range(1, N_NUMBERS + 1)) - set(candidate[row_index][:N_DRAWN]))
+            new = int(rng.choice(available))
+            candidate[row_index][position] = new
+            candidate[row_index][:N_DRAWN] = sorted(candidate[row_index][:N_DRAWN])
+            changes.append({"row": row_index, "removed": old, "added": new})
+        candidate, local_audit = refine_coverage_tickets(candidate, max_passes=local_passes)
+        candidate_count = local_audit["covered_outcomes_after"]
+        delta = candidate_count - current_count
+        accepted = delta >= 0 or rng.random() < np.exp(delta / temperature)
+        if accepted:
+            current, current_count = candidate, candidate_count
+        if candidate_count > best_count:
+            best, best_count = [row.copy() for row in candidate], candidate_count
+        proposals.append({"step": step, "temperature": float(temperature), "perturbations": changes,
+                          "local_refinement": local_audit, "candidate_covered_outcomes": candidate_count,
+                          "change_from_current": delta, "accepted": bool(accepted),
+                          "best_covered_outcomes": best_count})
+    if count(best) != best_count or best_count < initial_count:
+        raise RuntimeError("Exact coverage audit did not reproduce the retained best portfolio")
+    return best, {"objective": "At least three main matches", "seed": int(seed), "steps": int(steps),
+                  "perturbations": int(perturbations), "local_passes": int(local_passes),
+                  "start_temperature": float(start_temperature), "end_temperature": float(end_temperature),
+                  "covered_outcomes_before": initial_count, "covered_outcomes_after": best_count,
+                  "proposals": proposals}
+
+
 def refine_coverage_tickets(tickets, *, max_passes=2):
     """Improve >=3-main coverage using exact one-ball coordinate exchanges.
 

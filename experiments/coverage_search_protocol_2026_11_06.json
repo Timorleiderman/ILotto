@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "scope": "Follow-up defined after the five-seed probe found no further one-number improving exchanges. Uses no lottery history; exact fair-draw coverage, not predictive accuracy.",
+  "initial_results": "coverage_refinement_2026_11_06.json",
+  "seeds": [0, 1, 2, 3, 4],
+  "proposals_per_portfolio": 20,
+  "perturbations_per_proposal": 2,
+  "local_refine_passes": 2,
+  "temperature_start_outcomes": 1000,
+  "temperature_end_outcomes": 10,
+  "search_seed_offset": 70106,
+  "objective": "Exact count of main-number outcomes giving at least three matches on one or more of the same ten rows",
+  "acceptance": "Always accept nonnegative changes; otherwise use exp(change/temperature). Keep and return the best exact portfolio visited.",
+  "verification": "Verify each returned portfolio against the independent reference evaluator; preserve the previous results and report all five runs.",
+  "interpretation": "More computation at the same ticket budget, not an equal-runtime optimizer comparison or global-optimum claim"
+}

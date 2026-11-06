@@ -22,6 +22,12 @@ seed-search totals, validation, and remaining research questions.
 [Download the research data bundle](docs/data/progress-data-2026-11-06.zip) for
 the full saved JSON results, draw archives, original reports, and a checksum manifest.
 
+**[Algorithm research: learning structure and improving coverage](docs/algorithm-research.md)**
+evaluates a new 57-expert probability mixture and discrete basin hopping. The
+mixture detects planted biases but has no demonstrated real-data predictive edge.
+Basin hopping improved exact coverage on all five tested ten-row portfolios;
+enable it with `--search-steps 20` in the coverage CLI.
+
 **[Prediction and probability research (2026-11-06)](experiments/prediction_probability_research.md)**
 compares 20 forecasting models, probability calibration, and exact ten-ticket
 coverage. No predictive advantage was established. The new coverage generator

@@ -75,6 +75,7 @@ extra_css:
 nav:
   - Home: index.md
   - Progress and evidence: progress.md
+  - Algorithm research: algorithm-research.md
   - How it is measured: evaluation.md
   - Approaches:
       - approaches/index.md
