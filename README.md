@@ -28,6 +28,26 @@ mixture detects planted biases but has no demonstrated real-data predictive edge
 Basin hopping improved exact coverage on all five tested ten-row portfolios;
 enable it with `--search-steps 20` in the coverage CLI.
 
+**[Fixed-budget chances experiment (2026-11-07)](docs/ticket-chances.md)**
+tests 15 broader searches and exact strong-number assignment. For the previous
+best ten-row portfolio, reassignment raises the chance of three or more main
+matches plus strong from 5.9263% to 5.9571%; overall any-prize coverage stays
+38.5982%. The report includes all runs, the selected rows, and a data bundle.
+
+**[Prediction test over 1,000 historical draws](docs/historical-strikes.md)**
+evaluates all 59 probability models at one- and ten-ticket budgets, using only
+earlier draws for each forecast. The best totals are 62 and 422 winning draws,
+against fair expectations of 41.75 and 385.98; none passes the 118-comparison
+correction. The first-half ten-ticket leader falls from 211/500 to 187/500 in
+the second half. Every forecast, score, and temporal block is saved.
+
+**[One million synthetic training draws, all 1,661 real draws tested](docs/synthetic-learning.md)**
+trains a probability mixture on simulated fair and biased processes, validates on
+200,000 separate simulated draws, then freezes its settings before real evaluation.
+It learns planted biases but does not establish better real winning chances:
+657 ten-ticket winning draws versus 663 for the fixed uniform baseline. The report
+includes the full synthetic dataset, learned weights, and every real prediction.
+
 **[Prediction and probability research (2026-11-06)](experiments/prediction_probability_research.md)**
 compares 20 forecasting models, probability calibration, and exact ten-ticket
 coverage. No predictive advantage was established. The new coverage generator

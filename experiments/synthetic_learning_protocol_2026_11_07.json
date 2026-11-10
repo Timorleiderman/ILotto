@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "seed": 6071108,
+  "draws_per_episode": 2000,
+  "training_episodes": 500,
+  "validation_episodes": 100,
+  "scenario_cycle": ["fair", "fair", "persistent_bias", "changing_bias"],
+  "change_every": 250,
+  "bias_multipliers": [0.5, 1.5, 2.0],
+  "windows": [50, 100, 300, null],
+  "prior_draws": [100, 500, 2000],
+  "max_iterations": 500,
+  "optimizer_tolerance": 1e-10,
+  "weight_cleanup_threshold": 1e-8,
+  "training_objective": "Mean full-draw negative log likelihood on synthetic training episodes only; simplex mixture weights fitted by SLSQP with analytic gradient.",
+  "methods": ["uniform", "equal_weight_mixture", "synthetic_fair_trained", "synthetic_mixed_trained"],
+  "primary_real_endpoint": "Winning draws: at least one ticket matches at least three main numbers, separately for one and ten tickets per draw.",
+  "real_comparisons": "Holm correction across all four methods at both budgets (eight comparisons), alpha 0.05. Other metrics descriptive.",
+  "real_evaluation": "All 1661 modern real draws, including a uniform forecast for the first. Mixture weights frozen before loading the archive; each forecast uses only earlier real draws as history inputs. No synthetic generator fitting or tuning against real results.",
+  "real_blocks": 4,
+  "ticket_construction": "Existing top-six one-ticket rule and ranked relabeling of the fixed ten-ticket coverage template; deterministic tie rules retained.",
+  "limitations": "This is a retrospective research test: the archive and model families were examined previously. Hypothetical simulated biases are not evidence that those biases exist in the real lottery. Validation is reported without selecting or revising models afterward. No production defaults change.",
+  "input_sha256": {
+    "input/Orig_IL_lotto.csv": "0034509bdfa510c3978abcff14baee705f6bebf85701c7e6978ac07ecc171560",
+    "experiments/ticket_chances_2026_11_07.json": "c8f6e7c5286ea327373a95303b7c880ec00af31db969d74566820f71495e535f"
+  }
+}

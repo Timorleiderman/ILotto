@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "scope": "Exact fair-draw experiment at a fixed budget of ten distinct tickets. No historical prediction, ticket purchase, or payout assumption.",
+  "initial_results": "coverage_search_2026_11_06.json",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "primary_objective": "At least one ticket with three or more main matches",
+  "secondary_objective": "At least one ticket with three or more main matches and the strong number",
+  "proposals_per_run": 60,
+  "perturbation_counts": [
+    2,
+    4,
+    8
+  ],
+  "local_refine_passes": 2,
+  "temperature_start_outcomes": 1000,
+  "temperature_end_outcomes": 10,
+  "search_seed_offset": 70107,
+  "comparison": "Every search starts from its saved portfolio; equal proposal counts, measured runtimes, no equal-wall-time claim. Preserve every result, including failures to improve.",
+  "strong_assignment": "Exact partition optimization across all seven strong labels for each fixed main portfolio; also evaluate the baseline assignments. Main numbers and jackpot probability remain fixed.",
+  "verification": "Independently enumerate all 2,324,784 main outcomes for each final main portfolio; independently verify strong-event coverage for every baseline and the selected final portfolio.",
+  "selection": "Choose maximum exact primary coverage, then maximum exact secondary coverage, then first run in deterministic order. Recheck the selected portfolio with the reference evaluator.",
+  "limits": "A secondary-event gain is not a gain in overall win probability or expected payout. Exact odds assume uniform draws. No claim of a global optimum for main-number coverage. No tuning or extra runs based on results.",
+  "initial_results_sha256": "6eee8159c733433c0116910624d09c7661e0f95169e224d8c6b4aad7ed205b82"
+}

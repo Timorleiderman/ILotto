@@ -60,6 +60,52 @@ def match_histogram(draw_masks, ticket_masks):
 
 
 @njit(cache=True)
+def coverage_signatures(draw_masks, ticket_masks, min_matches):
+    """Count which ticket subsets cover each draw (callers cap at 14 rows)."""
+    histogram = np.zeros(1 << len(ticket_masks), dtype=np.int64)
+    for draw in draw_masks:
+        signature = 0
+        for i, ticket in enumerate(ticket_masks):
+            if _popcount(draw & ticket) >= min_matches:
+                signature |= 1 << i
+        histogram[signature] += 1
+    return histogram
+
+
+@njit(cache=True)
+def best_strong_partition(coverage, groups):
+    """Exact subset DP for a partition into nonempty, unlabeled groups.
+
+    Different strong outcomes are disjoint, so the objective is the sum of
+    main-draw union coverage within groups. Anchoring the next group at the
+    lowest remaining row removes label permutations without removing a partition.
+    """
+    size = len(coverage)
+    scores = np.full((groups + 1, size), -1, dtype=np.int64)
+    choices = np.zeros((groups + 1, size), dtype=np.int64)
+    scores[0, 0] = 0
+    for group in range(1, groups + 1):
+        for mask in range(1, size):
+            if _popcount(np.uint64(mask)) < group:
+                continue
+            if group == 1:
+                scores[group, mask] = coverage[mask]
+                choices[group, mask] = mask
+                continue
+            anchor = mask & -mask
+            subset = mask
+            while subset:
+                rest = mask ^ subset
+                if subset & anchor and scores[group - 1, rest] >= 0:
+                    score = coverage[subset] + scores[group - 1, rest]
+                    if score > scores[group, mask]:
+                        scores[group, mask] = score
+                        choices[group, mask] = subset
+                subset = (subset - 1) & mask
+    return scores[groups, size - 1], choices
+
+
+@njit(cache=True)
 def coverage_counts(draw_masks, ticket_masks):
     counts = np.zeros(len(draw_masks), dtype=np.int32)
     for i, draw in enumerate(draw_masks):

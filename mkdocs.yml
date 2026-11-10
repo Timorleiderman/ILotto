@@ -76,6 +76,9 @@ nav:
   - Home: index.md
   - Progress and evidence: progress.md
   - Algorithm research: algorithm-research.md
+  - Fixed budget chances: ticket-chances.md
+  - Thousand draw prediction test: historical-strikes.md
+  - Synthetic training experiment: synthetic-learning.md
   - How it is measured: evaluation.md
   - Approaches:
       - approaches/index.md
