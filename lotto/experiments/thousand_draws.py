@@ -76,11 +76,14 @@ def main():
     log_prob = np.asarray([*experts.log_prob, *[m['log_prob'] for m in mixed.values()]])
     with np.load(ROOT / 'experiments/joint_mixture_research_2026_11_06.npz', allow_pickle=False) as previous:
         np.testing.assert_array_equal(names, previous['names'])
-        np.testing.assert_array_equal(balls, previous['ball_marginals'])
-        np.testing.assert_array_equal(strong, previous['strong_probabilities'])
-        np.testing.assert_array_equal(log_prob, previous['joint_log_prob'])
+        # Probabilities are recomputed, so they agree to rounding (about 1e-15 between
+        # CPU families), not bit for bit. 1e-12 is far below anything that could move a
+        # ticket or a reported number.
+        np.testing.assert_allclose(balls, previous['ball_marginals'], rtol=0, atol=1e-12)
+        np.testing.assert_allclose(strong, previous['strong_probabilities'], rtol=0, atol=1e-12)
+        np.testing.assert_allclose(log_prob, previous['joint_log_prob'], rtol=1e-12, atol=0)
         np.testing.assert_array_equal(previous['dates'][-n:], draws.dates[-n:].astype('datetime64[D]').astype(str))
-    print('Reproduced all 59 original past-only forecast paths exactly', flush=True)
+    print('Reproduced all 59 original past-only forecast paths (to 1e-12)', flush=True)
     balls, strong, log_prob = balls[:, -n:], strong[:, -n:], log_prob[:, -n:]
     actual, actual_strong = draws.balls[-n:], draws.strong[-n:]
     dates = draws.dates[-n:].astype('datetime64[D]').astype(str)
