@@ -53,6 +53,25 @@ BONUS_FORM = (
     (7, 12, 14, 24, 25, 36, 7),
 )
 
+#: 38.60% of fair draws win a prize; 5.96% win three or more main numbers with the
+#: strong number (the strong numbers are the proven-optimal assignment). The
+#: selected portfolio of the 2026-11-07 strong-number experiment.
+TEN_ROW_FORM = (
+    (11, 12, 15, 22, 31, 35, 1),
+    (4, 6, 7, 8, 23, 30, 2),
+    (1, 18, 26, 29, 34, 35, 3),
+    (1, 2, 3, 11, 19, 25, 4),
+    (9, 12, 18, 25, 27, 28, 5),
+    (2, 14, 15, 26, 27, 36, 6),
+    (5, 7, 13, 16, 17, 20, 3),
+    (3, 9, 14, 22, 29, 33, 7),
+    (10, 17, 21, 24, 32, 37, 1),
+    (19, 28, 31, 33, 34, 36, 2),
+)
+
+#: The coverage designs by number of rows.
+FORMS = {2: ORDINARY_FORM, 10: TEN_ROW_FORM, 14: BONUS_FORM}
+
 
 class ParseError(ValueError):
     """The page did not contain a complete result in the expected layout."""

@@ -5,6 +5,7 @@
     uv run lotto run coverage --count 10   run it
     uv run lotto report --quick            rebuild the benchmark report  (= lotto run report)
     uv run lotto plan                      which form to play next       (= lotto run plan)
+    uv run lotto predict                   every model's 10-row form for the next draw
 
 Everything after the experiment id is passed to that experiment unchanged.
 """
@@ -16,7 +17,7 @@ import sys
 
 from lotto.experiments import CATALOG, find
 
-SHORTCUTS = ("report", "plan")
+SHORTCUTS = ("report", "plan", "predict")
 
 
 def catalog_text() -> str:

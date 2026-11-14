@@ -219,32 +219,36 @@ def load(
     return draws
 
 
-def next_draw_date(draws: Draws, lookback: int = 200) -> np.datetime64:
+def next_draw_date(draws: Draws, lookback: int = 200, today: np.datetime64 | None = None) -> np.datetime64:
     """The date of the next scheduled draw after the last one on record.
 
     Inferred from the recent cadence rather than hard-coded, so it keeps working
     if the operator changes the schedule. Draw days are currently Tuesday and
     Saturday, with an intermittent Thursday series; only weekdays carrying a
     meaningful share of the recent draws count as scheduled.
+
+    Today counts when it is a draw day not yet in the archive: draws are in the
+    evening, so on a Saturday the next draw is that same evening. `today` is a
+    parameter only so tests can fix the clock.
     """
     recent = draws.dates[-lookback:].astype("datetime64[D]")
     weekday = (recent.astype(int) + 3) % 7  # Monday == 0
     counts = np.bincount(weekday, minlength=7)
     scheduled = set(np.flatnonzero(counts >= 0.1 * len(recent)).tolist())
 
-    # Floored at today: when the archive is stale (the upstream download is
-    # unreachable from CI), "next draw after the last on record" is a date in
-    # the past, and a past date published as a prediction is worse than none.
-    today = np.datetime64("today", "D")
-    day = max(draws.dates[-1].astype("datetime64[D]"), today)
+    # Never in the past: when the archive is stale (the upstream download is
+    # unreachable from CI), "the day after the last draw on record" is a past
+    # date, and a past date published as a prediction is worse than none.
+    today = np.datetime64("today", "D") if today is None else np.datetime64(today, "D")
+    first = max(draws.dates[-1].astype("datetime64[D]") + np.timedelta64(1, "D"), today)
 
     if not scheduled:  # pathological history; fall back to a week later
-        return day + np.timedelta64(7, "D")
-    for _ in range(1, 15):
-        day = day + np.timedelta64(1, "D")
+        return first + np.timedelta64(6, "D")
+    for offset in range(14):
+        day = first + np.timedelta64(offset, "D")
         if int((day.astype(int) + 3) % 7) in scheduled:
             return day
-    return day
+    return first + np.timedelta64(13, "D")
 
 
 def era_table(raw_csv: str = RAW_CSV) -> pd.DataFrame:

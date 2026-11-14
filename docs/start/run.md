@@ -45,7 +45,16 @@ About ten seconds. It first checks pais.co.il for draws newer than the archive a
 archive and writes the report to `results/report/`: open `results/report/benchmark/index.html`
 in a browser. The published site is untouched; it is rebuilt with `--out-dir docs`.
 
-## 5. Add the neural networks
+## 5. Fill a form with every model
+
+```bash
+uv run lotto predict --quick
+```
+
+A few seconds. Every model's best ticket for the next draw, and a 10-row form from each, built
+on the exact coverage design. See [every model's form](../levers/predict.md).
+
+## 6. Add the neural networks
 
 ```bash
 uv sync --extra neural
@@ -55,7 +64,7 @@ uv run lotto report
 About two minutes. This adds the GRU, the Transformer and the date-conditioned model, for
 nineteen strategies in all.
 
-## 6. Check everything
+## 7. Check everything
 
 ```bash
 uv sync --extra neural --group docs

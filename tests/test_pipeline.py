@@ -664,3 +664,12 @@ def test_sum_test_bins_match_their_expected_shares():
     rows = balls[[index[int(t)] for t in sums]]
     d = data.Draws(np.arange(len(rows)).astype("datetime64[D]"), rows, np.ones(len(rows), dtype=np.int64))
     assert randomness.sum_distribution(d)["statistic"] < 1.0
+
+
+def test_next_draw_is_today_when_today_is_an_undrawn_draw_day():
+    """Saturday morning, last draw Tuesday: the next draw is this evening, not next Tuesday."""
+    d = data.load(raw_csv=SNAPSHOT, clean_csv=None)  # last draw Tuesday 2026-11-03
+    assert data.next_draw_date(d, today=np.datetime64("2026-11-07")) == np.datetime64("2026-11-07")
+    assert data.next_draw_date(d, today=np.datetime64("2026-11-04")) > np.datetime64("2026-11-04")
+    # The day of the last recorded draw is never returned again.
+    assert data.next_draw_date(d, today=np.datetime64("2026-11-03")) > np.datetime64("2026-11-03")

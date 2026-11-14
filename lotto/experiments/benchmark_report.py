@@ -16,7 +16,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from lotto.approaches import statistical as predictors
+from lotto.approaches import full_suite, quick_suite
 from lotto.core import backtest, data, randomness
 from lotto.report import html as report
 
@@ -45,19 +45,7 @@ def main() -> int:
     for t in tests:
         logger.info("  p=%.4f  %s", t["p_value"], t["test"])
 
-    from lotto.approaches.chaos import chaos_suite
-    from lotto.approaches.golden_ratio import golden_suite
-    from lotto.approaches.perfect_fit import spacetime_suite
-
-    suite = predictors.statistical_suite() + spacetime_suite() + chaos_suite() + golden_suite()
-    if not args.quick:
-        suite += predictors.generative_suite()
-        from lotto.approaches.neural import NeuralPredictor
-
-        suite += [
-            NeuralPredictor(arch="gru", epochs=60, refit_every=50),
-            NeuralPredictor(arch="transformer", epochs=60, refit_every=50),
-        ]
+    suite = quick_suite() if args.quick else full_suite()
 
     # One window, resolved once: the backtest, the Monte-Carlo null and the
     # report must all describe the same draws.

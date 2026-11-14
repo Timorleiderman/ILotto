@@ -2,7 +2,7 @@
 
 !!! info "Generated output"
 
-    Rebuilt 2026-11-14 18:13 UTC from 1,663 draws through 2026-11-10. Do not edit by hand — `lotto/experiments/benchmark_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
+    Rebuilt 2026-11-14 18:24 UTC from 1,663 draws through 2026-11-10. Do not edit by hand — `lotto/experiments/benchmark_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
 
 ## Strategy scoreboard
 
@@ -79,7 +79,7 @@ Under independent fair draws, every full ticket has the same jackpot probability
 | Random ticket | next draw | 1 · 4 · 5 · 9 · 24 · 26 | 3 |
 | Hot numbers (last 100 draws) | next draw | 1 · 2 · 7 · 18 · 21 · 35 | 2 |
 | Neural (gru, set prediction) | next draw | 2 · 15 · 16 · 20 · 25 · 36 | 4 |
-| Date-conditioned generative (CB-6/37) | 2026-11-17 | 7 · 10 · 23 · 25 · 27 · 29 | 5 |
+| Date-conditioned generative (CB-6/37) | 2026-11-14 | 7 · 9 · 10 · 25 · 27 · 29 | 3 |
 
 ---
 

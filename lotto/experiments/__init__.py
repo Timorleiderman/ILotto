@@ -38,6 +38,8 @@ CATALOG: tuple[Experiment, ...] = (
     Experiment("synthetic-training", "2. Forecasting",
                "Does training on a million simulated draws transfer to the real ones?",
                "synthetic_training", "synthetic-learning.md"),
+    Experiment("predict", "3. Algorithms", "What does every model say about the next draw, as a form to fill?",
+               "predict", "levers/predict.md", quick="--quick --offline"),
     Experiment("coverage", "3. Algorithms", "How much prize chance can a fixed number of rows buy?",
                "coverage", "approaches/ticket-generators.md", quick="--count 10 --seed 0 --out results/coverage.json"),
     Experiment("coverage-benchmark", "3. Algorithms", "How much does exact refinement add, and how fast is it?",

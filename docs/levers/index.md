@@ -9,6 +9,7 @@ which rows should I buy?**
 | [Coverage](../approaches/ticket-generators.md) | which rows, so they overlap as little as possible | ten rows win a prize in 38.60% of draws; fourteen in 51.01% |
 | [Strong-number assignment](../ticket-chances.md) | which strong number each row carries | 3+ and strong: 5.926% → 5.957% for ten fixed rows, proven optimal |
 | [Draw planner](draw-planner.md) | which draw to play | bonus draws pay small prizes 1.5× at the same odds |
+| [Every model's form](predict.md) | which numbers fill the form | each model's forecast, arranged in the 10-row design; same 38.60% |
 
 These are algorithms problems, not prediction problems, and each uses a different technique:
 

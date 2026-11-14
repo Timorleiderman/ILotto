@@ -37,6 +37,11 @@ uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json
 uv run lotto report --quick --n-test 100 --null-trials 500
 ```
 
+```bash
+uv run lotto predict --quick
+```
+
+`lotto predict` prints every model's best ticket and a 10-row form for the next draw.
 `lotto list` shows every experiment with the question it answers. The light install above runs
 everything except the two neural predictors; add them with `uv sync --extra neural`, then
 `uv run lotto report` builds the full benchmark in about two minutes.

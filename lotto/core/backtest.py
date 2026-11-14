@@ -94,6 +94,31 @@ def walk_forward(
     )
 
 
+def next_draw_scores(predictor: Predictor, draws: Draws) -> tuple[np.datetime64 | None, np.ndarray, np.ndarray]:
+    """What a predictor says about the next, undrawn result, using every draw on record.
+
+    Models with a fit step are refitted on the whole history first. Models that
+    read the calendar get the next scheduled draw date, which is public in
+    advance. Returns (that date or None, 37 ball scores, 7 strong scores).
+    """
+    from lotto.core.data import N_NUMBERS, N_STRONG, next_draw_date
+
+    if predictor.refit_every:
+        predictor.fit(draws)
+    target_date = None
+    if predictor.wants_target_date:
+        target_date = next_draw_date(draws)
+        ball_scores, strong_scores = predictor.scores(draws, target_date)
+    else:
+        ball_scores, strong_scores = predictor.scores(draws)
+    ball_scores = np.asarray(ball_scores, dtype=float)
+    strong_scores = np.asarray(strong_scores, dtype=float)
+    if (ball_scores.shape != (N_NUMBERS,) or strong_scores.shape != (N_STRONG,)
+            or np.isnan(ball_scores).any() or not np.isfinite(strong_scores).all()):
+        raise ValueError(f"{predictor.name}: expected 37 ball and 7 strong scores without NaN")
+    return target_date, ball_scores, strong_scores
+
+
 def random_ticket_null(draws: Draws, n_test: int, n_trials: int = 5000, seed: int = 7) -> dict:
     """Empirical distribution of mean-matches for random tickets.
 

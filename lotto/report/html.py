@@ -10,7 +10,7 @@ import numpy as np
 from scipy import stats
 
 from lotto.approaches.statistical import Predictor
-from lotto.core import metrics
+from lotto.core import backtest, metrics
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 from lotto.report import charts
 
@@ -100,25 +100,8 @@ def _pill(significant: bool) -> str:
 
 def predict_next(predictor: Predictor, draws: Draws, top_n: int = 12) -> dict:
     """Ticket the given predictor would play for the next, undrawn result."""
-    if predictor.refit_every:
-        predictor.fit(draws)
-
-    target_date = None
-    if predictor.wants_target_date:
-        # Date-conditioned models need the round's date. The next scheduled draw
-        # is genuinely in the future, so this is also the one call where such a
-        # model is doing what it was built for rather than reconstructing.
-        from lotto.core.data import next_draw_date
-
-        target_date = next_draw_date(draws)
-        ball_scores, strong_scores = predictor.scores(draws, target_date)
-    else:
-        ball_scores, strong_scores = predictor.scores(draws)
-
-    ball_scores = np.asarray(ball_scores, dtype=float)
-    strong_scores = np.asarray(strong_scores, dtype=float)
-    if (ball_scores.shape != (N_NUMBERS,) or strong_scores.shape != (N_STRONG,)
-            or not np.isfinite(ball_scores).all() or not np.isfinite(strong_scores).all()):
+    target_date, ball_scores, strong_scores = backtest.next_draw_scores(predictor, draws)
+    if not np.isfinite(ball_scores).all():
         raise ValueError("Predictors must emit finite vectors with 37 ball and 7 strong scores")
     # Reuse the backtest's top-six tie policy. A separate argsort here used to
     # publish different tickets from those measured when frequencies were tied.

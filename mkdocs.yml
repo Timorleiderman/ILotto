@@ -101,6 +101,7 @@ nav:
       - Coverage at a fixed budget: approaches/ticket-generators.md
       - Strong-number assignment: ticket-chances.md
       - Which draw to play: levers/draw-planner.md
+      - Every model's form for the next draw: levers/predict.md
   - 6 · Side quest:
       - Searching for a seed: side-quests/seed-search.md
   - Reference:

@@ -11,6 +11,7 @@ Every experiment runs through one command. Arguments after the id go to the expe
 | 2. Forecasting | `joint-mixture` | Can a learner that starts uncertain find a bias in the draws? | `uv run lotto run joint-mixture` | [algorithm-research.md](../algorithm-research.md) |
 | 2. Forecasting | `thousand-draws` | Over 1,000 draws, do forecast-ranked tickets win more often? | `uv run lotto run thousand-draws` | [historical-strikes.md](../historical-strikes.md) |
 | 2. Forecasting | `synthetic-training` | Does training on a million simulated draws transfer to the real ones? | `uv run lotto run synthetic-training` | [synthetic-learning.md](../synthetic-learning.md) |
+| 3. Algorithms | `predict` | What does every model say about the next draw, as a form to fill? | `uv run lotto run predict --quick --offline` | [levers/predict.md](../levers/predict.md) |
 | 3. Algorithms | `coverage` | How much prize chance can a fixed number of rows buy? | `uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json` | [approaches/ticket-generators.md](../approaches/ticket-generators.md) |
 | 3. Algorithms | `coverage-benchmark` | How much does exact refinement add, and how fast is it? | `uv run lotto run coverage-benchmark --seeds 3 --out results/coverage-benchmark.json` | [approaches/ticket-generators.md](../approaches/ticket-generators.md) |
 | 3. Algorithms | `coverage-search` | Can basin hopping escape a local optimum of the coverage design? | `uv run lotto run coverage-search` | [algorithm-research.md](../algorithm-research.md) |

@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-11-14T18:13:25+00:00",
+  "generated_utc": "2026-11-14T18:24:33+00:00",
   "n_draws": 1663,
   "last_draw_date": "2026-11-10",
   "randomness_tests": [
@@ -108,7 +108,7 @@
       "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.08
+      "seconds": 0.07
     },
     {
       "name": "EWMA frequency (half-life 50)",
@@ -213,7 +213,7 @@
       "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 1.51
+      "seconds": 1.53
     },
     {
       "name": "Perfect-fit function (polynomial)",
@@ -234,7 +234,7 @@
       "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.22
+      "seconds": 0.23
     },
     {
       "name": "Method of analogues (chaos)",
@@ -276,7 +276,7 @@
       "strong_accuracy": 0.13333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.1
+      "seconds": 0.11
     },
     {
       "name": "Cold numbers (all-time)",
@@ -381,7 +381,7 @@
       "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.08
+      "seconds": 0.09
     },
     {
       "name": "Date-conditioned generative (CB-6/37)",
@@ -402,7 +402,7 @@
       "strong_accuracy": 0.17,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 2.96
+      "seconds": 3.0
     },
     {
       "name": "Neural (transformer, set prediction)",
@@ -423,7 +423,7 @@
       "strong_accuracy": 0.13,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 38.05
+      "seconds": 37.86
     },
     {
       "name": "Pairwise co-occurrence (Markov)",
@@ -465,7 +465,7 @@
       "strong_accuracy": 0.18,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 50.36
+      "seconds": 49.68
     }
   ],
   "monte_carlo_null": {
@@ -670,65 +670,65 @@
     },
     {
       "strategy": "Date-conditioned generative (CB-6/37)",
-      "target_date": "2026-11-17",
+      "target_date": "2026-11-14",
       "numbers": [
         7,
+        9,
         10,
-        23,
         25,
         27,
         29
       ],
-      "strong": 5,
+      "strong": 3,
       "shortlist_kind": "normalized_marginal_probability",
       "shortlist": [
         [
-          29,
-          0.03681940049385973
-        ],
-        [
-          25,
-          0.033565431530263416
+          9,
+          0.03491749953419607
         ],
         [
           27,
-          0.03330415522228316
+          0.03388597175404016
         ],
         [
-          10,
-          0.0327159346491933
-        ],
-        [
-          23,
-          0.03191149509387672
+          29,
+          0.03385165696808447
         ],
         [
           7,
-          0.0311028487383104
+          0.03275945052648517
         ],
         [
-          9,
-          0.030826474486105312
+          25,
+          0.03245457326096197
         ],
         [
-          6,
-          0.03046562267460904
+          10,
+          0.032013163822006724
         ],
         [
-          2,
-          0.030274228225827166
+          37,
+          0.031932471899994055
         ],
         [
-          5,
-          0.029775278253248747
+          24,
+          0.03193028156407457
         ],
         [
-          34,
-          0.0287571742330247
+          19,
+          0.03074848745453964
         ],
         [
-          3,
-          0.02859575635731566
+          23,
+          0.030725861503103837
+        ],
+        [
+          22,
+          0.02949027326573138
+        ],
+        [
+          20,
+          0.028224665309340875
         ]
       ]
     }

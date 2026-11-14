@@ -28,6 +28,7 @@ uv run lotto report --out-dir docs                  # checks for new draws, full
 uv run lotto report --offline --quick               # same, without contacting pais.co.il
 uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json
 uv run lotto plan                                   # which form to play next
+uv run lotto predict --quick                        # every model's best ticket and 10-row form for the next draw
 
 uv run mkdocs serve                # live preview
 uv run mkdocs build --strict       # what CI runs; broken links fail the build
