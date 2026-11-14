@@ -30,34 +30,32 @@ class Storage:
     def __init__(self, root: Path):
         self.root = Path(root)
         self._lock = threading.Lock()
-        self._results: dict[str, dict] = {}
 
     # -- results -------------------------------------------------------------
-    def put_result(self, result: dict) -> None:
-        """Keep a completed result. An id already on disk is left as it is."""
+    def put_result(self, result: dict) -> dict:
+        """Keep a completed result and return its immutable on-disk version."""
+        if not valid_id(result.get("id")):
+            raise ValueError("invalid result id")
         path = self.root / "results" / f"{result['id']}.json"
         with self._lock:
-            self._results[result["id"]] = result
             if not path.exists():
                 write_json(path, result)
                 self._prune()
+            return json.loads(path.read_text())
 
     def _prune(self) -> None:
         """Drop the oldest result files beyond `KEEP_RESULTS`. Call with the lock held."""
         files = sorted((self.root / "results").glob("*.json"), key=lambda p: p.stat().st_mtime)
         for old in files[:-KEEP_RESULTS]:
             old.unlink(missing_ok=True)
-            self._results.pop(old.stem, None)
 
     def get_result(self, result_id: str) -> dict | None:
         """The result with this id, or None."""
         if not valid_id(result_id):
             return None
         with self._lock:
-            if result_id in self._results:
-                return self._results[result_id]
-        path = self.root / "results" / f"{result_id}.json"
-        return json.loads(path.read_text()) if path.is_file() else None
+            path = self.root / "results" / f"{result_id}.json"
+            return json.loads(path.read_text()) if path.is_file() else None
 
     # -- prediction log ------------------------------------------------------
     def log_entries(self) -> list[dict]:
@@ -70,6 +68,8 @@ class Storage:
 
     def add_log_entry(self, entry: dict) -> dict:
         """Save an entry once. Saving the same id again returns the original, unchanged."""
+        if not valid_id(entry.get("id")):
+            raise ValueError("invalid log id")
         path = self.root / "log" / f"{entry['id']}.json"
         with self._lock:
             if path.exists():

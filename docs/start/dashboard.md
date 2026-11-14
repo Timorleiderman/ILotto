@@ -1,95 +1,134 @@
 # The dashboard
 
-A page in your browser for playing with every model in the project: change its settings,
-get a ticket and a form for the next draw, see the exact odds, test a setting on past draws,
-and keep a record of what you predicted.
+Explore the models, generate a form, and measure settings against chance on your own machine.
 
 ```bash
 uv run lotto ui
 ```
 
-It opens `http://localhost:6037` (6 of 37) and runs until you press Ctrl-C. Everything happens
-on your machine. The only thing it ever contacts is pais.co.il, and only when you press
-**Check for new draws**.
+The dashboard opens at `http://localhost:6037` and runs until Ctrl-C. It starts from the local
+archive. Only **Check for new draws** contacts pais.co.il; the estimated next date comes from
+archive cadence, not an official schedule. A failed check leaves the saved archive usable.
 
 | Option | What it does |
 |---|---|
-| `--port 7000` | use another port |
-| `--no-browser` | start the server without opening a browser |
-| `--offline` | never contact pais.co.il |
+| `--port 7000` | use another port, from 1 to 65535 |
+| `--no-browser` | start without opening a browser |
+| `--offline` | disable checks for new draws |
 
-## The four screens
+![The prediction screen, using the pinned test archive](../images/dashboard.jpg)
 
-### Predict
+*Example from the pinned test archive through 3 November 2026. Your archive and results may differ.*
 
-Pick a model, change its settings and seed, choose how many rows to fill in, and press
-**Generate**.
+## Predict
 
-- **The ticket**: the model's six numbers and strong number.
-- **The odds line**: the chance of any prize, of three or more with the strong number, of the
-  first prize, and the cost. Click it for the full table. The odds are exact and depend only on
-  the number of rows, so they are the same for every model and seed; that is why they take one
-  line.
-- **The form**: one row per line, with a button to copy them.
-- **Why these numbers**: the numbers 1–37 shaded by the model's score, with the chosen ones
-  ringed. Point at a number to see its value.
-- **Record**: how these exact settings did on the published scoreboard. Change a setting and
-  the record goes away, because nothing has measured the new one yet; the Lab can.
-- **Save to log** and **Open report**, a page you can print.
+Choose a model, settings, seed and row count, then press **Generate**.
 
-Two models take any date, not only the next draw: the date-conditioned model and the seed-world
-toy. A past date is a *look back*: the model is given only the draws before that date, the real
-result is shown beside its ticket, and it cannot be saved as a prediction.
+- **Ticket:** the model's top six and strong number, or a seeded sample in the date-conditioned
+  model's sampled mode. This separate ticket need not occur in the coverage form.
+- **Odds:** a compact line for any prize, three or more with strong, first prize and estimated
+  base cost. Expand it for the full table. Counts are exact under a uniform fair draw for the
+  selected stored design; relabelling that design preserves its odds. A prize need not be a profit.
+- **Form:** 1, 2, 10 or 14 rows, with a copy button. One row is an illustrative ticket, not a
+  claim about the operator's minimum purchase. The cost uses the code's current 3 NIS row rate.
+- **Number grids:** ranking scores or relative forecast weights. Focus or tap to inspect a
+  value. A normalized weight is not a calibrated probability of being drawn.
+- **Record:** a dated reference for a matching benchmark preset. The published report does
+  not contain a full configuration manifest, so an exact settings match is unverified.
+  Custom settings show no reference. **Test these settings in the Lab** copies the displayed
+  result's settings into the Lab, even if you have since changed the controls.
+- **Save to log / Open report / Markdown:** use the completed result on screen.
 
-### Compare
+Changing controls leaves the earlier result labelled as stale until you generate again.
+Repeated predictions reuse the stored result, including its generation time. The cache key
+includes the archive, settings, date/mode, design, schema, implementation and runtime versions.
 
-Runs all 19 scoreboard models on the next draw: each one's ticket and record in one table, and
-a board showing how many models picked each number. **Open** loads a model into Predict.
+The date-conditioned model and seed-world toy accept other dates. A past date is a **look
+back**, even when the archive has not caught up to it: only earlier draws are used, the actual
+result is shown when available, and the output cannot be saved as a future prediction.
 
-### Lab
+## Compare
 
-Replays the settings from Predict over the last 100 to 1,000 draws. Each forecast sees only
-earlier draws. You get the mean number of matches against chance (0.973), a p-value, and a chart
-of how often it matched 0, 1, 2… numbers beside what chance predicts.
+**Run all models** runs the 19 benchmark presets on one archive/date: 16 quick presets, the
+SciPy-based date-conditioned model, and two neural models. Missing TensorFlow makes neural
+rows unavailable; a model failure leaves the other rows intact. The seed-world toy is separate.
+**Open** applies a row's preset in Predict and generates its form.
 
-Every setting you try goes into a **notebook** that is kept between visits, and the verdict is
-corrected for all of them. Try five windows and the best one has to clear a higher bar. That is
-the project's central lesson, and here you can feel it.
+The consensus board counts successful rows and shows its denominator. Agreement describes
+these methods, many of which read the same history; it is not confidence in a number.
 
-### Log
+## Lab
 
-Predictions you saved before a draw. Once the result is in the archive, each one is scored: the
-matches in every row, any prize tier hit, and a running total against what chance would give.
-Entries cannot be edited or deleted in the dashboard, because a record you can prune is not a
-record. A prediction saved on the draw day itself is kept but left out of the totals: the
-dashboard cannot tell whether it was saved before the draw.
+Replay the Predict settings over 100–1,000 draws. Each forecast sees only earlier draws.
+The result shows the actual evaluation dates/count, mean matches against chance (0.973),
+a two-sided finite-sample p-value, and match counts from 0 through 6 beside the chance baseline.
 
-## Using it from another machine
+The Lab currently evaluates **top-six tickets**. Date-conditioned sampled mode is disabled
+here rather than silently testing a different ticket-selection rule. Switch to top six in
+Predict to run that model's backtest. The Lab measures the single ticket, not the whole form.
 
-The dashboard listens only on the machine it runs on. To run it on one machine and view it on
-another, forward the port over SSH, then open `http://localhost:6037` as usual. Keep the same
-port number on both sides: the dashboard refuses requests addressed to any other name or port.
+The notebook survives reloads and records failed/cancelled attempts. Retrying preserves
+abandoned attempts; a completed identical comparison is reused. Runs left unfinished when
+the server stopped are marked interrupted at the next startup.
+
+Holm's step-down correction is recomputed across completed comparisons. This is **exploration**:
+choosing new settings after seeing results reuses evaluation data. Correction alone does not
+validate that tuning, and a low two-sided p-value can mean *fewer* matches than chance.
+Confirmation needs a frozen choice on untouched future draws.
+
+## Log
+
+Save a completed forecast before its target draw. When that exact date appears in the archive,
+the Log scores every form row, its strong number and prize tier. The ticket and the form are
+shown separately. Entries cannot be edited or deleted in the dashboard.
+
+Same-day saves have unverified timing and stay outside prospective totals: a date-only estimate
+cannot establish whether the save preceded the draw. Local timestamps are a personal record,
+not independent preregistration. The totals count **forms**, with expectation equal to the sum
+of their individual fair-draw prize chances. Several forms on the same draw are correlated.
+
+## Jobs, reports and stored files
+
+One worker runs jobs in order. Prediction, Compare and Lab offer cancellation; it takes effect
+at the next safe boundary. A neural fit may need to finish its current stage. Cancelling
+before publication prevents a result from being saved. Reloading reconnects to active work.
+
+HTML and Markdown reports carry the settings, archive fingerprint and algorithm provenance.
+Prediction reports also include the form's design fingerprint and training cutoff. Print from
+the HTML report; longer forms and comparisons may use more than one sheet.
+
+Files live under `results/ui/`, which git ignores. Up to 300 completed result files are retained;
+log entries include their own copy, so pruning reports does not remove saved predictions.
+The notebook and log persist until their owner removes their files. Reads do not rewrite the
+archive. Only an explicit check for new draws may update `input/`.
+
+## Remote viewing
+
+The server binds only to `127.0.0.1`. To view it from another machine, forward the same port
+on both ends, then open `http://localhost:6037`:
 
 ```bash
 ssh -L 6037:localhost:6037 user@other-machine
 ```
 
-## Where things are kept
+There is no public hosting mode. The server checks Host, Origin and a per-launch token for
+changes, and serves only its fixed static paths. No extra UI dependencies are required.
 
-Results, the log and the notebook are plain JSON under `results/ui/`, which git ignores. The
-dashboard never writes anywhere else, except when a check for new draws adds them to `input/`.
+## Implementation and current limits
 
-## How it is built
-
-No extra dependencies: Python's built-in web server and one page of plain JavaScript.
-
-| File | What it holds |
+| File | Responsibility |
 |---|---|
-| `lotto/ui/registry.py` | every model, its settings and their allowed ranges |
-| `lotto/ui/service.py` | predict, compare, backtest and log scoring, all by calling existing code |
-| `lotto/ui/jobs.py` | one background worker, so the page stays responsive while a model trains |
-| `lotto/ui/storage.py` | the files under `results/ui/` |
-| `lotto/ui/server.py` | the web server and its two safety checks |
-| `lotto/ui/static/` | the page: `index.html`, `app.css`, `app.js` |
+| `lotto/ui/registry.py` | model presets, editable settings and validation |
+| `lotto/ui/service.py` | call existing computation and assemble versioned results |
+| `lotto/ui/jobs.py` | bounded queue, one worker, cancellation and atomic publication |
+| `lotto/ui/storage.py` | immutable results/log entries and the persistent notebook |
+| `lotto/ui/server.py` | local HTTP API and request protection |
+| `lotto/ui/report.py` | printable HTML and Markdown |
+| `lotto/ui/static/` | page, controls and rendering |
+
+Custom form sizes, MLP, epoch-level progress and sampled-ticket backtests are deferred.
+TensorFlow availability is detected without importing it; an installed but broken runtime
+is reported as a model failure when used. Neither the dashboard nor the benchmark establishes
+a predictive advantage.
 
 Next: [how results are measured →](../evaluation.md)

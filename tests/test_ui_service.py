@@ -204,3 +204,122 @@ def test_old_results_are_pruned_but_never_a_logged_one(tmp_path, monkeypatch):
     assert store.get_result(f"{0:016x}") is None and store.get_result(f"{5:016x}") is not None
     store.add_log_entry({"id": f"{0:016x}", "saved_utc": "2026-01-01T00:00:00+00:00", "result": {"id": f"{0:016x}"}})
     assert store.log_entries()[0]["result"]["id"] == f"{0:016x}"
+
+
+@pytest.mark.parametrize("model,params,field", [
+    ("ensemble", {"members": [[]]}, "members"),
+    ("ensemble", {"members": [{}]}, "members"),
+    ("hot", {"window": float("inf")}, "window"),
+    ("hot", {"window": float("nan")}, "window"),
+    ("hot", {"window": 10**1000}, "window"),
+])
+def test_malformed_values_are_validation_errors(model, params, field):
+    with pytest.raises(Invalid) as error:
+        registry.resolve(model, params, None)
+    assert field in error.value.fields
+
+
+@pytest.mark.parametrize("target", [123, True, [], {}, "NaT", "2026-11", "2026-11-17T22:00", "2026-02-30"])
+def test_target_requires_a_calendar_date(service, target):
+    with pytest.raises(Invalid) as error:
+        service.predict({"model": "seed_world", "date": target}, job())
+    assert "date" in error.value.fields
+
+
+def test_past_date_beyond_a_stale_archive_is_retrospective(service, monkeypatch):
+    monkeypatch.setattr("lotto.ui.service.today_in_israel", lambda: np.datetime64("2026-11-14"))
+    result = service.predict({"model": "seed_world", "date": "2026-11-04", "rows": 1}, job())
+    assert result["mode"] == "retrospective" and result["actual"] is None
+    with pytest.raises(Invalid):
+        service.save_to_log(result["id"])
+
+
+def test_prediction_cache_preserves_the_completed_result(tmp_path, monkeypatch):
+    service = Service(Storage(tmp_path), raw_csv=SNAPSHOT, offline=True)
+    first = service.predict({"model": "random", "seed": "18", "rows": 1}, job())
+    monkeypatch.setattr(service, "_scores", lambda *args: pytest.fail("a cache hit must not rerun the model"))
+    assert service.predict({"model": "random", "seed": "18", "rows": 1}, job()) == first
+    changed = {**first, "ticket": [1, 2, 3, 4, 5, 6, 1], "generated_utc": "changed"}
+    assert service.storage.put_result(changed) == first
+    assert service.storage.get_result(first["id"]) == Storage(tmp_path).get_result(first["id"]) == first
+    first["ticket"][0] = 999
+    assert service.storage.get_result(first["id"])["ticket"][0] != 999
+
+
+def test_algorithm_changes_invalidate_cached_predictions(tmp_path):
+    service = Service(Storage(tmp_path), raw_csv=SNAPSHOT, offline=True)
+    first = service.predict({"model": "hot", "rows": 1}, job())
+    service.algorithm = "changed-version"
+    second = service.predict({"model": "hot", "rows": 1}, job())
+    assert first["id"] != second["id"]
+    assert first["archive"] == second["archive"]
+    assert first["design_sha256"] == second["design_sha256"]
+
+
+def test_cancellation_during_odds_does_not_publish_a_result(tmp_path, monkeypatch):
+    from lotto.ui.jobs import Cancelled
+
+    service = Service(Storage(tmp_path), raw_csv=SNAPSHOT, offline=True)
+    running = job()
+    original = service.form_odds
+
+    def odds(rows):
+        result = original(rows)
+        running.cancel()
+        return result
+
+    monkeypatch.setattr(service, "form_odds", odds)
+    with pytest.raises(Cancelled):
+        service.predict({"model": "hot", "rows": 1}, running)
+    assert not list(tmp_path.rglob("*.json"))
+
+
+def test_sampled_mode_is_not_silently_backtested_as_top_six(tmp_path, monkeypatch):
+    service = Service(Storage(tmp_path), raw_csv=SNAPSHOT, offline=True)
+    monkeypatch.setattr(backtest, "walk_forward", lambda *a, **kw: pytest.fail("invalid mode must not run"))
+    with pytest.raises(Invalid, match="top-six"):
+        service.backtest({"model": "date_cb", "params": {"ticket": "sampled"}, "seed": "7"}, job())
+    assert service.notebook()["attempts"] == []
+
+
+def test_cancelled_notebook_attempt_survives_a_successful_retry(tmp_path, monkeypatch):
+    from lotto.ui.jobs import Cancelled
+
+    service = Service(Storage(tmp_path), raw_csv=SNAPSHOT, offline=True)
+    original = backtest.walk_forward
+
+    def cancelled(*args, **kwargs):
+        raise Cancelled
+
+    with monkeypatch.context() as patch:
+        patch.setattr(backtest, "walk_forward", cancelled)
+        with pytest.raises(Cancelled):
+            service.backtest({"model": "hot", "n_test": 100}, job())
+    complete = service.backtest({"model": "hot", "n_test": 100}, job())
+    monkeypatch.setattr(backtest, "walk_forward", lambda *a, **kw: pytest.fail("completed retry must be cached"))
+    assert service.backtest({"model": "hot", "n_test": 100}, job())["attempt_id"] == complete["attempt_id"]
+    assert [a["state"] for a in service.storage.notebook()] == ["cancelled", "complete"]
+    monkeypatch.setattr(backtest, "walk_forward", original)
+
+
+def test_restart_marks_unfinished_notebook_attempts(tmp_path):
+    store = Storage(tmp_path)
+    store.save_notebook([{"id": "0123456789abcdef", "state": "running", "label": "Test"}])
+    service = Service(store, raw_csv=SNAPSHOT, offline=True)
+    assert service.notebook()["attempts"][0]["state"] == "interrupted"
+
+
+def test_reference_is_dated_without_claiming_verified_settings(service):
+    result = service.predict({"model": "hot", "rows": 1}, job())
+    assert result["reference"]["configuration_verified"] is False
+    assert result["score_kind"] == "relative_weight"
+
+
+@pytest.mark.parametrize("kind,payload", [
+    ("predict", {"model": "hot", "row": 14}),
+    ("backtest", {"model": "hot", "n_tests": 100}),
+    ("compare", {"model": "hot"}),
+])
+def test_unknown_top_level_fields_are_not_silently_ignored(service, kind, payload):
+    with pytest.raises(Invalid):
+        service.validate_request(kind, payload)

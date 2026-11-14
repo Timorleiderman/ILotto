@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import threading
-from datetime import datetime, timezone
+import uuid
+from datetime import date, datetime, timezone
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -28,10 +31,28 @@ from lotto.ui.jobs import Cancelled, Job
 from lotto.ui.registry import Invalid
 from lotto.ui.storage import Storage, valid_id
 
-SCHEMA = 1
+SCHEMA = 2
 ISRAEL = ZoneInfo("Asia/Jerusalem")
 ROW_CHOICES = (1, *sorted(FORMS))
 MIN_HISTORY = 200
+logger = logging.getLogger(__name__)
+
+
+def algorithm_fingerprint() -> str:
+    """Invalidate saved computations when their implementation or runtime changes."""
+    from importlib.metadata import PackageNotFoundError, version
+
+    package = Path(__file__).parents[1]
+    digest = hashlib.sha256()
+    for path in sorted(package.rglob("*.py")):
+        digest.update(str(path.relative_to(package)).encode())
+        digest.update(path.read_bytes())
+    for name in ("numpy", "scipy", "numba", "tensorflow"):
+        try:
+            digest.update(f"{name}={version(name)}".encode())
+        except PackageNotFoundError:
+            digest.update(f"{name}=absent".encode())
+    return digest.hexdigest()
 
 
 def _day(value) -> str:
@@ -64,7 +85,14 @@ class Service:
         self.refresh_status = {"state": "not_checked", "at": None}
         self._lock = threading.Lock()
         self._odds: dict[int, dict] = {}
+        self.algorithm = algorithm_fingerprint()
         self._load()
+        attempts = self.storage.notebook()
+        interrupted = [a for a in attempts if a["state"] in ("queued", "running")]
+        if interrupted:
+            for attempt in interrupted:
+                attempt.update(state="interrupted", finished_utc=_now_utc())
+            self.storage.save_notebook(attempts)
 
     # ------------------------------------------------------------------ archive
     def _load(self) -> None:
@@ -143,7 +171,37 @@ class Service:
         return {"preset": preset_id, "name": name, "mean_matches": row["mean_matches"], "n_draws": row["n_draws"],
                 "p_value": row["p_value"], "significant": bool(row.get("significant_after_correction")),
                 "strategies_compared": len(report["strategies"]),
-                "archive_last_date": report["last_draw_date"], "generated_utc": report["generated_utc"]}
+                "archive_last_date": report["last_draw_date"], "generated_utc": report["generated_utc"],
+                "configuration_verified": False}
+
+    def validate_request(self, kind: str, request: dict) -> None:
+        """Reject malformed requests before queueing expensive work; services also validate directly."""
+        allowed = {
+            "predict": {"model", "params", "seed", "rows", "date"},
+            "backtest": {"model", "params", "seed", "n_test"},
+            "compare": set(),
+        }[kind]
+        if not isinstance(request, dict):
+            raise Invalid({"request": "an object is required"})
+        unknown = set(request) - allowed
+        if unknown:
+            raise Invalid({key: "unknown request field" for key in unknown})
+        if kind == "compare":
+            return
+        spec, params, _ = registry.resolve(request.get("model"), request.get("params", {}), request.get("seed"))
+        if spec.needs_tensorflow and not registry.tensorflow_available():
+            raise Invalid({"model": "Needs TensorFlow: uv sync --extra neural"})
+        if kind == "predict":
+            rows = request.get("rows", 10)
+            if isinstance(rows, bool) or not isinstance(rows, int) or rows not in ROW_CHOICES:
+                raise Invalid({"rows": f"choose one of {', '.join(map(str, ROW_CHOICES))}"})
+            self._target(spec, request.get("date"), self.snapshot()[0])
+        else:
+            if spec.id == "date_cb" and params["ticket"] == "sampled":
+                raise Invalid({"ticket": "The Lab evaluates top-six tickets. Choose 'top six' before backtesting."})
+            n_test = request.get("n_test", 300)
+            if isinstance(n_test, bool) or not isinstance(n_test, int) or not 100 <= n_test <= 1000:
+                raise Invalid({"n_test": "a whole number of draws from 100 to 1,000"})
 
     # ------------------------------------------------------------------ predict
     def _target(self, spec: registry.Model, raw_date, draws: data.Draws) -> tuple[str, str]:
@@ -152,14 +210,19 @@ class Service:
         if raw_date in (None, "", nxt):
             return nxt, "forecast"
         try:
-            target = _day(raw_date)
+            if not isinstance(raw_date, str) or len(raw_date) != 10:
+                raise ValueError
+            target = date.fromisoformat(raw_date).isoformat()
+            if target != raw_date:
+                raise ValueError
         except (ValueError, TypeError) as exc:
             raise Invalid({"date": "a date like 2026-11-17 is required"}) from exc
         if not spec.any_date:
             raise Invalid({"date": "this model only forecasts the next draw"})
         if not "1968-01-01" <= target <= "2100-12-31":
             raise Invalid({"date": "choose a date between 1968 and 2100"})
-        return target, "forecast" if target > _day(draws.dates[-1]) else "retrospective"
+        retrospective = target < _day(today_in_israel()) or target <= _day(draws.dates[-1])
+        return target, "retrospective" if retrospective else "forecast"
 
     def _scores(self, spec, params, seed, draws, target, mode):
         """Run one model for one date. A look back only ever sees draws before that date."""
@@ -174,6 +237,7 @@ class Service:
 
     def predict(self, request: dict, job: Job) -> dict:
         """One model, one draw: its ticket, a form, exact odds and where the numbers came from."""
+        self.validate_request("predict", request)
         spec, params, seed = registry.resolve(request.get("model"), request.get("params", {}), request.get("seed"))
         if spec.needs_tensorflow and not registry.tensorflow_available():
             raise Invalid({"model": "Needs TensorFlow: uv sync --extra neural"})
@@ -182,6 +246,15 @@ class Service:
             raise Invalid({"rows": f"choose one of {', '.join(map(str, ROW_CHOICES))}"})
         draws, archive = self.snapshot()
         target, mode = self._target(spec, request.get("date"), draws)
+        design = [list(r) for r in FORMS[rows]] if rows in FORMS else "single-ticket"
+        identity = {"schema": SCHEMA, "algorithm": self.algorithm, "model": spec.id, "params": params,
+                    "seed": None if seed is None else str(seed), "rows": rows, "target_date": target,
+                    "mode": mode, "archive_sha256": archive["sha256"],
+                    "design_sha256": hashlib.sha256(json.dumps(design).encode()).hexdigest()}
+        result_id = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:16]
+        cached = self.storage.get_result(result_id)
+        if cached is not None:
+            return job.finish(lambda: cached)
 
         job.step(f"Running {spec.label}" + (" (training)" if spec.needs_tensorflow else ""))
         predictor, history, balls, strong = self._scores(spec, params, seed, draws, target, mode)
@@ -199,28 +272,26 @@ class Service:
             if len(hit):
                 actual = _ticket_row(draws.balls[hit[0]], draws.strong[hit[0]])
         preset = registry.matching_preset(spec.id, params, seed)
-        identity = {"schema": SCHEMA, "model": spec.id, "params": params, "seed": None if seed is None else str(seed),
-                    "rows": rows, "target_date": target, "archive_sha256": archive["sha256"]}
         result = {
-            "id": hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:16],
+            "id": result_id,
             "kind": "prediction", **identity,
             "model_label": spec.label, "family": spec.family, "strategy_name": predictor.name,
             "mode": mode, "trained_through": _day(history.dates[-1]) if len(history) else None,
             "history_draws": len(history),
             "actual": actual, "ticket": ticket, "ticket_kind": ticket_kind, "form": form,
             "scores": _finite(balls), "strong_scores": _finite(strong),
-            "score_kind": "probability" if predictor.emits_probabilities else "score",
+            "score_kind": "relative_weight" if predictor.emits_probabilities else "score",
             "odds": self.form_odds(rows),
             "preset": None if preset is None or mode != "forecast" else preset.id,
             "reference": None if preset is None or mode != "forecast" else self.reference(preset.id),
             "archive": archive, "generated_utc": _now_utc(), "benchmark": spec.benchmark,
         }
-        self.storage.put_result(result)
-        return result
+        return job.finish(lambda: self.storage.put_result(result))
 
     # ------------------------------------------------------------------ compare
     def compare(self, request: dict, job: Job) -> dict:
         """Every scoreboard preset on the next draw, and which numbers they agree on."""
+        self.validate_request("compare", request)
         draws, archive = self.snapshot()
         target = self.next_draw(draws)
         tensorflow = registry.tensorflow_available()
@@ -229,6 +300,7 @@ class Service:
             spec, params, seed = registry.resolve(preset.model, preset.params, preset.seed)
             row = {"preset": preset.id, "model": spec.id, "name": self.preset_names()[preset.id], "family": spec.family}
             reference = self.reference(preset.id)
+            row.update(params=params, seed=None if seed is None else str(seed), reference=reference)
             row["reference_mean"] = None if reference is None else reference["mean_matches"]
             if spec.needs_tensorflow and not tensorflow:
                 rows.append({**row, "state": "unavailable", "message": "Needs TensorFlow: uv sync --extra neural"})
@@ -239,23 +311,26 @@ class Service:
                 rows.append({**row, "state": "complete", "ticket": best_ticket(balls, strong)})
             except Cancelled:
                 raise
-            except Exception as exc:  # one failing model must not lose the others
-                rows.append({**row, "state": "failed", "message": f"{type(exc).__name__}: {exc}"})
+            except Exception:  # one failing model must not lose the others
+                logger.exception("Comparison failed for %s", preset.id)
+                rows.append({**row, "state": "failed", "message": "Model failed; see the server terminal."})
         done = [r for r in rows if r["state"] == "complete"]
         consensus = np.zeros(data.N_NUMBERS, dtype=int)
         for r in done:
             consensus[np.array(r["ticket"][:6]) - 1] += 1
-        identity = {"schema": SCHEMA, "kind": "comparison", "target_date": target, "archive_sha256": archive["sha256"],
+        identity = {"schema": SCHEMA, "algorithm": self.algorithm, "kind": "comparison",
+                    "target_date": target, "archive_sha256": archive["sha256"],
                     "presets": [r["preset"] for r in done]}
-        result = {"id": hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:16], **identity,
+        # Each comparison is a run: transient failures and availability can differ on a retry.
+        result = {"id": uuid.uuid4().hex[:16], **identity,
                   "rows": rows, "consensus": consensus.tolist(), "counted": len(done), "archive": archive,
                   "generated_utc": _now_utc()}
-        self.storage.put_result(result)
-        return result
+        return job.finish(lambda: self.storage.put_result(result))
 
     # ---------------------------------------------------------------------- Lab
     def backtest(self, request: dict, job: Job) -> dict:
         """Replay one configuration over past draws, each forecast seeing only earlier draws."""
+        self.validate_request("backtest", request)
         spec, params, seed = registry.resolve(request.get("model"), request.get("params", {}), request.get("seed"))
         if spec.needs_tensorflow and not registry.tensorflow_available():
             raise Invalid({"model": "Needs TensorFlow: uv sync --extra neural"})
@@ -265,14 +340,19 @@ class Service:
         draws, archive = self.snapshot()
         window = backtest.evaluation_window(len(draws), n_test)
         config = {"model": spec.id, "params": params, "seed": None if seed is None else str(seed)}
-        key = hashlib.sha256(json.dumps({**config, "n": len(window), "archive": archive["sha256"]},
+        key = hashlib.sha256(json.dumps({**config, "n": len(window), "archive": archive["sha256"],
+                                        "algorithm": self.algorithm, "schema": SCHEMA},
                                         sort_keys=True).encode()).hexdigest()[:16]
         attempts = self.storage.notebook()
-        cached = next((a for a in attempts if a["id"] == key and a["state"] == "complete"), None)
+        cached = next((a for a in attempts if a.get("comparison_id", a["id"]) == key
+                       and a["state"] == "complete"), None)
         if cached is None:
             # Record the attempt before running it: an abandoned try is still a try.
-            attempts = [a for a in attempts if a["id"] != key]
-            attempt = {"id": key, **config, "label": self._label(spec, params, seed), "state": "running",
+            previous = [a for a in attempts if a.get("comparison_id", a["id"]) == key]
+            attempt_id = key if not previous else uuid.uuid4().hex[:16]
+            attempt = {"id": attempt_id, "comparison_id": key, "algorithm": self.algorithm,
+                       "archive_sha256": archive["sha256"], **config,
+                       "label": self._label(spec, params, seed), "state": "running",
                        "requested_draws": n_test, "started_utc": _now_utc(), "archive_last_date": archive["last_date"]}
             attempts.append(attempt)
             self.storage.save_notebook(attempts)
@@ -284,8 +364,8 @@ class Service:
                 attempt["state"] = "cancelled"
                 self.storage.save_notebook(attempts)
                 raise
-            except Exception as exc:
-                attempt.update(state="failed", message=f"{type(exc).__name__}: {exc}")
+            except Exception:
+                attempt.update(state="failed", message="Run failed; see the server terminal.")
                 self.storage.save_notebook(attempts)
                 raise
             summary = run.summary
@@ -296,8 +376,17 @@ class Service:
                 last_date=_day(draws.dates[window.stop - 1]), mean_matches=summary["mean_matches"],
                 p_value=summary["p_value"], histogram=hist, chance=[float(v) for v in pmf * len(window)],
                 seconds=round(run.seconds, 2), finished_utc=_now_utc())
-            self.storage.save_notebook(attempts)
-        return {"attempt_id": key, "notebook": self.notebook()}
+            def publish():
+                self.storage.save_notebook(attempts)
+                return {"attempt_id": attempt_id, "notebook": self.notebook()}
+
+            try:
+                return job.finish(publish)
+            except Cancelled:
+                attempt["state"] = "cancelled"
+                self.storage.save_notebook(attempts)
+                raise
+        return job.finish(lambda: {"attempt_id": cached["id"], "notebook": self.notebook()})
 
     @staticmethod
     def _label(spec: registry.Model, params: dict, seed: int | None) -> str:

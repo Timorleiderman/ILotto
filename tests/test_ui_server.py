@@ -101,8 +101,8 @@ def test_predict_runs_as_a_job_and_reports_it(dashboard):
 
 def test_invalid_settings_come_back_by_field(dashboard):
     app, _ = dashboard
-    job = finish(app, call(app, "POST", "/api/predict", {"model": "hot", "params": {"window": 3}})[1])
-    assert job["state"] == "failed" and "window" in job["error"]["fields"]
+    status, body = call(app, "POST", "/api/predict", {"model": "hot", "params": {"window": 3}})
+    assert status == 400 and "window" in body["error"]["fields"]
     status, body = call(app, "POST", "/api/log", {"result_id": "0000000000000000"})
     assert status == 400 and "result" in body["error"]["fields"]
 
@@ -122,9 +122,34 @@ def test_backtest_fills_the_notebook_and_log_saves_once(dashboard):
 
 def test_a_queued_job_can_be_cancelled(dashboard):
     app, _ = dashboard
-    slow = call(app, "POST", "/api/compare", {})[1]
-    queued = call(app, "POST", "/api/predict", {"model": "ewma", "params": {"half_life": 77}})[1]
-    status, cancelled = call(app, "DELETE", f"/api/jobs/{queued['id']}")
-    assert status == 200 and cancelled["state"] in ("cancelled", "cancel_requested", "succeeded")
-    call(app, "DELETE", f"/api/jobs/{slow['id']}")
-    assert finish(app, slow)["state"] in ("cancelled", "succeeded")
+    entered, release = threading.Event(), threading.Event()
+
+    def hold(job):
+        entered.set()
+        assert release.wait(5)
+        job.step("Released")
+        return {}
+
+    slow = app.jobs.submit("test", "hold", hold)
+    try:
+        assert entered.wait(5)
+        queued = call(app, "POST", "/api/predict", {"model": "ewma", "params": {"half_life": 77}})[1]
+        status, cancelled = call(app, "DELETE", f"/api/jobs/{queued['id']}")
+        assert status == 200 and cancelled["state"] == "cancelled"
+        assert call(app, "DELETE", f"/api/jobs/{slow.id}")[1]["state"] == "cancel_requested"
+    finally:
+        release.set()
+    assert finish(app, slow.view())["state"] == "cancelled"
+
+
+@pytest.mark.parametrize("path,body,status", [
+    ("/api/predict", {"model": "hot", "params": {"window": float("inf")}}, 400),
+    ("/api/predict", {"model": "ensemble", "params": {"members": [{}]}}, 400),
+    ("/api/predict", {"model": "seed_world", "date": []}, 400),
+    ("/api/predict", {"model": "hot", "row": 14}, 400),
+    ("/api/backtest", {"model": "date_cb", "params": {"ticket": "sampled"}}, 400),
+    ("/api/compare", {"unexpected": True}, 400),
+    ("/api/predict", {"payload": "x" * 65536}, 413),
+])
+def test_malformed_requests_are_rejected_before_queueing(dashboard, path, body, status):
+    assert call(dashboard[0], "POST", path, body)[0] == status

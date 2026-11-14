@@ -20,6 +20,7 @@ let draft = null;          // {model, params, seed, rows, date}
 let shown = null;          // the prediction on screen
 let comparison = null;     // the comparison on screen
 let lastAttempt = null;    // id of the Lab attempt to show first
+let predicting = false, testing = false;
 
 // ---------------------------------------------------------------- formatting
 const percent = (p, digits = 2) => (100 * p).toFixed(p < 0.001 ? 5 : digits) + "%";
@@ -48,10 +49,10 @@ async function api(method, path, body) {
 
 // Start a job and wait for it. `onProgress` gets each status; returns the result.
 // The returned promise has a `cancel()` method.
-function runJob(path, body, onProgress) {
+function runJob(path, body, onProgress, resumeId = null) {
   let jobId = null, stopped = false;
   const promise = (async () => {
-    let job = await api("POST", path, body);
+    let job = resumeId ? await api("GET", `/api/jobs/${resumeId}`) : await api("POST", path, body);
     jobId = job.id;
     while (["queued", "running", "cancel_requested"].includes(job.state)) {
       onProgress(job);
@@ -70,7 +71,7 @@ function progressHTML(job, label) {
   const p = job.progress, known = p.total > 0;
   return `<div class="card"><div class="progress"><span>${esc(job.state === "queued" ? "Waiting for the previous job" : p.stage || label)}</span>
     <div class="meter${known ? "" : " busy"}"><i style="width:${known ? Math.round(100 * p.done / p.total) : 35}%"></i></div>
-    <button class="btn" type="button" data-cancel>Cancel</button></div></div>`;
+    <button class="btn" type="button" data-cancel${job.state === "cancel_requested" ? " disabled" : ""}>Cancel</button></div></div>`;
 }
 
 // --------------------------------------------------------------------- theme
@@ -83,16 +84,21 @@ $("#theme").addEventListener("click", () => setTheme(document.documentElement.da
 
 // ---------------------------------------------------------------------- tabs
 function showTab(name) {
-  $$("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
-  $$(".screen").forEach(s => s.classList.toggle("on", s.id === name));
+  $$("#tabs button").forEach(b => {
+    b.setAttribute("aria-selected", String(b.dataset.tab === name));
+    b.tabIndex = b.dataset.tab === name ? 0 : -1;
+  });
+  $$(".screen").forEach(s => { s.classList.toggle("on", s.id === name); s.hidden = s.id !== name; });
   if (name === "lab") renderLabConfig();
   if (name === "log") loadLog();
 }
 $("#tabs").addEventListener("click", e => e.target.dataset.tab && showTab(e.target.dataset.tab));
 $("#tabs").addEventListener("keydown", e => {
-  if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+  e.preventDefault();
   const tabs = $$("#tabs button"), i = tabs.indexOf(document.activeElement);
-  const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+  const next = tabs[e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1
+    : (i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
   next.focus(); showTab(next.dataset.tab);
 });
 
@@ -111,9 +117,12 @@ function renderTopBar() {
 $("#refresh").addEventListener("click", async () => {
   const button = $("#refresh");
   button.disabled = true; $("#refreshstate").textContent = "Checking pais.co.il…";
-  try { await runJob("/api/refresh", {}, () => {}); } catch (error) { showBanner(error.message); }
-  STATE = await api("GET", "/api/state");
-  renderTopBar(); renderControls(); markStale();
+  try {
+    await runJob("/api/refresh", {}, () => {});
+    STATE = await api("GET", "/api/state");
+    renderTopBar(); renderControls(); markStale();
+  } catch (error) { showBanner(error.message); $("#refreshstate").textContent = "Check interrupted; using the saved archive."; }
+  finally { button.disabled = STATE.refresh.offline; }
 });
 function showBanner(message) {
   const banner = $("#banner");
@@ -131,7 +140,19 @@ function saveDraft() { try { localStorage.setItem("lotto.draft", JSON.stringify(
 function loadDraft() {
   try {
     const saved = JSON.parse(localStorage.getItem("lotto.draft"));
-    if (saved && modelSpec(saved.model)) return saved;
+    if (saved && modelSpec(saved.model) && saved.params && typeof saved.params === "object" && !Array.isArray(saved.params)) {
+      const spec = modelSpec(saved.model), params = defaults(spec);
+      for (const p of spec.params) {
+        const value = saved.params[p.name];
+        if (p.kind === "subset" && Array.isArray(value) && value.every(v => p.choices.includes(v))) params[p.name] = value;
+        else if (p.kind === "choice" && p.choices.includes(value)) params[p.name] = value;
+        else if (p.kind === "int_or_all" && value === null) params[p.name] = null;
+        else if (typeof value === "number" && Number.isFinite(value)) params[p.name] = value;
+      }
+      return {model: saved.model, params, seed: typeof saved.seed === "string" ? saved.seed : spec.seed_default,
+        rows: STATE.rows.includes(saved.rows) ? saved.rows : 10,
+        date: typeof saved.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(saved.date) ? saved.date : ""};
+    }
   } catch { /* fall through */ }
   return null;
 }
@@ -170,11 +191,11 @@ function renderControls() {
       control = p.choices.map(c => `<label class="check"><input type="checkbox" data-param="${p.name}" value="${c}"${value.includes(c) ? " checked" : ""}> ${esc(STATE.preset_names[c] || c)}</label>`).join("");
     } else {
       const step = p.kind === "float" ? "any" : "1";
-      control = `<input id="${id}" data-param="${p.name}" type="number" min="${p.low}" max="${p.high}" step="${step}" value="${value ?? ""}"${p.kind === "int_or_all" ? ' placeholder="all draws"' : ""}>`;
+      control = `<input id="${id}" data-param="${p.name}" type="number" min="${p.low}" max="${p.high}" step="${step}" value="${esc(value ?? "")}"${p.kind === "int_or_all" ? ' placeholder="all draws"' : ""}>`;
     }
     const range = p.kind === "choice" || p.kind === "subset" ? "" : ` Allowed: ${p.low} to ${p.high.toLocaleString("en")}${p.kind === "int_or_all" ? ", or empty for all" : ""}.`;
-    box.insertAdjacentHTML("beforeend", `<div><label for="${id}">${esc(p.label)}</label>${control}
-      <p class="hint">${esc(p.help)}${range}</p><p class="fielderror" data-error="${p.name}"></p></div>`);
+    box.insertAdjacentHTML("beforeend", `<fieldset><legend>${esc(p.label)}</legend>${p.kind === "subset" ? "" : `<label for="${id}" class="sr">${esc(p.label)}</label>`}${control}
+      <p class="hint">${esc(p.help)}${range}</p><p class="fielderror" data-error="${p.name}"></p></fieldset>`);
   }
   $("#seedbox").hidden = !usesSeed(spec, draft.params);
   $("#seed").value = draft.seed ?? "";
@@ -185,7 +206,7 @@ function renderControls() {
   $("#datehint").textContent = spec.any_date
     ? "Any date. A past date is a look back: the model sees only draws before it, and it cannot be saved as a prediction."
     : "The next draw. Only the date-conditioned and seed-world models take another date.";
-  $("#generate").disabled = !spec.available;
+  $("#generate").disabled = !spec.available || predicting;
 }
 
 function readParams() {
@@ -248,15 +269,16 @@ function showFieldErrors(root, error) {
 
 // ------------------------------------------------------------- Predict: run
 let predictRun = 0;
-$("#controls").addEventListener("submit", async e => {
-  e.preventDefault();
+async function runPrediction(resumeId = null) {
+  if (predicting) return;
+  predicting = true; $("#generate").disabled = true;
   const run = ++predictRun, out = $("#result");   // a newer click wins over an older job finishing late
   showFieldErrors($("#controls"), null); showBanner("");
   const job = runJob("/api/predict", request(), status => {
     if (run !== predictRun) return;
     out.innerHTML = progressHTML(status, "Working");
     $("[data-cancel]", out).addEventListener("click", () => job.cancel());
-  });
+  }, resumeId);
   try {
     const result = await job;
     if (run !== predictRun) return;
@@ -269,8 +291,12 @@ $("#controls").addEventListener("submit", async e => {
     if (shown) renderResult();
     if (!error.cancelled && !inField) showBanner(error.message);
     if (inField) showBanner("Some settings are not valid; see the messages beside them.");
+  } finally {
+    predicting = false;
+    $("#generate").disabled = !modelSpec(draft.model).available;
   }
-});
+}
+$("#controls").addEventListener("submit", e => { e.preventDefault(); runPrediction(); });
 
 const emptyResult = () => '<div class="empty">Choose a model and press <b>Generate</b> to see its ticket, a form and the odds.</div>';
 
@@ -278,13 +304,17 @@ const emptyResult = () => '<div class="empty">Choose a model and press <b>Genera
 // `null` values are numbers the model excluded; picks are ringed.
 function gridHTML(values, picks, describe, strong = false) {
   const finite = values.filter(v => v !== null), lo = Math.min(...finite), hi = Math.max(...finite);
-  return `<div class="slip${strong ? " strong" : ""}">` + values.map((v, i) => {
+  return `<div class="score-grid"><div class="slip${strong ? " strong" : ""}">` + values.map((v, i) => {
     const n = i + 1, pick = picks.includes(n) ? " pick" : "";
-    if (v === null) return `<div class="cell out${pick}" title="${n}: excluded by the model" tabindex="0">${n}</div>`;
+    const detail = v === null ? `${n}: excluded by the model` : describe(n, v);
     const t = hi === lo ? 0 : (v - lo) / (hi - lo);
-    return `<div class="cell${pick}" tabindex="0" title="${esc(describe(n, v))}" style="background:color-mix(in srgb,var(--series-1) ${Math.round(8 + 92 * t)}%,var(--surface));color:${t > 0.55 ? "#fff" : "var(--text-primary)"}">${n}</div>`;
-  }).join("") + "</div>";
+    return `<button type="button" class="cell${v === null ? " out" : ""}${pick}" title="${esc(detail)}" aria-label="${esc(detail)}" data-grid-detail="${esc(detail)}" style="background:color-mix(in srgb,var(--series-1) ${v === null ? 0 : Math.round(8 + 92 * t)}%,var(--surface))"><span>${n}</span></button>`;
+  }).join("") + '</div><p class="hint grid-value" aria-live="polite">Focus or tap a number for its value.</p></div>';
 }
+["focusin", "click", "pointerover"].forEach(event => document.addEventListener(event, e => {
+  const cell = e.target.closest("[data-grid-detail]");
+  if (cell) $(".grid-value", cell.closest(".score-grid")).textContent = cell.dataset.gridDetail;
+}));
 
 function settingsText(r) {
   const parts = Object.entries(r.params).map(([k, v]) => `${k.replace(/_/g, " ")} ${v === null ? "all" : Array.isArray(v) ? v.length + " models" : v}`);
@@ -295,18 +325,19 @@ function settingsText(r) {
 function renderResult() {
   const r = shown, o = r.odds, out = $("#result");
   const total = r.scores.reduce((a, v) => a + (v ?? 0), 0);
-  const describe = (n, v) => r.score_kind === "probability"
-    ? `${n}: ${(600 * v / total).toFixed(1)}% chance of being drawn, according to the model`
+  const describe = (n, v) => r.score_kind === "relative_weight"
+    ? `${n}: ${(100 * v / total).toFixed(2)}% of the model's total forecast weight; not a chance of being drawn`
     : `${n}: score ${Number.isInteger(v) ? v : v.toFixed(3)} (higher is preferred; not a probability)`;
   const lookBack = r.mode === "retrospective";
   const actualHits = r.actual ? Object.assign(new Set(r.actual.slice(0, 6)), { strong: r.actual[6] }) : null;
   const rowsLabel = r.rows === 1 ? "1 row" : `${r.rows} rows`;
   const ref = r.reference;
   const record = ref
-    ? `On the published scoreboard (draws through ${day(ref.archive_last_date)}) these exact settings averaged
+    ? `Published reference for this preset (draws through ${day(ref.archive_last_date)}):
        <b>${ref.mean_matches.toFixed(3)}</b> matched numbers per draw over ${ref.n_draws} draws. A random ticket averages
        ${STATE.baseline_matches.toFixed(3)}. After correction for ${ref.strategies_compared} strategies this is
-       ${ref.significant ? "unusual; see the Lab before trusting it" : "not significant"}.`
+       ${ref.significant ? "unusual; see the Lab before trusting it" : "not significant"}.
+       The published file does not record a full configuration manifest, so an exact settings match is unverified.`
     : lookBack ? "A look back has no scoreboard record."
     : r.benchmark ? "These settings are untested: the published scoreboard measured different ones."
     : "A toy generator: it is not part of the scoreboard.";
@@ -329,7 +360,7 @@ function renderResult() {
       <summary><span class="oddsline"><b>${percent(o.p_any_prize)}</b> any prize</span>
         <span class="oddsline"><b>${percent(o.p_three_plus_and_strong)}</b> 3+ with strong</span>
         <span class="oddsline"><b>1 in ${compact(1 / o.p_first_prize)}</b> first prize</span>
-        <span class="oddsline"><b>${o.cost} NIS</b> ${rowsLabel}</span>
+        <span class="oddsline"><b>${o.cost} NIS</b> estimated base cost</span>
         <span class="oddsmore">Fixed odds for ${rowsLabel}; details</span></summary>
       <p class="sub">Exact odds of a ${rowsLabel === "1 row" ? "single row" : rowsLabel + " form"} under a fair draw. They depend only on the number of rows and how they are arranged, so they are the same for every model and every seed. A prize is not necessarily a profit.</p>
       <div class="scroll"><table><thead><tr><th>At least one row matches</th><th class="num">Chance</th><th class="num">1 in</th></tr></thead><tbody>
@@ -348,7 +379,7 @@ function renderResult() {
       </div>
       <div class="card">
         <h2>Why these numbers</h2>
-        <p class="sub">Each number shaded by the model's ${r.score_kind === "probability" ? "probability" : "score"} for it. Point at a number for its value.</p>
+        <p class="sub">Each number shaded by its ${r.score_kind === "relative_weight" ? "relative forecast weight" : "ranking score"}. Focus or tap for the value.</p>
         ${gridHTML(r.scores, r.ticket.slice(0, 6), describe)}
         <h3>Strong number</h3>
         ${gridHTML(r.strong_scores, [r.ticket[6]], (n, v) => `strong ${n}: ${Number.isInteger(v) ? v : v.toFixed(3)}`, true)}
@@ -374,7 +405,11 @@ function renderResult() {
     try { await navigator.clipboard.writeText(text); $("#copied").textContent = "Copied."; }
     catch { $("#copied").textContent = "Copying is blocked by the browser; select the rows instead."; }
   });
-  $("#tolab").addEventListener("click", () => showTab("lab"));
+  $("#tolab").addEventListener("click", () => {
+    draft = {model: r.model, params: structuredClone(r.params), seed: r.seed ?? modelSpec(r.model).seed_default,
+      rows: r.rows, date: modelSpec(r.model).any_date ? r.target_date : ""};
+    saveDraft(); renderControls(); markStale(); showTab("lab"); $("#tab-lab").focus();
+  });
   $("#save").addEventListener("click", async () => {
     try {
       const entry = await api("POST", "/api/log", { result_id: r.id });
@@ -388,18 +423,22 @@ function renderResult() {
 }
 
 // ------------------------------------------------------------------- Compare
-$("#runcompare").addEventListener("click", async () => {
+async function runComparison(resumeId = null) {
   const button = $("#runcompare"), status = $("#comparestatus");
   button.disabled = true;
-  const job = runJob("/api/compare", {}, s => { status.textContent = s.progress.total ? `${s.progress.done + 1} of ${s.progress.total}: ${s.progress.stage}` : "Starting…"; });
+  const job = runJob("/api/compare", {}, s => {
+    status.innerHTML = `${esc(s.progress.stage)} <button class="btn" type="button" data-cancel${s.state === "cancel_requested" ? " disabled" : ""}>Cancel</button>`;
+    $("[data-cancel]", status).addEventListener("click", () => job.cancel());
+  }, resumeId);
   try { comparison = await job; status.textContent = ""; renderCompare(); }
   catch (error) { status.textContent = error.message; }
   button.disabled = false;
-});
+}
+$("#runcompare").addEventListener("click", () => runComparison());
 function renderCompare() {
   const c = comparison, top = c.consensus.map((v, i) => [v, i + 1]).filter(x => x[0] >= 5).map(x => x[1]);
   $("#compareout").innerHTML = `
-    <div class="cols" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);margin-top:16px">
+    <div class="cols comparison-layout" style="margin-top:16px">
       <div class="card">
         <h2>Draw of ${day(c.target_date)}</h2>
         <p class="sub">Record: mean matched numbers per draw on the published scoreboard; a random ticket averages ${STATE.baseline_matches.toFixed(3)}.</p>
@@ -431,23 +470,29 @@ function renderLabConfig() {
   if (!STATE || !draft) return;
   const spec = modelSpec(draft.model), r = request();
   $("#labconfig").innerHTML = `<b>${esc(spec.label)}</b><br><span class="sub">${esc(settingsText({ params: r.params, seed: r.seed ?? null }) || "no settings")}</span>`;
-  $("#runlab").disabled = !spec.available;
+  const sampled = spec.id === "date_cb" && r.params.ticket === "sampled";
+  $("#labmode").textContent = sampled ? "The Lab evaluates top-six tickets. Choose top six in Predict to run a backtest." : "";
+  $("#runlab").disabled = !spec.available || testing || sampled;
 }
 $("#ntest").addEventListener("input", e => { $("#ntestv").textContent = e.target.value; });
-$("#runlab").addEventListener("click", async () => {
+async function runLab(resumeId = null) {
+  if (testing) return;
+  testing = true;
   const button = $("#runlab"), status = $("#labstatus"), r = request();
   button.disabled = true; $("#laberror").textContent = "";
   const job = runJob("/api/backtest", { model: r.model, params: r.params, seed: r.seed, n_test: Number($("#ntest").value) }, s => {
     status.innerHTML = `${esc(s.progress.stage)} <button class="btn" type="button" data-cancel>Cancel</button>`;
     $("[data-cancel]", status).addEventListener("click", () => job.cancel());
-  });
+  }, resumeId);
   try { const done = await job; lastAttempt = done.attempt_id; renderLab(done.notebook); }
   catch (error) {
     $("#laberror").textContent = error.fields && Object.keys(error.fields).length ? Object.values(error.fields).join(" ") : error.message;
-    renderLab(await api("GET", "/api/notebook"));
+    try { renderLab(await api("GET", "/api/notebook")); } catch (loadError) { showBanner(loadError.message); }
+  } finally {
+    status.textContent = ""; testing = false; renderLabConfig();
   }
-  status.textContent = ""; button.disabled = false;
-});
+}
+$("#runlab").addEventListener("click", () => runLab());
 function renderLab(notebook) {
   const done = notebook.attempts.filter(a => a.state === "complete");
   const a = done.find(x => x.id === lastAttempt) || done[done.length - 1];
@@ -464,7 +509,7 @@ function renderLab(notebook) {
       <div class="chart">${a.chart}</div>
       <p class="hint">A low p-value can also mean matching fewer numbers than chance. Neither direction is evidence until it holds on draws not yet made.</p></div>` : '<div class="empty">Run a backtest to see how the current settings would have scored on past draws.</div>') + `
     <div class="card"><h2>Notebook</h2>
-      <p class="sub">Every setting tried, including abandoned runs, kept between visits. This is exploration: choosing new settings after seeing results makes the tries dependent, and the correction covers only the tries listed here.</p>
+      <p class="sub">Every setting tried, including abandoned runs, kept between visits. This is exploratory: choosing settings after seeing results reuses evaluation data. Holm adjustment alone does not validate that tuning; confirmation needs untouched future draws.</p>
       ${notebook.attempts.length ? `<div class="scroll"><table><thead><tr><th>Settings</th><th class="num">Draws</th><th class="num">Mean matches</th><th class="num">p</th><th>After correction</th></tr></thead><tbody>
       ${notebook.attempts.slice().reverse().map(x => `<tr><td>${esc(x.label)}</td><td class="num">${x.draws ?? "—"}</td>
         <td class="num">${x.state === "complete" ? x.mean_matches.toFixed(3) : "—"}</td><td class="num">${x.state === "complete" ? x.p_value.toFixed(3) : "—"}</td><td>${verdict(x)}</td></tr>`).join("")}</tbody></table></div>`
@@ -500,8 +545,9 @@ async function loadLog() {
 
 // ---------------------------------------------------------------------- boot
 (async function boot() {
-  let theme = "light";
-  try { theme = localStorage.getItem("lotto.theme") || "light"; } catch { /* private mode */ }
+  const systemTheme = matchMedia("(prefers-color-scheme: dark)");
+  let theme = systemTheme.matches ? "dark" : "light";
+  try { const saved = localStorage.getItem("lotto.theme"); if (["light", "dark"].includes(saved)) theme = saved; } catch { /* private mode */ }
   setTheme(theme);
   try { STATE = await api("GET", "/api/state"); }
   catch (error) { showBanner(error.message); return; }
@@ -509,7 +555,19 @@ async function loadLog() {
   if (!STATE.rows.includes(draft.rows)) draft.rows = 10;
   renderTopBar(); renderControls();
   $("#result").innerHTML = emptyResult();
-  renderLab(await api("GET", "/api/notebook"));
+  try { renderLab(await api("GET", "/api/notebook")); } catch (error) { showBanner(error.message); }
+  if (STATE.active_job) {
+    try {
+      const job = await api("GET", `/api/jobs/${STATE.active_job}`);
+      if (job.kind === "predict") { runPrediction(job.id); return; }
+      if (job.kind === "compare") { showTab("compare"); runComparison(job.id); return; }
+      if (job.kind === "backtest") { showTab("lab"); runLab(job.id); return; }
+      if (job.kind === "refresh") {
+        await runJob(null, null, () => { $("#refreshstate").textContent = "Checking pais.co.il…"; }, job.id);
+        STATE = await api("GET", "/api/state"); renderTopBar(); renderControls();
+      }
+    } catch (error) { showBanner(error.message); }
+  }
   // Show something useful straight away, unless that would start a long training run.
   if (modelSpec(draft.model).family !== "Neural") $("#generate").click();
 })();

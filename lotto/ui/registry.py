@@ -14,6 +14,7 @@ so the scoreboard and the dashboard cannot drift apart.
 from __future__ import annotations
 
 import importlib.util
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -53,14 +54,19 @@ class Param:
                 raise ValueError(f"choose one of: {', '.join(self.choices)}")
             return value
         if self.kind == "subset":
-            if (not isinstance(value, list) or not value or len(set(value)) != len(value)
-                    or any(v not in self.choices for v in value)):
+            if (not isinstance(value, list) or not value
+                    or any(not isinstance(v, str) or v not in self.choices for v in value)
+                    or len(set(value)) != len(value)):
                 raise ValueError("choose at least one of the listed models, each once")
             return [v for v in self.choices if v in value]  # canonical order
         if self.kind == "int_or_all" and value in (None, "all"):
             return None
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise ValueError("a number is required")
+        if not self.low <= value <= self.high:
+            raise ValueError(f"must be between {self.low:g} and {self.high:g}")
+        if not math.isfinite(value):
+            raise ValueError("a finite number is required")
         if self.kind in ("int", "int_or_all"):
             if value != int(value):
                 raise ValueError("a whole number is required")

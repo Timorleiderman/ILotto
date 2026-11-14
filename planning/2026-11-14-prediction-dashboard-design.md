@@ -1,6 +1,7 @@
 # Prediction dashboard — design
 
-Date: 2026-11-14. Status: implemented in `lotto/ui/` (see `docs/start/dashboard.md`); custom form sizes, MLP and epoch-level progress remain deferred.
+Date: 2026-11-14. Status: implemented and reviewed in `lotto/ui/` (see `docs/start/dashboard.md`).
+Custom form sizes, MLP, epoch-level progress and sampled-ticket backtests remain deferred.
 Mockup: open `planning/dashboard-mockup.html` in a browser. It shows four screens with
 frozen examples from the archive through 10 November 2026. Controls explore the design;
 they do not run models. The historical log examples are retrospective, not saved predictions.
@@ -14,11 +15,11 @@ A local browser dashboard for exploring the project's prediction methods, design
 and measuring results against chance.
 
 ```bash
-uv run lotto ui  # planned command; not available yet
+uv run lotto ui
 ```
 
-It will start a server at `http://127.0.0.1:6037` (6 of 37), open the browser, and stop with
-Ctrl-C. Support `--no-browser`, `--port`, and `--offline`. Start from the local archive;
+It starts a server at `http://localhost:6037` (6 of 37), bound to `127.0.0.1`, opens the browser,
+and stops with Ctrl-C. Supports `--no-browser`, `--port`, and `--offline`. Starts from the local archive;
 checking pais.co.il is an explicit action, disabled in offline mode.
 
 1. **Predict.** Choose a model, settings and form size; see its ticket, form and exact fair-draw odds.
@@ -26,6 +27,17 @@ checking pais.co.il is an explicit action, disabled in offline mode.
 3. **Lab.** Replay configurations on past draws and keep a record of the settings tried.
 4. **Log.** Save completed predictions and score them when the corresponding result arrives.
 5. **Report.** Export a completed result as printable HTML or Markdown, with its provenance.
+
+### Implementation notes after review
+
+The sections below retain the design rationale and acceptance criteria. The current API uses
+one persistent `/api/notebook`; Compare runs all benchmark presets. Historical generation
+uses past-only history rather than reconstruction from a fit containing the target draw.
+The Lab rejects sampled mode because the core harness evaluates top-six tickets. Prediction
+results use schema 2, source/runtime fingerprints and immutable caching. Comparisons receive
+a new run ID so transient failures cannot overwrite a prior report. Legacy scoreboard records
+remain dated references with unverified configuration matches. Fine-grained neural progress
+and full configuration manifests in the published report are still follow-up work.
 
 ## 2. Implementation choice
 
@@ -99,11 +111,11 @@ in `Asia/Jerusalem`; compute the local day explicitly when calling `next_draw_da
 | `GET /api/state` | archive identity/cutoff, estimated next date, refresh status, registry, availability, designs and active job |
 | `POST /api/refresh` | queue validated refresh; distinguish updated, unchanged and failed |
 | `POST /api/predict` | model/preset + resolved settings + seeds + rows + date/mode → job |
-| `POST /api/compare` | selected preset IDs + one common archive/date → job |
-| `POST /api/backtest` | frozen config + evaluation window + notebook ID → job |
+| `POST /api/compare` | all benchmark presets + one common archive/date → job |
+| `POST /api/backtest` | frozen top-six config + evaluation window → job in the persistent notebook |
 | `GET /api/jobs/<id>` | state, progress, result or structured error |
 | `DELETE /api/jobs/<id>` | request cancellation; return actual cancellation state |
-| `GET /api/notebooks/<id>` | persisted attempts and recomputed exploratory verdicts |
+| `GET /api/notebook` | persisted attempts and recomputed exploratory verdicts |
 | `GET /api/log`, `POST /api/log` | read records; save a server-held completed result by ID |
 | `GET /report/<id>` | printable HTML; `?format=md` returns Markdown |
 

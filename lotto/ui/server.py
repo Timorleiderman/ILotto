@@ -46,6 +46,10 @@ SECURITY_HEADERS = {
 }
 
 
+def _reject_constant(value: str):
+    raise ValueError(f"{value} is not a JSON number")
+
+
 class App:
     """What one running dashboard holds: its service, its worker and its secret token."""
 
@@ -109,7 +113,7 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
             if not 0 <= length <= MAX_BODY:
                 raise Refused(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "The request is too large.")
             try:
-                value = json.loads(self.rfile.read(length) or b"{}")
+                value = json.loads(self.rfile.read(length) or b"{}", parse_constant=_reject_constant)
             except ValueError as exc:
                 raise Refused(HTTPStatus.BAD_REQUEST, "The request is not valid JSON.") from exc
             if not isinstance(value, dict):
@@ -181,8 +185,10 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
             work = {"/api/predict": service.predict, "/api/compare": service.compare,
                     "/api/backtest": service.backtest}.get(path)
             if work is not None:
+                kind = path.rsplit("/", 1)[1]
+                service.validate_request(kind, body)
                 key = path + json.dumps(body, sort_keys=True) + service.archive["sha256"]
-                job = app.jobs.submit(path.rsplit("/", 1)[1], key, lambda j: work(body, j))
+                job = app.jobs.submit(kind, key, lambda j: work(body, j))
                 return self._json(job.view(), HTTPStatus.ACCEPTED)
             if path == "/api/refresh":
                 if service.offline:
@@ -206,7 +212,16 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
 def create_server(service: Service, port: int = DEFAULT_PORT) -> tuple[ThreadingHTTPServer, App]:
     """A server bound to 127.0.0.1. Port 0 picks a free port (used by the tests)."""
     app = App(service)
-    server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(app))
+    class DashboardServer(ThreadingHTTPServer):
+        def server_close(self):
+            app.jobs.close()
+            super().server_close()
+
+    try:
+        server = DashboardServer(("127.0.0.1", port), make_handler(app))
+    except BaseException:
+        app.jobs.close()
+        raise
     server.daemon_threads = True
     app.port = server.server_address[1]
     return server, app
@@ -220,6 +235,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-browser", action="store_true", help="do not open the browser")
     parser.add_argument("--offline", action="store_true", help="never contact pais.co.il")
     args = parser.parse_args(argv)
+    if not 1 <= args.port <= 65535:
+        parser.error("--port must be between 1 and 65535")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-7s %(message)s")
 
     service = Service(Storage(paths.REPO_ROOT / "results/ui"), offline=args.offline)

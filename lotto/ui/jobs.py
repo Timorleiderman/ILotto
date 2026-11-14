@@ -41,43 +41,69 @@ class Job:
         self.result: dict | None = None
         self.error: dict | None = None
         self._cancel = threading.Event()
+        self._lock = threading.Lock()
 
     def step(self, stage: str, done: int = 0, total: int = 0) -> None:
         """Report progress, and stop here if cancellation was requested."""
-        if self._cancel.is_set():
-            raise Cancelled
-        self.stage, self.done, self.total = stage, done, total
+        with self._lock:
+            if self._cancel.is_set():
+                raise Cancelled
+            self.stage, self.done, self.total = stage, done, total
+
+    def finish(self, publish: Callable[[], dict]) -> dict:
+        """Check cancellation and publish a completed result as one atomic transition."""
+        with self._lock:
+            if self._cancel.is_set():
+                raise Cancelled
+            if self.state != "succeeded":
+                result = publish()
+                self.result, self.state, self.stage = result, "succeeded", "Done"
+            return self.result
+
+    def cancel(self) -> None:
+        """Cancellation cannot race with committing a finished result."""
+        with self._lock:
+            if self.state in ("queued", "running"):
+                self._cancel.set()
+                if self.state == "queued":
+                    self.state, self.stage = "cancelled", "Cancelled"
+                else:
+                    self.state, self.stage = "cancel_requested", "Cancellation requested; finishing the current stage"
 
     def view(self) -> dict:
         """The job as plain data for the page."""
-        return {"id": self.id, "kind": self.kind, "state": self.state,
-                "progress": {"stage": self.stage, "done": self.done, "total": self.total},
-                "result": self.result, "error": self.error}
+        with self._lock:
+            return {"id": self.id, "kind": self.kind, "state": self.state,
+                    "progress": {"stage": self.stage, "done": self.done, "total": self.total},
+                    "result": self.result, "error": self.error}
 
 
 class JobRunner:
     """A queue and the single thread that works through it."""
 
     def __init__(self):
-        self._queue: queue.Queue[Job] = queue.Queue()
+        self._queue: queue.Queue[Job | None] = queue.Queue(maxsize=MAX_QUEUED)
         self._jobs: dict[str, Job] = {}
         self._lock = threading.Lock()
+        self._closed = False
         threading.Thread(target=self._run, name="lotto-ui-worker", daemon=True).start()
 
     def submit(self, kind: str, key: str, work: Callable[[Job], dict]) -> Job:
         """Queue work. The same request already waiting or running is returned, not repeated."""
         with self._lock:
+            if self._closed:
+                raise Busy
             for job in self._jobs.values():
                 if job.key == key and job.state in ("queued", "running", "cancel_requested"):
                     return job
-            if sum(j.state == "queued" for j in self._jobs.values()) >= MAX_QUEUED:
+            if self._queue.full():
                 raise Busy
             job = Job(kind, key, work)
             self._jobs[job.id] = job
             finished = [j for j in self._jobs.values() if j.state in ("succeeded", "failed", "cancelled")]
             for old in finished[:-KEEP_FINISHED]:
                 del self._jobs[old.id]
-        self._queue.put(job)
+            self._queue.put_nowait(job)
         return job
 
     def get(self, job_id: str) -> Job | None:
@@ -90,14 +116,23 @@ class JobRunner:
         job = self.get(job_id)
         if job is None:
             return None
-        with self._lock:
-            if job.state == "queued":
-                job._cancel.set()
-                job.state, job.stage = "cancelled", "Cancelled"
-            elif job.state == "running":
-                job._cancel.set()
-                job.state, job.stage = "cancel_requested", "Cancellation requested; finishing the current stage"
+        job.cancel()
         return job
+
+    def close(self) -> None:
+        """Stop accepting work and cancel pending work, without interrupting an unsafe stage."""
+        with self._lock:
+            if self._closed:
+                return
+            self._closed = True
+            for job in self._jobs.values():
+                job.cancel()
+            while True:
+                try:
+                    self._queue.get_nowait()
+                except queue.Empty:
+                    break
+            self._queue.put_nowait(None)
 
     def active(self) -> Job | None:
         """The job running now, if any."""
@@ -107,19 +142,22 @@ class JobRunner:
     def _run(self) -> None:
         while True:
             job = self._queue.get()
-            with self._lock:
+            if job is None:
+                return
+            with job._lock:
                 if job.state != "queued":
                     continue
                 job.state = "running"
             try:
                 result = job._work(job)
-                if job._cancel.is_set():
-                    raise Cancelled
-                job.result, job.state, job.stage = result, "succeeded", "Done"
+                job.finish(lambda: result)
             except Cancelled:
-                job.state, job.stage = "cancelled", "Cancelled"
+                with job._lock:
+                    job.state, job.stage = "cancelled", "Cancelled"
             except Invalid as exc:
-                job.error, job.state = {"message": "Some settings are not valid.", "fields": exc.fields}, "failed"
-            except Exception as exc:  # a failed job must not take the worker down
+                with job._lock:
+                    job.error, job.state = {"message": "Some settings are not valid.", "fields": exc.fields}, "failed"
+            except Exception:  # a failed job must not take the worker down
                 logger.exception("Job %s (%s) failed", job.id, job.kind)
-                job.error, job.state = {"message": f"{type(exc).__name__}: {exc}", "fields": {}}, "failed"
+                with job._lock:
+                    job.error, job.state = {"message": "The job failed; see the server terminal.", "fields": {}}, "failed"

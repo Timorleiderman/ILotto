@@ -98,6 +98,13 @@ Presentation only, standard library only. Rules:
 - The server binds to 127.0.0.1, checks the Host header, and requires the page's Origin and
   token for anything that changes state. Do not add a `--host` option or relax these.
 - Log entries are append-only in the UI. Lab verdicts are labelled exploratory, never "signal".
+- The Lab currently rejects sampled date-conditioned tickets: the core harness evaluates
+  top-six tickets, and must not silently measure a different selection rule.
+- Completed predictions are immutable and cached by archive/config/date/design plus source
+  and runtime fingerprints. Publish through `Job.finish()` so cancellation cannot save a
+  result that the UI calls cancelled. Cache hits preserve the original generation timestamp.
+- A published scoreboard row is a dated preset reference, not a verified exact-settings
+  match: the report currently lacks a full configuration manifest.
 
 ### The seed-search ledger is the one exception
 

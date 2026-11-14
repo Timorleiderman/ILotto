@@ -60,7 +60,7 @@ on the exact coverage design. See [every model's form](../levers/predict.md).
 uv run lotto ui
 ```
 
-Everything above, in the browser, with controls for every model's settings. See
+Prediction, comparison, backtesting and a personal log, with controls for the models. See
 [the dashboard](dashboard.md).
 
 ## 7. Add the neural networks
@@ -70,8 +70,9 @@ uv sync --extra neural
 uv run lotto report
 ```
 
-About two minutes. This adds the GRU, the Transformer and the date-conditioned model, for
-nineteen strategies in all.
+About two minutes. The extra installs TensorFlow for the GRU and Transformer. The full report
+also runs the SciPy-based date-conditioned model (which needs no TensorFlow), for nineteen
+strategies in all.
 
 ## 8. Check everything
 

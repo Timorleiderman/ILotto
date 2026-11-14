@@ -8,15 +8,16 @@
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
+<a class="skip" href="#main">Skip to dashboard</a>
 <header>
   <div class="wrap">
     <div class="bar">
       <div class="brand">ILotto <span>dashboard</span></div>
       <nav id="tabs" role="tablist" aria-label="Screens">
-        <button role="tab" data-tab="predict" aria-selected="true">Predict</button>
-        <button role="tab" data-tab="compare" aria-selected="false">Compare</button>
-        <button role="tab" data-tab="lab" aria-selected="false">Lab</button>
-        <button role="tab" data-tab="log" aria-selected="false">Log</button>
+        <button id="tab-predict" role="tab" data-tab="predict" aria-controls="predict" aria-selected="true">Predict</button>
+        <button id="tab-compare" role="tab" data-tab="compare" aria-controls="compare" aria-selected="false" tabindex="-1">Compare</button>
+        <button id="tab-lab" role="tab" data-tab="lab" aria-controls="lab" aria-selected="false" tabindex="-1">Lab</button>
+        <button id="tab-log" role="tab" data-tab="log" aria-controls="log" aria-selected="false" tabindex="-1">Log</button>
       </nav>
       <div class="spacer"></div>
       <button class="btn" id="theme" type="button">Dark theme</button>
@@ -30,10 +31,10 @@
   </div>
 </header>
 
-<main class="wrap">
-  <div id="banner" class="note error" hidden></div>
+<main class="wrap" id="main" tabindex="-1">
+  <div id="banner" class="note error" role="alert" hidden></div>
 
-  <section class="screen on" id="predict" role="tabpanel">
+  <section class="screen on" id="predict" role="tabpanel" aria-labelledby="tab-predict" tabindex="0">
     <div class="head"><h1>Predict the next draw</h1>
       <p>Pick a model, change its settings, and get its ticket, a form to fill in and the exact odds.</p></div>
     <div class="two">
@@ -68,7 +69,7 @@
     </div>
   </section>
 
-  <section class="screen" id="compare" role="tabpanel">
+  <section class="screen" id="compare" role="tabpanel" aria-labelledby="tab-compare" tabindex="0" hidden>
     <div class="head"><h1>Compare every model</h1>
       <p>What each scoreboard model picks for the next draw, and which numbers they agree on.</p></div>
     <div class="actions"><button class="btn primary auto" id="runcompare" type="button">Run all models</button>
@@ -76,7 +77,7 @@
     <div id="compareout"></div>
   </section>
 
-  <section class="screen" id="lab" role="tabpanel">
+  <section class="screen" id="lab" role="tabpanel" aria-labelledby="tab-lab" tabindex="0" hidden>
     <div class="head"><h1>Test a setting against chance</h1>
       <p>Replay the settings from Predict over past draws. Each forecast sees only the draws before it.</p></div>
     <div class="two">
@@ -84,6 +85,7 @@
         <h3>Settings under test</h3>
         <p id="labconfig"></p>
         <p class="hint">Taken from the Predict screen. Change them there.</p>
+        <p id="labmode" class="hint"></p>
         <label for="ntest">Replay over <b id="ntestv">300</b> past draws</label>
         <input id="ntest" type="range" min="100" max="1000" step="50" value="300">
         <div class="actions"><button class="btn primary" id="runlab" type="button">Run backtest</button></div>
@@ -94,7 +96,7 @@
     </div>
   </section>
 
-  <section class="screen" id="log" role="tabpanel">
+  <section class="screen" id="log" role="tabpanel" aria-labelledby="tab-log" tabindex="0" hidden>
     <div class="head"><h1>Prediction log</h1>
       <p>Predictions saved before a draw, scored once its result is in the archive. Entries cannot be changed or deleted here.</p></div>
     <div id="logout"></div>
