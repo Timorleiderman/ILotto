@@ -143,6 +143,152 @@ def inherit_rejections(
         return {**ledger["inheritance"], "ledger": str(target)}
 
 
+def _load_ledger(ledger_path: Path, directory: Path, identity: dict) -> dict:
+    """Read this prefix's ledger (or start an empty one) and check its ranges are sane."""
+    ledger = json.loads(ledger_path.read_text()) if ledger_path.exists() else {
+        "identity": identity, "ranges": [], "imports": {},
+    }
+    if ledger["identity"] != identity:
+        raise ValueError("Ledger identity mismatch")
+    previous_stop = 0
+    for record in ledger["ranges"]:
+        start, stop = record["start"], record["stop"]
+        expected_path = directory / f"range_{start}_{stop}.json"
+        if (not isinstance(start, int) or not isinstance(stop, int)
+                or not previous_stop <= start < stop <= MAX_SEED
+                or record["checkpoint"] != str(expected_path)
+                or not start <= record.get("committed_until", start) <= stop):
+            raise ValueError("Invalid or overlapping ledger ranges")
+        previous_stop = stop
+    return ledger
+
+
+def _import_checkpoints(ledger: dict, ledger_path: Path, directory: Path, root: Path,
+                        prefix: list[Observation], imports, out_of_time) -> None:
+    """Copy finished checkpoints from elsewhere into this ledger, refusing any overlap."""
+    try:
+        with campaign_lock(Path(root) / "allocation.lock",
+                           wait=min(ALLOCATION_WAIT_SECONDS, max(0, out_of_time.remaining()))):
+            for source in imports:
+                if out_of_time():
+                    break
+                source = Path(source).resolve()
+                if str(source) in ledger["imports"]:
+                    continue
+                state = _read(source, prefix)
+                start, stop = state["identity"]["start"], state["identity"]["stop"]
+                destination = directory / f"range_{start}_{stop}.json"
+                # Check overlap before writing; never overwrite an already-advanced range.
+                if any(r["checkpoint"] == str(destination) for r in ledger["ranges"]):
+                    raise ValueError("Import duplicates an existing range from another source")
+                if any(max(start, r["start"]) < min(stop, r["stop"]) for r in remote_ranges(root)):
+                    raise ValueError("Remote reservations remain owned by the coordinator; do not import them")
+                _reserve(ledger, destination, start, stop)
+                _record(ledger, destination)["committed_until"] = state["next_seed"]
+                if destination.exists():
+                    if _read(destination, prefix) != state:
+                        raise ValueError("Unregistered import file differs; manual inspection required")
+                else:
+                    write_json(destination, state)
+                ledger["imports"][str(source)] = str(destination)
+                write_json(ledger_path, ledger)
+    except CampaignLockTimeout:
+        if not out_of_time():
+            raise
+        # Out of time while waiting: the caller returns the normal time-limit summary.
+
+
+def _load_states(ledger: dict, prefix: list[Observation]) -> dict[str, dict]:
+    """Every registered checkpoint, keyed by path, checked against the ledger's cursors.
+
+    A missing checkpoint is fine if no work was committed to it (it was reserved
+    just before a crash); a missing or regressed one with committed work is not.
+    """
+    states = {}
+    for record in ledger["ranges"]:
+        path = Path(record["checkpoint"])
+        if path.exists():
+            state = _read(path, prefix)
+            if (state["identity"]["start"], state["identity"]["stop"]) != (
+                record["start"], record["stop"]
+            ) or state["next_seed"] < record.get("committed_until", record["start"]):
+                raise ValueError("Registered checkpoint has changed or regressed")
+            states[str(path)] = state
+        elif record.get("committed_until", record["start"]) > record["start"]:
+            raise ValueError("A checkpoint containing completed work is missing")
+    return states
+
+
+def _totals(states: dict[str, dict], n_prefix: int) -> tuple[list[int], list[int], list[list[int]]]:
+    """Summed match counts, all survivors, and the merged list of completed seed ranges."""
+    counts = [0] * (n_prefix + 1)
+    survivors: list[int] = []
+    completed: list[list[int]] = []
+    for state in sorted(states.values(), key=lambda item: item["identity"]["start"]):
+        counts = [a + b for a, b in zip(counts, state["matched_prefix_counts"])]
+        survivors.extend(state["survivors"])
+        start, cursor = state["identity"]["start"], state["next_seed"]
+        if cursor > start:
+            if completed and completed[-1][1] == start:
+                completed[-1][1] = cursor
+            else:
+                completed.append([start, cursor])
+    return counts, survivors, completed
+
+
+def _record(ledger: dict, checkpoint) -> dict:
+    """The ledger entry for a checkpoint path."""
+    return next(r for r in ledger["ranges"] if r["checkpoint"] == str(checkpoint))
+
+
+def _next_range(ledger: dict, ledger_path: Path, directory: Path, root: Path,
+                states: dict[str, dict], budget: int) -> dict | None:
+    """The lowest unfinished local range, or a newly reserved one; None if 2**64 is used up.
+
+    Walks the seed line from 0 over local and remote ranges in order. The first
+    local range with seeds left is resumed. If everything up to the first gap is
+    finished, a new range of up to `budget` seeds is reserved in that gap. Must be
+    called while holding the allocation lock.
+    """
+    coverage = [dict(r, remote=False) for r in ledger["ranges"]]
+    coverage.extend(dict(r, remote=True) for r in remote_ranges(root))
+    coverage.sort(key=lambda r: (r["start"], not r["remote"]))
+    frontier = 0
+    for record in coverage:
+        if record["stop"] <= frontier:
+            continue
+        if frontier < record["start"]:
+            break
+        if not record["remote"]:
+            state = states.get(record["checkpoint"])
+            cursor = state["next_seed"] if state else record["start"]
+            if cursor < record["stop"]:
+                return _record(ledger, record["checkpoint"])
+        frontier = record["stop"]
+    if frontier == MAX_SEED:
+        return None
+    next_start = min((r["start"] for r in coverage if r["start"] > frontier), default=MAX_SEED)
+    stop = min(frontier + budget, next_start)
+    path = directory / f"range_{frontier}_{stop}.json"
+    _reserve(ledger, path, frontier, stop)
+    # Serialize this write with remote allocations, not remote work.
+    write_json(ledger_path, ledger)
+    return _record(ledger, path)
+
+
+class _Deadline:
+    """Calling it says whether the time budget is spent; `remaining()` gives seconds left."""
+
+    def __init__(self, seconds: float):
+        self.began, self.seconds = time.perf_counter(), seconds
+
+    def remaining(self) -> float:
+        return self.seconds - (time.perf_counter() - self.began)
+
+    def __call__(self) -> bool:
+        return self.remaining() <= 0
+
+
 def continue_search(
     prefix: list[Observation], *, root: Path, candidates: int, max_seconds: float,
     imports=(), batch_size: int = 4096, search_impl=None,
@@ -151,160 +297,62 @@ def continue_search(
 
     All cooperating runners must use this same root. Explicit imports must match
     the generator and prefix, and are copied so legacy output stays unchanged.
+
+    The steps: load the ledger, import finished checkpoints, then repeatedly
+    pick the next range (resume or reserve) and search it until the candidate
+    or time budget runs out. The time budget covers the whole call, lock waits
+    included.
     """
     if not isinstance(candidates, int) or candidates <= 0:
         raise ValueError("candidates must be a positive integer")
     if not math.isfinite(max_seconds) or max_seconds <= 0:
         raise ValueError("max_seconds must be finite and positive")
-    # The budget covers the whole call, including lock waits during imports.
-    began = time.perf_counter()
+    out_of_time = _Deadline(max_seconds)
     identity = {"schema": 1, "generator": GENERATOR, "prefix_sha256": prefix_hash(prefix)}
     directory = Path(root).resolve() / identity["prefix_sha256"]
     ledger_path = directory / "ledger.json"
+    runner = search if search_impl is None else search_impl
+
     with campaign_lock(directory / "search.lock"):
-        ledger = json.loads(ledger_path.read_text()) if ledger_path.exists() else {
-            "identity": identity, "ranges": [], "imports": {},
-        }
-        if ledger["identity"] != identity:
-            raise ValueError("Ledger identity mismatch")
-        previous_stop = 0
-        for record in ledger["ranges"]:
-            start, stop = record["start"], record["stop"]
-            expected_path = directory / f"range_{start}_{stop}.json"
-            if (not isinstance(start, int) or not isinstance(stop, int)
-                    or not previous_stop <= start < stop <= MAX_SEED
-                    or record["checkpoint"] != str(expected_path)
-                    or not start <= record.get("committed_until", start) <= stop):
-                raise ValueError("Invalid or overlapping ledger ranges")
-            previous_stop = stop
-        remaining_seconds = max(0, max_seconds - (time.perf_counter() - began))
-        try:
-            with campaign_lock(Path(root) / "allocation.lock",
-                               wait=min(ALLOCATION_WAIT_SECONDS, remaining_seconds)):
-                for source in imports:
-                    if time.perf_counter() - began >= max_seconds:
-                        break
-                    source = Path(source).resolve()
-                    if str(source) in ledger["imports"]:
-                        continue
-                    state = _read(source, prefix)
-                    start, stop = state["identity"]["start"], state["identity"]["stop"]
-                    destination = directory / f"range_{start}_{stop}.json"
-                    # Check overlap before writing; never overwrite an already-advanced range.
-                    if any(r["checkpoint"] == str(destination) for r in ledger["ranges"]):
-                        raise ValueError("Import duplicates an existing range from another source")
-                    if any(max(start, r["start"]) < min(stop, r["stop"])
-                           for r in remote_ranges(root)):
-                        raise ValueError("Remote reservations remain owned by the coordinator; do not import them")
-                    _reserve(ledger, destination, start, stop)
-                    next(r for r in ledger["ranges"] if r["checkpoint"] == str(destination))[
-                        "committed_until"
-                    ] = state["next_seed"]
-                    if destination.exists():
-                        if _read(destination, prefix) != state:
-                            raise ValueError("Unregistered import file differs; manual inspection required")
-                    else:
-                        write_json(destination, state)
-                    ledger["imports"][str(source)] = str(destination)
-                    write_json(ledger_path, ledger)
-        except CampaignLockTimeout:
-            if time.perf_counter() - began < max_seconds:
-                raise
-            # Read committed checkpoints below to return the normal time-limit summary.
+        ledger = _load_ledger(ledger_path, directory, identity)
+        _import_checkpoints(ledger, ledger_path, directory, root, prefix, imports, out_of_time)
+        states = _load_states(ledger, prefix)
+        initial = sum(_totals(states, len(prefix))[0])
 
-        states = {}
-        # Missing registered checkpoints may be work reserved just before a crash.
-        # A durable cursor is also stored in the ledger to detect deleted/regressed files.
-        for record in ledger["ranges"]:
-            path = Path(record["checkpoint"])
-            if path.exists():
-                state = _read(path, prefix)
-                if (state["identity"]["start"], state["identity"]["stop"]) != (
-                    record["start"], record["stop"]
-                ) or state["next_seed"] < record.get("committed_until", record["start"]):
-                    raise ValueError("Registered checkpoint has changed or regressed")
-                states[str(path)] = state
-            elif record.get("committed_until", record["start"]) > record["start"]:
-                raise ValueError("A checkpoint containing completed work is missing")
-
-        def totals():
-            counts = [0] * (len(prefix) + 1)
-            survivors = []
-            completed = []
-            for state in sorted(states.values(), key=lambda item: item["identity"]["start"]):
-                counts = [a + b for a, b in zip(counts, state["matched_prefix_counts"])]
-                survivors.extend(state["survivors"])
-                start, cursor = state["identity"]["start"], state["next_seed"]
-                if cursor > start:
-                    if completed and completed[-1][1] == start:
-                        completed[-1][1] = cursor
-                    else:
-                        completed.append([start, cursor])
-            return counts, survivors, completed
-
-        initial = sum(totals()[0])
         tested, reason = 0, "candidate_limit"
         while tested < candidates:
-            remaining_seconds = max_seconds - (time.perf_counter() - began)
-            if remaining_seconds <= 0:
+            if out_of_time():
                 reason = "time_limit"
                 break
             try:
                 with campaign_lock(Path(root) / "allocation.lock",
-                                   wait=min(ALLOCATION_WAIT_SECONDS, remaining_seconds)):
+                                   wait=min(ALLOCATION_WAIT_SECONDS, max(0, out_of_time.remaining()))):
                     # Waiting for the lock spends budget: re-check before reserving work.
-                    if max_seconds - (time.perf_counter() - began) <= 0:
+                    if out_of_time():
                         reason = "time_limit"
                         break
-                    blocked = remote_ranges(root)
-                    coverage = [dict(r, remote=False) for r in ledger["ranges"]]
-                    coverage.extend(dict(r, remote=True) for r in blocked)
-                    coverage.sort(key=lambda r: (r["start"], not r["remote"]))
-                    frontier, selected = 0, None
-                    for record in coverage:
-                        if record["stop"] <= frontier:
-                            continue
-                        if frontier < record["start"]:
-                            break
-                        if record["remote"]:
-                            frontier = record["stop"]
-                            continue
-                        state = states.get(record["checkpoint"])
-                        cursor = state["next_seed"] if state else record["start"]
-                        if cursor < record["stop"]:
-                            selected = next(r for r in ledger["ranges"]
-                                            if r["checkpoint"] == record["checkpoint"])
-                            break
-                        frontier = record["stop"]
+                    selected = _next_range(ledger, ledger_path, directory, root, states,
+                                           candidates - tested)
                     if selected is None:
-                        if frontier == MAX_SEED:
-                            reason = "seed_space_exhausted"
-                            break
-                        next_start = min((r["start"] for r in coverage if r["start"] > frontier),
-                                         default=MAX_SEED)
-                        stop = min(frontier + candidates - tested, next_start)
-                        path = directory / f"range_{frontier}_{stop}.json"
-                        _reserve(ledger, path, frontier, stop)
-                        # Serialize this write with remote allocations, not remote work.
-                        write_json(ledger_path, ledger)
-                        selected = next(r for r in ledger["ranges"] if r["checkpoint"] == str(path))
+                        reason = "seed_space_exhausted"
+                        break
             except CampaignLockTimeout:
-                if time.perf_counter() - began < max_seconds:
+                if not out_of_time():
                     raise
                 reason = "time_limit"
                 break
             old = states.get(selected["checkpoint"])
             cursor = old["next_seed"] if old else selected["start"]
-            runner = search if search_impl is None else search_impl
-            # Recompute: lock waits and ledger writes since the loop check spent budget.
-            # A range reserved just above stays registered and resumes on the next run.
-            remaining_seconds = max_seconds - (time.perf_counter() - began)
-            if remaining_seconds <= 0:
+            # Lock waits and ledger writes spent budget. A range reserved above
+            # stays registered and resumes on the next run. Read the clock once:
+            # the search rejects a budget that is not positive.
+            seconds_left = out_of_time.remaining()
+            if seconds_left <= 0:
                 reason = "time_limit"
                 break
             state = runner(
                 prefix, start=selected["start"], stop=selected["stop"],
-                checkpoint=Path(selected["checkpoint"]), max_seconds=remaining_seconds,
+                checkpoint=Path(selected["checkpoint"]), max_seconds=seconds_left,
                 max_candidates=candidates - tested, batch_size=batch_size,
             )
             states[selected["checkpoint"]] = state
@@ -314,8 +362,9 @@ def continue_search(
             if state["stop_reason"] in ("interrupted", "survivor_limit", "time_limit", "user_stop"):
                 reason = state["stop_reason"]
                 break
-        counts, survivors, completed = totals()
-        elapsed = time.perf_counter() - began
+
+        counts, survivors, completed = _totals(states, len(prefix))
+        elapsed = time.perf_counter() - out_of_time.began
         result = {
             "identity": identity, "previously_tested": initial, "new_seeds_tested": tested,
             "total_unique_seeds_tested": sum(counts), "completed_ranges": completed,
