@@ -14,6 +14,7 @@ from __future__ import annotations
 import logging
 
 import numpy as np
+from scipy.stats import rankdata
 
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 
@@ -241,10 +242,13 @@ class Ensemble(Predictor):
     def scores(self, history: Draws) -> tuple[np.ndarray, np.ndarray]:
         ball_acc = np.zeros(N_NUMBERS)
         strong_acc = np.zeros(N_STRONG)
+        # Tied scores share the average of their ranks. Ranking them by an
+        # unstable sort instead gave a different order on every CPU family,
+        # so the same history produced different tickets on Mac and Linux.
         for m in self.members:
             b, s = m.scores(history)
-            ball_acc += np.argsort(np.argsort(np.nan_to_num(b, neginf=-1e18))) / N_NUMBERS
-            strong_acc += np.argsort(np.argsort(s)) / N_STRONG
+            ball_acc += (rankdata(np.nan_to_num(b, neginf=-1e18)) - 1) / N_NUMBERS
+            strong_acc += (rankdata(s) - 1) / N_STRONG
         return ball_acc / len(self.members), strong_acc / len(self.members)
 
 

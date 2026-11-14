@@ -47,7 +47,8 @@ def prediction_experiment(draws):
     bootstrap_indices = ((starts[:, :, None] + np.arange(20)) % 300).reshape(4000, 300)
     rows = []
     for i, name in enumerate(names):
-        picks = np.argpartition(-ball_p[i], 5, axis=1)[:, :6]
+        # Same tie rule as the benchmark: equal probabilities go to the lower number.
+        picks = np.argsort(-ball_p[i], axis=1, kind="stable")[:, :6]
         hits = np.take_along_axis(actual, picks, axis=1).sum(axis=1).astype(int)
         strong_hits = np.argmax(strong_p[i], axis=1) + 1 == draws.strong[targets]
         summary = metrics.summarise(hits[-300:], ball_loss[i, -300:], strong_hits[-300:])

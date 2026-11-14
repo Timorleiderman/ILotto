@@ -592,3 +592,14 @@ def test_fractional_and_repeated_balls_are_rejected(tmp_path, old, new):
     raw.write_bytes(body.replace(old, new, 1))
     with pytest.raises(ValueError):
         data.load(raw_csv=str(raw), clean_csv=None)
+
+
+def test_ensemble_ranks_ties_equally():
+    """Tied member scores must share a rank, not be ordered by the sort kernel."""
+
+    class Flat(predictors.Predictor):
+        def scores(self, history):
+            return np.zeros(37), np.zeros(7)
+
+    balls, strong = predictors.Ensemble([Flat()]).scores(fake_draws(10))
+    assert np.all(balls == balls[0]) and np.all(strong == strong[0])
