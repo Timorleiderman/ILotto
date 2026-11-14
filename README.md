@@ -86,10 +86,10 @@ mornings after draw days. The draw archive itself can only be refreshed from a m
 reach pais.co.il, which GitHub's runners cannot:
 
 ```bash
-uv run lotto report --refresh
+uv run lotto report --refresh --out-dir docs
 ```
 
-Then commit `input/`.
+Then commit `input/` and `docs/`.
 
 ## Disclaimer
 

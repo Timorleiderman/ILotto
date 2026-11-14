@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Run the full analysis and write the GitHub Pages report.
+"""Run the full analysis and write the benchmark report.
 
-    uv run lotto report [--refresh] [--n-test 300] [--quick]
+    uv run lotto report [--refresh] [--n-test 300] [--quick] [--out-dir DIR]
 
-`--refresh` re-downloads the draw archive; CI uses it. `--quick` skips the
-neural models, which is handy when iterating on the report layout.
+`--refresh` re-downloads the draw archive. `--quick` skips the neural models.
+Pages go to `results/report/` by default, so trying the command never touches
+the published site; pass `--out-dir docs` to rebuild the pages the site serves.
 """
 
 from __future__ import annotations
@@ -27,7 +28,8 @@ def main() -> int:
     ap.add_argument("--refresh", action="store_true", help="re-download the draw archive")
     ap.add_argument("--n-test", type=int, default=300, help="walk-forward window length")
     ap.add_argument("--quick", action="store_true", help="skip neural models")
-    ap.add_argument("--out-dir", default=str(data.REPO_ROOT / "docs"), help="MkDocs source tree")
+    ap.add_argument("--out-dir", default=str(data.REPO_ROOT / "results/report"),
+                    help="where to write the pages; use docs to update the published site")
     ap.add_argument("--null-trials", type=int, default=5000)
     args = ap.parse_args()
 

@@ -9,9 +9,10 @@ from pathlib import Path
 
 import numpy as np
 
+from lotto.core import paths
 from lotto.tickets.coverage import best_match_counts, portfolio_odds, search_coverage_tickets
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = paths.REPO_ROOT
 
 
 def main():

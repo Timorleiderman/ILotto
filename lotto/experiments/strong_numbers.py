@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import platform
 import tempfile
@@ -13,18 +12,15 @@ from pathlib import Path
 
 import numpy as np
 
+from lotto.core import paths
+from lotto.core.files import sha256_file
 from lotto.tickets.coverage import best_match_counts, portfolio_odds, search_coverage_tickets
 from lotto.tickets.strong_assignment import optimize_strong_numbers, strong_prize_odds
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = paths.REPO_ROOT
 PROTOCOL = ROOT / 'experiments/ticket_chances_protocol_2026_11_07.json'
 # New runs go to results/ (not tracked); experiments/ holds the frozen evidence and is only read.
 OUTPUT = ROOT / 'results/strong-numbers/ticket_chances.json'
-
-
-def sha256(path):
-    """Hex SHA-256 of a file's bytes."""
-    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def verify_mains(tickets, odds):
@@ -43,7 +39,7 @@ def verify_strong(tickets, expected):
 def main():
     config = json.loads(PROTOCOL.read_text())
     source = ROOT / 'experiments' / config['initial_results']
-    if config.get('schema') != 1 or sha256(source) != config['initial_results_sha256']:
+    if config.get('schema') != 1 or sha256_file(source) != config['initial_results_sha256']:
         raise ValueError('Protocol must match schema 1 and the saved input checksum')
     previous = json.loads(source.read_text())
     seeds = config['seeds']
@@ -123,7 +119,7 @@ def main():
     paths = ['lotto/tickets/_kernels.py', 'lotto/tickets/coverage.py', 'lotto/tickets/strong_assignment.py',
              'lotto/experiments/strong_numbers.py']
     output = {'schema': 1, 'status': 'complete', 'configuration': config,
-              'protocol_sha256': sha256(PROTOCOL), 'source_sha256': {p: sha256(ROOT / p) for p in paths},
+              'protocol_sha256': sha256_file(PROTOCOL), 'source_sha256': {p: sha256_file(ROOT / p) for p in paths},
               'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                               'platform': platform.platform()},
               'timing_scope': 'Search only, after baseline warmup; verification and strong assignment excluded',

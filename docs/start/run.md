@@ -41,7 +41,8 @@ uv run lotto report --quick --n-test 100 --null-trials 500
 ```
 
 About ten seconds. It runs nine randomness tests and sixteen prediction strategies on the real
-archive and writes `docs/results.md` and `docs/benchmark/index.html`.
+archive and writes the report to `results/report/`: open `results/report/benchmark/index.html`
+in a browser. The published site is untouched; it is rebuilt with `--out-dir docs`.
 
 ## 5. Add the neural networks
 

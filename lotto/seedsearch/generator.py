@@ -9,11 +9,12 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import os
 import time
 from dataclasses import asdict, dataclass
 from datetime import date
 from pathlib import Path
+
+from lotto.core.files import write_json
 
 GENERATOR = "calendar-sha256-v1"
 DOMAIN = (GENERATOR + ":").encode("ascii")
@@ -98,19 +99,6 @@ def prefix_hash(prefix: list[Observation]) -> str:
         previous = observation.date
     payload = json.dumps([asdict(x) for x in prefix], sort_keys=True).encode()
     return hashlib.sha256(payload).hexdigest()
-
-
-def write_json(path: Path, value: dict) -> None:
-    """Atomic replacement; each experiment must have a single writer."""
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + ".tmp")
-    with temporary.open("w") as stream:
-        json.dump(value, stream, indent=2, allow_nan=False)
-        stream.write("\n")
-        stream.flush()
-        os.fsync(stream.fileno())
-    os.replace(temporary, path)
 
 
 def validate_checkpoint(state: dict, prefix: list[Observation]) -> None:

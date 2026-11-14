@@ -18,19 +18,20 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import requests
 
+from lotto.core import paths
+
 logger = logging.getLogger(__name__)
 
 CSV_URL = "https://pais.co.il/Lotto/lotto_resultsDownload.aspx"
 
-#: The repository root. Paths are resolved from here, not from the working
-#: directory, so ``uv run lotto ...`` works from any folder.
-REPO_ROOT = Path(__file__).resolve().parents[2]
+#: The checkout, found by `lotto.core.paths`, so ``uv run lotto ...`` works from
+#: any folder and with a regular (non-editable) install.
+REPO_ROOT = paths.REPO_ROOT
 #: The raw archive's path inside the repository, as the dated protocols record it.
 RAW_CSV_IN_REPO = "input/Orig_IL_lotto.csv"
 RAW_CSV = str(REPO_ROOT / RAW_CSV_IN_REPO)
@@ -160,6 +161,11 @@ def load(
     """
     if refresh:
         download(raw_csv)
+    if not os.path.exists(raw_csv):
+        raise FileNotFoundError(
+            f"No draw archive at {raw_csv}. Run from inside the ILotto checkout, or set "
+            "LOTTO_ROOT to the checkout's folder."
+        )
 
     df = _read_raw(raw_csv).sort_values("date").reset_index(drop=True)
 

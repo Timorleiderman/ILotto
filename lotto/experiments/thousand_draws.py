@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import platform
 import tempfile
@@ -12,25 +11,21 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import binom
 
-from lotto.core import data, metrics
+from lotto.core import data, metrics, paths
+from lotto.core.files import sha256_file
 from lotto.experiments.joint_mixture import build, mixtures
 from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES
 from lotto.tickets.coverage import portfolio_odds
 from lotto.tickets.forecast_portfolios import longest_run, ranked_portfolios, score_portfolios
 from lotto.tickets.strong_assignment import strong_prize_odds
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = paths.REPO_ROOT
 # The dated run is pinned to the archive as it stood on 2026-11-03. Reading that saved
 # copy, not the live input/ file, keeps the experiment runnable after new draws arrive.
 ARCHIVE = ROOT / 'experiments/archive_2026-11-03.csv'
 PROTOCOL = ROOT / 'experiments/historical_strikes_protocol_2026_11_07.json'
 # New runs go to results/ (not tracked); experiments/ holds the frozen evidence and is only read.
 OUTPUT = ROOT / 'results/thousand-draws/historical_strikes.json'
-
-
-def sha256(path):
-    """Hex SHA-256 of a file's bytes."""
-    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def summarize(matches, strong_hit, p_win):
@@ -55,7 +50,7 @@ def main():
             or config['selection_draws'] != 500):
         raise ValueError('Require the fixed 1000-draw protocol, four 250-draw blocks and a 500-draw selector')
     for filename, expected in config['input_sha256'].items():
-        if sha256(ARCHIVE if filename == data.RAW_CSV_IN_REPO else ROOT / filename) != expected:
+        if sha256_file(ARCHIVE if filename == data.RAW_CSV_IN_REPO else ROOT / filename) != expected:
             raise ValueError(f'Input changed since protocol freeze: {filename}')
     draws = data.load(raw_csv=str(ARCHIVE), clean_csv=None, refresh=False)
     n = config['n_test']
@@ -136,8 +131,8 @@ def main():
     paths = ['lotto/tickets/forecast_portfolios.py', 'lotto/forecasting/joint_mixture.py', 'lotto/forecasting/calibration.py',
              'lotto/approaches/date_conditioned.py', 'lotto/core/metrics.py', 'lotto/experiments/joint_mixture.py',
              'lotto/experiments/thousand_draws.py']
-    result = {'schema': 1, 'status': 'complete', 'configuration': config, 'protocol_sha256': sha256(PROTOCOL),
-              'source_sha256': {p: sha256(ROOT / p) for p in paths},
+    result = {'schema': 1, 'status': 'complete', 'configuration': config, 'protocol_sha256': sha256_file(PROTOCOL),
+              'source_sha256': {p: sha256_file(ROOT / p) for p in paths},
               'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                               'platform': platform.platform()},
               'training_draws_before_first_target': len(draws) - n, 'test_start': dates[0], 'test_end': dates[-1],
@@ -159,7 +154,7 @@ def main():
                             portfolio_main_matches=np.asarray(ten_counts, dtype=np.uint8),
                             single_strong_hits=np.asarray(one_strong), portfolio_strong_hits=np.asarray(ten_strong),
                             joint_log_prob=log_prob)
-        result['per_draw_artifact'] = {'path': out_arrays.name, 'sha256': sha256(staged_arrays)}
+        result['per_draw_artifact'] = {'path': out_arrays.name, 'sha256': sha256_file(staged_arrays)}
         staged_json.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
         staged_arrays.replace(out_arrays)
         staged_json.replace(OUTPUT)

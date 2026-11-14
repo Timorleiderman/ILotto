@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-11-14T11:46:21+00:00",
+  "generated_utc": "2026-11-14T18:04:11+00:00",
   "n_draws": 1661,
   "last_draw_date": "2026-11-03",
   "randomness_tests": [
@@ -40,9 +40,9 @@
     },
     {
       "test": "Draw-sum distribution (chi-square vs exact null)",
-      "statistic": 18.375211460643072,
+      "statistic": 20.37403827344523,
       "dof": 19,
-      "p_value": 0.4975199402936854,
+      "p_value": 0.372394215841857,
       "detail": "observed mean sum 114.3 vs 114.0 expected; 20 bins"
     },
     {
@@ -213,7 +213,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 1.51
+      "seconds": 1.52
     },
     {
       "name": "Method of analogues (chaos)",
@@ -234,7 +234,7 @@
       "strong_accuracy": 0.16,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.11
+      "seconds": 0.1
     },
     {
       "name": "Perfect-fit function (polynomial)",
@@ -297,7 +297,7 @@
       "strong_accuracy": 0.13333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.1
+      "seconds": 0.11
     },
     {
       "name": "Rank ensemble",
@@ -381,7 +381,7 @@
       "strong_accuracy": 0.16333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 46.34
+      "seconds": 49.13
     },
     {
       "name": "Date-conditioned generative (CB-6/37)",
@@ -465,7 +465,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 36.08
+      "seconds": 37.34
     }
   ],
   "monte_carlo_null": {

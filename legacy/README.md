@@ -39,6 +39,6 @@ uv run python legacy/train.py --model multi_output --epochs 5
 ```
 
 Run from the repository root; five epochs take a few seconds. Models and plots are written to
-`legacy/model/` and a log to `evaluate.log`; neither is tracked. The script also downloads the
-latest draw archive into `input/`; run `git checkout input/` afterwards if you did not mean to
-refresh it.
+`legacy/model/` and a log to `evaluate.log`; neither is tracked. The exhibit reads the committed
+archive in `input/` and never downloads; it does still write its own value-filtered copy,
+`input/lotto_IL_filtered.csv`, which is git-ignored.

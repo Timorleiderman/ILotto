@@ -14,11 +14,11 @@ from pathlib import Path
 
 import numpy as np
 
-from lotto.core import data, metrics
+from lotto.core import data, metrics, paths
 from lotto.forecasting.joint_mixture import FAMILY_PRIOR, LOG_FULL_OUTCOMES, build_experts, mix_experts
 from lotto.tickets.coverage import best_match_counts, portfolio_odds, refine_coverage_tickets
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = paths.REPO_ROOT
 METHODS = ('static_joint_mixture', 'fixed_share_joint_mixture')
 FOLD_COUNT = 4
 FOLD_DRAWS = 300

@@ -2,7 +2,7 @@
 
 !!! info "Generated output"
 
-    Rebuilt 2026-11-14 11:46 UTC from 1,661 draws through 2026-11-03. **Note: the newest draw here is 11 days old** — the upstream archive is not reachable from the CI runners, so new draws arrive only via a local refresh. Do not edit by hand — `lotto/experiments/benchmark_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
+    Rebuilt 2026-11-14 18:04 UTC from 1,661 draws through 2026-11-03. **Note: the newest draw here is 11 days old** — the upstream archive is not reachable from the CI runners, so new draws arrive only via a local refresh. Do not edit by hand — `lotto/experiments/benchmark_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
 
 ## Strategy scoreboard
 
@@ -52,7 +52,7 @@ Each row asks a different way the machine could be unfair: biased ball frequenci
 | Lag-1 serial independence (hot/due folklore) | 1.44 | 0.2306 | <span class="pill ok">no signal</span> |
 | Appearance-gap distribution vs geometric | 12.47 | 0.3295 | <span class="pill ok">no signal</span> |
 | Pairwise co-occurrence (666 pairs, exact-binomial Bonferroni) | 3.74 | 0.4620 | <span class="pill ok">no signal</span> |
-| Draw-sum distribution (chi-square vs exact null) | 18.38 | 0.4975 | <span class="pill ok">no signal</span> |
+| Draw-sum distribution (chi-square vs exact null) | 20.37 | 0.3724 | <span class="pill ok">no signal</span> |
 | First half vs second half frequency drift (without-replacement Wald) | 30.01 | 0.7483 | <span class="pill ok">no signal</span> |
 | Incompressibility (no generating function within compressor reach) | 24.05 | 1.0000 | <span class="pill ok">no signal</span> |
 | Surrogate-data determinism (method of analogues vs shuffles) | 1.03 | 0.2150 | <span class="pill ok">no signal</span> |

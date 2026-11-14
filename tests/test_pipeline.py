@@ -596,3 +596,33 @@ def test_ensemble_ranks_ties_equally():
 
     balls, strong = predictors.Ensemble([Flat()]).scores(fake_draws(10))
     assert np.all(balls == balls[0]) and np.all(strong == strong[0])
+
+
+def _six_numbers_summing_to(total: int) -> list[int]:
+    """Six distinct numbers from 1..37 adding up to `total` (21..207)."""
+    row = [1, 2, 3, 4, 5, 6]
+    extra = total - 21
+    for i in range(5, -1, -1):  # push the largest numbers up first
+        room = 32 + i - row[i]  # position i can rise to 32 + i (32..37)
+        step = min(extra, room)
+        row[i] += step
+        extra -= step
+    assert sum(row) == total and len(set(row)) == 6 and max(row) <= 37
+    return row
+
+
+def test_sum_test_bins_match_their_expected_shares():
+    """Each draw sum must land in the bin whose expected probability counts it.
+
+    A mismatch at the bin edges made this test reject 12% of fair histories at
+    alpha 0.05. A history whose sums follow the exact distribution must score
+    close to zero.
+    """
+    pmf = randomness.sum_pmf()
+    counts = np.round(pmf * 200_000).astype(int)
+    sums = np.repeat(np.arange(len(pmf)), counts)
+    balls = np.array([_six_numbers_summing_to(int(t)) for t in range(len(pmf)) if counts[t]])
+    index = {t: i for i, t in enumerate(t for t in range(len(pmf)) if counts[t])}
+    rows = balls[[index[int(t)] for t in sums]]
+    d = data.Draws(np.arange(len(rows)).astype("datetime64[D]"), rows, np.ones(len(rows), dtype=np.int64))
+    assert randomness.sum_distribution(d)["statistic"] < 1.0

@@ -16,6 +16,7 @@ import shlex
 import time
 from pathlib import Path
 
+from lotto.core import paths
 from lotto.experiments.seed_search_cuda_benchmark import validate_worker
 from lotto.seedsearch.allocations import get_remote, reserve_remote
 from lotto.seedsearch.campaign import campaign_lock
@@ -28,7 +29,7 @@ from lotto.seedsearch.generator import (
     write_json,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = paths.REPO_ROOT
 RUN_ROOT = ROOT / "experiments/seed_search_runs"
 
 

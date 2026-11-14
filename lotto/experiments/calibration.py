@@ -16,11 +16,11 @@ from pathlib import Path
 import numpy as np
 from scipy import stats
 
-from lotto.core import backtest, data, metrics
+from lotto.core import backtest, data, metrics, paths
 from lotto.forecasting.calibration import frequency_forecasts, past_loss_choices
 from lotto.tickets.coverage import greedy_coverage_tickets, portfolio_odds, single_ticket_prize_odds
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = paths.REPO_ROOT
 
 
 def prediction_experiment(draws):

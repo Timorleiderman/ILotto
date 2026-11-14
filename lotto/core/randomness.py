@@ -169,7 +169,9 @@ def sum_distribution(draws: Draws, n_bins: int = 20) -> dict:
     cdf = np.cumsum(sum_pmf())
     # Bin edges at equal-probability quantiles of the exact distribution.
     edges = np.unique(np.searchsorted(cdf, np.arange(1, n_bins) / n_bins))
-    bins = np.searchsorted(edges, observed, side="right")
+    # A sum equal to an edge belongs to the bin that ends at that edge, because
+    # each bin's expected share below is cdf[edge] minus the previous cdf[edge].
+    bins = np.searchsorted(edges, observed, side="left")
     counts = np.bincount(bins, minlength=len(edges) + 1)
     bin_p = np.diff(np.concatenate([[0.0], cdf[edges], [1.0]]))
     res = stats.chisquare(counts, bin_p * len(observed))

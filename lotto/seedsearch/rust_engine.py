@@ -12,6 +12,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
+from lotto.core import paths
 from lotto.seedsearch.generator import (
     GENERATOR,
     MAX_SEED,
@@ -22,7 +23,7 @@ from lotto.seedsearch.generator import (
     write_json,
 )
 
-DEFAULT_BINARY = Path(__file__).resolve().parents[2] / "native/seed-search/target/release/ilotto-seed-search"
+DEFAULT_BINARY = paths.REPO_ROOT / "native/seed-search/target/release/ilotto-seed-search"
 
 
 def native_batch(prefix, start, stop, workers, binary=DEFAULT_BINARY):

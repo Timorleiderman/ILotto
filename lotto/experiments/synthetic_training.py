@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import platform
 import tempfile
@@ -14,7 +13,8 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import binom
 
-from lotto.core import data, metrics
+from lotto.core import data, metrics, paths
+from lotto.core.files import sha256_file, write_json
 from lotto.experiments.thousand_draws import summarize
 from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES
 from lotto.forecasting.synthetic_learning import (
@@ -27,7 +27,7 @@ from lotto.forecasting.synthetic_learning import (
 from lotto.tickets.coverage import portfolio_odds
 from lotto.tickets.forecast_portfolios import ranked_portfolios, score_portfolios
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = paths.REPO_ROOT
 # The dated run is pinned to the archive as it stood on 2026-11-03. Reading that saved
 # copy, not the live input/ file, keeps the experiment runnable after new draws arrive.
 ARCHIVE = ROOT / 'experiments/archive_2026-11-03.csv'
@@ -45,23 +45,6 @@ SOURCES = ['lotto/forecasting/synthetic_learning.py', 'lotto/forecasting/calibra
            'lotto/experiments/thousand_draws.py', 'lotto/experiments/synthetic_training.py']
 
 
-def sha256(path):
-    """Hex SHA-256 of a file's bytes."""
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def write_json(path, value):
-    """Write JSON atomically: to a temporary file first, then rename over the target."""
-    with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as handle:
-        staging = Path(handle.name)
-        try:
-            handle.write(json.dumps(value, indent=2, allow_nan=False) + '\n')
-        except BaseException:
-            staging.unlink(missing_ok=True)
-            raise
-    staging.replace(path)
-
-
 def validate_protocol(config):
     """Raise ValueError unless the protocol is exactly the frozen one."""
     if (config.get('schema') != 1 or config['draws_per_episode'] != 2000
@@ -77,7 +60,7 @@ def train(config):
     """This stage never loads or fits to the real archive or coverage template."""
     validate_protocol(config)
     tick = time.perf_counter()
-    source_hashes = {p: sha256(ROOT / p) for p in SOURCES}
+    source_hashes = {p: sha256_file(ROOT / p) for p in SOURCES}
     episode_rows, episode_lp, metadata, oracle_rows = [], [], [], []
     names = None
     for split, count in enumerate([config['training_episodes'], config['validation_episodes']]):
@@ -139,10 +122,10 @@ def train(config):
                             oracle_log_prob=np.asarray(oracle_rows))
         staged.replace(DATASET)
     result = {'schema': 1, 'status': 'frozen_before_real_evaluation', 'protocol': config,
-              'protocol_sha256': sha256(PROTOCOL), 'source_sha256': source_hashes,
+              'protocol_sha256': sha256_file(PROTOCOL), 'source_sha256': source_hashes,
               'component_names': names, 'weights': weights, 'fitted': fitted,
               'training_draws': train_lp.shape[1], 'validation_draws': config['validation_episodes'] *
-              config['draws_per_episode'], 'dataset': {'path': DATASET.name, 'sha256': sha256(DATASET)},
+              config['draws_per_episode'], 'dataset': {'path': DATASET.name, 'sha256': sha256_file(DATASET)},
               'generation': metadata, 'validation': summaries, 'validation_episodes': validation,
               'seconds': time.perf_counter() - tick,
               'environment': {'python': platform.python_version(), 'numpy': np.__version__}}
@@ -158,13 +141,13 @@ def evaluate(config):
     # Use the weights from a local training run if there is one, else the saved ones.
     frozen_path, dataset_path = (FROZEN, DATASET) if FROZEN.exists() else (SAVED_FROZEN, SAVED_DATASET)
     frozen = json.loads(frozen_path.read_text())
-    if frozen['protocol_sha256'] != sha256(PROTOCOL) or frozen['dataset']['sha256'] != sha256(dataset_path):
+    if frozen['protocol_sha256'] != sha256_file(PROTOCOL) or frozen['dataset']['sha256'] != sha256_file(dataset_path):
         raise ValueError('Frozen training inputs do not match')
     # Inputs are still verified by hash. Source files are not: the freeze recorded
     # them by their pre-restructure paths (commit e6a792c reproduces that state
     # exactly); since then, unchanged numbers are guarded by tests/test_golden.py.
     for filename, expected in config['input_sha256'].items():
-        if sha256(ARCHIVE if filename == data.RAW_CSV_IN_REPO else ROOT / filename) != expected:
+        if sha256_file(ARCHIVE if filename == data.RAW_CSV_IN_REPO else ROOT / filename) != expected:
             raise ValueError(f'Input changed since freeze: {filename}')
     draws = data.load(raw_csv=str(ARCHIVE), clean_csv=None, refresh=False)
     if len(draws) != 1661:
@@ -204,8 +187,8 @@ def evaluate(config):
     for row in summaries:
         for budget in ('one_ticket', 'ten_tickets'):
             row[budget]['significant_after_holm_8'] = verdict[f"{row['name']}|{budget}"]
-    result = {'schema': 1, 'status': 'complete', 'frozen_training_sha256': sha256(frozen_path),
-              'protocol_sha256': sha256(PROTOCOL), 'source_sha256': frozen['source_sha256'],
+    result = {'schema': 1, 'status': 'complete', 'frozen_training_sha256': sha256_file(frozen_path),
+              'protocol_sha256': sha256_file(PROTOCOL), 'source_sha256': frozen['source_sha256'],
               'draws': len(draws), 'start': dates[0], 'end': dates[-1], 'template': template,
               'models': summaries, 'significant_comparisons': [k for k, v in verdict.items() if v],
               'fair_null': {budget: {'p_any_prize': p, 'expected_winning_draws': len(draws) * p,
@@ -217,7 +200,7 @@ def evaluate(config):
     with tempfile.TemporaryDirectory(prefix='synthetic-real-', dir=OUTPUT.parent) as directory:
         staged = Path(directory) / out_arrays.name
         np.savez_compressed(staged, dates=dates, actual_balls=draws.balls, actual_strong=draws.strong, **arrays)
-        result['per_draw_artifact'] = {'path': out_arrays.name, 'sha256': sha256(staged)}
+        result['per_draw_artifact'] = {'path': out_arrays.name, 'sha256': sha256_file(staged)}
         staged.replace(out_arrays)
     write_json(OUTPUT, result)
     for row in summaries:

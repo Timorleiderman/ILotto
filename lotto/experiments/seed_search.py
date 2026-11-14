@@ -19,6 +19,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from lotto.core import paths
 from lotto.seedsearch.campaign import continue_search
 from lotto.seedsearch.generator import (
     GENERATOR,
@@ -31,7 +32,7 @@ from lotto.seedsearch.generator import (
     write_json,
 )
 
-RUN_ROOT = Path(__file__).resolve().parents[2] / "experiments/seed_search_runs"
+RUN_ROOT = paths.REPO_ROOT / "experiments/seed_search_runs"
 
 
 def main() -> int:

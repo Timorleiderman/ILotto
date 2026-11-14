@@ -23,8 +23,8 @@ uv run ruff check .          # must pass over the whole repo
 
 # Everything runs through one command.
 uv run lotto list                                   # the experiment catalog
-uv run lotto report --quick                         # benchmark report, skip neural models
-uv run lotto report --refresh                       # fresh draws, full run (~2 min)
+uv run lotto report --quick                         # benchmark report into results/report/, skip neural models
+uv run lotto report --refresh --out-dir docs        # fresh draws, full run (~2 min), rebuilds the site pages
 uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json
 uv run lotto plan                                   # which form to play next
 
@@ -67,8 +67,8 @@ than surprising.
 
 The scheduled publish runs `--refresh`, but the download times out from GitHub's runners
 (geo/cloud-IP blocking) and falls back to the committed archive — so **new draws only land
-when someone runs `uv run lotto report --refresh` locally and commits
-`input/`**. The workflow prints archive freshness to the job summary and warns past 7 days;
+when someone runs `uv run lotto report --refresh --out-dir docs` locally and
+commits `input/` and `docs/`**. The workflow prints archive freshness to the job summary and warns past 7 days;
 the generated pages carry the same warning. Do not "fix" the fallback by making the
 download fatal: the site must still rebuild when the source is down.
 
@@ -77,12 +77,19 @@ download fatal: the site must still rebuild when the source is down.
 | Kind of thing | Lives in | Rule |
 |---|---|---|
 | Code that computes | `lotto/` (`core`, `approaches`, `forecasting`, `tickets`, `seedsearch`, `report`) | importable and tested; no side effects on import |
-| An experiment | `lotto/experiments/<name>.py` + frozen evidence in `experiments/` | one catalog entry in `lotto/experiments/__init__.py`; exposes `main()`; writes to `results/` (untracked), never to `experiments/` |
+| An experiment | `lotto/experiments/<name>.py` + frozen evidence in `experiments/` | one catalog entry in `lotto/experiments/__init__.py`; exposes `main()`; writes to `results/` (untracked), never to `experiments/` — except the seed-search ledger, below |
 | Words | `docs/` | dated reports go under `docs/reference/research-log/` and are not rewritten |
 
 `legacy/` is the 2023–2025 Keras stack, kept as an exhibit. It is untested on purpose except
 for `tests/test_legacy_exhibit.py`, which pins its split defect; do not repair it without
 updating `legacy/README.md` and `docs/approaches/legacy-models.md`.
+
+### The seed-search ledger is the one exception
+
+`experiments/seed_search_runs/` (git-ignored) holds the live seed-search ledger: every
+range ever searched, so no seed is tested twice across runs and machines. The seed-search
+commands append to it by default. Never move or delete it; pass `--ledger-dir` to search
+somewhere else.
 
 ### Adding an experiment
 
@@ -172,7 +179,8 @@ Set `refit_every` for models with a `fit` step; the harness refits on history on
 MkDocs Material. `docs/` is the *source* tree, `site/` is the build output and the Pages
 artifact.
 
-Generated — never hand-edit, `lotto report` overwrites them:
+Generated — never hand-edit, `lotto report --out-dir docs` overwrites them (without
+`--out-dir` the command writes to `results/report/` instead):
 
 - `docs/benchmark/index.html` and `docs/benchmark/results.json` (standalone report, copied
   through verbatim by MkDocs)

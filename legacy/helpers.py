@@ -1,7 +1,5 @@
-import os
 import math
 import logging
-import requests
 import pandas as pd
 import numpy as np
 
@@ -97,22 +95,10 @@ def fetch_dataset(
     lotto_csv_file="input/lotto_IL_filtered.csv",
 ):
 
-    csv_url = "https://pais.co.il/Lotto/lotto_resultsDownload.aspx"
-    base_dir = os.path.dirname(orig_lotto_csv)
-    if not os.path.exists(base_dir):
-        os.makedirs(base_dir)
-    # Guarded: without a timeout a hung request stalls the caller indefinitely,
-    # and without raise_for_status an error page would be written over the
-    # committed archive as if it were data. Failure keeps the existing file.
-    try:
-        r = requests.get(csv_url, timeout=15)
-        r.raise_for_status()
-        if len(r.content) < 10_000:
-            raise ValueError(f"download too small ({len(r.content)} bytes)")
-        with open(orig_lotto_csv, "wb") as f:
-            f.write(r.content)
-    except (requests.RequestException, ValueError) as exc:
-        logger.warning("Could not refresh archive (%s); using committed copy", exc)
+    # The exhibit used to download the archive here and write it straight over
+    # the committed copy, which the benchmark and the published report share.
+    # It now only reads that copy; refresh it with `uv run lotto report --refresh`,
+    # which validates a download before replacing anything.
     ILottoCSV(orig_lotto_csv, lotto_csv_file)
     lotto_ds = pd.read_csv(lotto_csv_file, index_col="Date")
     return lotto_ds
