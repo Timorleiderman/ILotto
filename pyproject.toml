@@ -18,6 +18,17 @@ lotto = "lotto.cli:main"
 [tool.ruff]
 line-length = 110
 
+[tool.ruff.lint]
+# Defaults plus sorted imports.
+extend-select = ["I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["lotto", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+# The exhibit is kept as it was written.
+"legacy/**" = ["I"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Puts the project root on sys.path so `tests` is importable as a package

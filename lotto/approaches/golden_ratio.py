@@ -30,8 +30,8 @@ import logging
 
 import numpy as np
 
-from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 from lotto.approaches.statistical import Predictor
+from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 
 logger = logging.getLogger(__name__)
 
@@ -111,4 +111,5 @@ class FibonacciTicket(Predictor):
 
 
 def golden_suite() -> list[Predictor]:
+    """The golden-ratio strategy and the Fibonacci control, in report order."""
     return [GoldenRatio(), FibonacciTicket()]

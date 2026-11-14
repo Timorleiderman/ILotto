@@ -26,7 +26,7 @@ Each chapter builds on the one before. Every claim is a command you can run.
 ## What was found
 
 **The draw cannot be picked.** Nineteen strategies, from hot numbers to a Transformer, were
-replayed draw by draw over 1,661 draws. None beats a random ticket after correcting for the number
+replayed draw by draw over the latest 300 of 1,661 draws, each seeing only earlier draws. None beats a random ticket after correcting for the number
 of strategies tried. [Live scoreboard](results.md).
 
 **Looking impressive is cheap.** A lookup table reconstructs every past draw, 6.000 numbers out

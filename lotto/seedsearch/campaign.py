@@ -15,9 +15,14 @@ from pathlib import Path
 
 from lotto.seedsearch.allocations import remote_ranges
 from lotto.seedsearch.generator import (
-    GENERATOR, MAX_SEED, Observation, prefix_hash, search, validate_checkpoint, write_json,
+    GENERATOR,
+    MAX_SEED,
+    Observation,
+    prefix_hash,
+    search,
+    validate_checkpoint,
+    write_json,
 )
-
 
 #: How long to wait for the short-lived allocation lock. Holders keep it only
 #: while reading or writing small range files, so contention is momentary; a

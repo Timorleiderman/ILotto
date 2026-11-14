@@ -10,22 +10,28 @@ the existing campaign ledger after the remote worker has stopped.
 from __future__ import annotations
 
 import argparse
-from datetime import date, timedelta
 import hashlib
 import json
-from pathlib import Path
 import random
 import time
+from datetime import date, timedelta
+from pathlib import Path
 
-
-from lotto.seedsearch.cuda_engine import CudaWorker
 from lotto.seedsearch.campaign import campaign_lock
+from lotto.seedsearch.cuda_engine import CudaWorker
 from lotto.seedsearch.generator import (
-    GENERATOR, MAX_SEED, Observation, prefix_hash, validate_checkpoint, world_outcome, write_json,
+    GENERATOR,
+    MAX_SEED,
+    Observation,
+    prefix_hash,
+    validate_checkpoint,
+    world_outcome,
+    write_json,
 )
 
 
 def validate_worker(worker):
+    """Check a CUDA worker against the Python reference before trusting its results."""
     rng = random.Random(120893)
     pairs = [(0, "2020-01-01"), (45123, "2020-01-01"), (MAX_SEED - 1, "2026-11-06")]
     for _ in range(1000):

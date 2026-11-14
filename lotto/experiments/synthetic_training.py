@@ -6,23 +6,26 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import platform
 import tempfile
 import time
+from pathlib import Path
 
 import numpy as np
 from scipy.stats import binom
 
-
-from lotto.core import data
-
-from lotto.core import metrics
-from lotto.tickets.forecast_portfolios import ranked_portfolios, score_portfolios
-from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES
-from lotto.tickets.coverage import portfolio_odds
-from lotto.forecasting.synthetic_learning import SCENARIOS, components, fit_mixture, frozen_forecast, simulate_episode
+from lotto.core import data, metrics
 from lotto.experiments.thousand_draws import summarize
+from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES
+from lotto.forecasting.synthetic_learning import (
+    SCENARIOS,
+    components,
+    fit_mixture,
+    frozen_forecast,
+    simulate_episode,
+)
+from lotto.tickets.coverage import portfolio_odds
+from lotto.tickets.forecast_portfolios import ranked_portfolios, score_portfolios
 
 ROOT = Path(__file__).resolve().parents[2]
 # The dated run is pinned to the archive as it stood on 2026-11-03. Reading that saved
@@ -43,10 +46,12 @@ SOURCES = ['lotto/forecasting/synthetic_learning.py', 'lotto/forecasting/calibra
 
 
 def sha256(path):
+    """Hex SHA-256 of a file's bytes."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def write_json(path, value):
+    """Write JSON atomically: to a temporary file first, then rename over the target."""
     with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as handle:
         staging = Path(handle.name)
         try:
@@ -58,6 +63,7 @@ def write_json(path, value):
 
 
 def validate_protocol(config):
+    """Raise ValueError unless the protocol is exactly the frozen one."""
     if (config.get('schema') != 1 or config['draws_per_episode'] != 2000
             or config['training_episodes'] != 500 or config['validation_episodes'] != 100
             or config['scenario_cycle'] != ['fair', 'fair', 'persistent_bias', 'changing_bias']
@@ -158,7 +164,7 @@ def evaluate(config):
     # them by their pre-restructure paths (commit e6a792c reproduces that state
     # exactly); since then, unchanged numbers are guarded by tests/test_golden.py.
     for filename, expected in config['input_sha256'].items():
-        if sha256(ARCHIVE if filename == data.RAW_CSV else ROOT / filename) != expected:
+        if sha256(ARCHIVE if filename == data.RAW_CSV_IN_REPO else ROOT / filename) != expected:
             raise ValueError(f'Input changed since freeze: {filename}')
     draws = data.load(raw_csv=str(ARCHIVE), clean_csv=None, refresh=False)
     if len(draws) != 1661:

@@ -6,18 +6,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import platform
 import sys
 import tempfile
 import time
+from pathlib import Path
 
 import numpy as np
 
-
-from lotto.core import data
-
-from lotto.core import metrics
+from lotto.core import data, metrics
 from lotto.forecasting.joint_mixture import FAMILY_PRIOR, LOG_FULL_OUTCOMES, build_experts, mix_experts
 from lotto.tickets.coverage import best_match_counts, portfolio_odds, refine_coverage_tickets
 
@@ -84,6 +81,7 @@ def build(draws, config, *, marginals=True):
 
 
 def mixtures(experts, config):
+    """The protocol's sequential mixtures of the experts, keyed by method name."""
     if (config['primary_method'], config['secondary_method']) != METHODS:
         raise ValueError(f'Protocol method names must be {METHODS}, in that order')
     return {config['primary_method']: mix_experts(experts.log_prob, experts.prior),
@@ -101,6 +99,7 @@ def interval(values, *, seed=61106):
 
 
 def wilson(successes, n):
+    """Wilson 95% interval for a binomial proportion."""
     p, z = successes/n, 1.959963984540054
     center = (p + z*z/(2*n)) / (1 + z*z/n)
     half = z * np.sqrt(p*(1-p)/n + z*z/(4*n*n)) / (1 + z*z/n)
@@ -108,6 +107,7 @@ def wilson(successes, n):
 
 
 def real_comparison(draws, config, npz_path):
+    """Score every expert and mixture on the real draws; write per-draw arrays to ``npz_path``."""
     validate_protocol(config, len(draws))
     tick = time.perf_counter()
     e = build(draws, config)
@@ -166,6 +166,7 @@ def real_comparison(draws, config, npz_path):
 
 
 def synthetic_draws(n, rng, multiplier, bias_starts):
+    """A fair history in which ball 1 is drawn ``multiplier`` times as often from ``bias_starts`` on."""
     probability = np.full(n, 6/37)
     probability[bias_starts:] *= multiplier
     present = rng.random(n) < probability
@@ -176,6 +177,7 @@ def synthetic_draws(n, rng, multiplier, bias_starts):
 
 
 def controls(config):
+    """Run the planted-bias simulations: can the mixture detect a bias it was not told about?"""
     settings = config['synthetic']
     rows = []
     for scenario_index, scenario in enumerate(settings['scenarios']):
@@ -207,6 +209,7 @@ def controls(config):
 
 
 def coverage_probe(config):
+    """Check whether exact refinement can still improve the saved coverage portfolios."""
     previous = json.loads((ROOT/'experiments/coverage_refinement_2026_11_06.json').read_text())
     if config['coverage_probe']['seeds'] > len(previous['rows']):
         raise ValueError('Coverage-probe count exceeds the available initial portfolios')

@@ -9,15 +9,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from lotto.core import backtest
-
-from lotto.core import data
-
-from lotto.core import metrics
-
 from lotto.approaches import statistical as predictors
-
-from lotto.core import randomness
+from lotto.core import backtest, data, metrics, randomness
 from tests import SNAPSHOT
 
 
@@ -297,8 +290,8 @@ def test_perfect_fit_families_disagree_about_the_future():
     This is the identifiability argument made constructive: if the data
     determined the continuation, exact fits would have to agree on it.
     """
-    from lotto.core import metrics
     from lotto.approaches import perfect_fit as spacetime
+    from lotto.core import metrics
 
     d = fake_draws(400, seed=15)
     tickets = []

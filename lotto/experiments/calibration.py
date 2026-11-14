@@ -10,18 +10,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import time
+from pathlib import Path
 
 import numpy as np
 from scipy import stats
 
-
-from lotto.core import backtest
-
-from lotto.core import data
-
-from lotto.core import metrics
+from lotto.core import backtest, data, metrics
 from lotto.forecasting.calibration import frequency_forecasts, past_loss_choices
 from lotto.tickets.coverage import greedy_coverage_tickets, portfolio_odds, single_ticket_prize_odds
 
@@ -29,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def prediction_experiment(draws):
+    """Score every smoothed-frequency forecast walk-forward and compare each with uniform."""
     names, targets, ball_p, strong_p = frequency_forecasts(draws)
     actual = draws.multi_hot[targets]
     ball_loss = -(actual[None] * np.log(np.clip(ball_p / 6, 1e-12, 1))).sum(axis=2) / 6
@@ -110,6 +106,7 @@ def uniformity_power(n_draws, simulations=512):
 
 
 def coverage_experiment(seeds):
+    """Exact any-prize odds for random and greedy ten-row portfolios, one pair per seed."""
     results = []
     for seed in seeds:
         rng = np.random.default_rng(seed)
@@ -133,6 +130,11 @@ def coverage_experiment(seeds):
 
 
 def null_benchmark(draws):
+    """Time two ways of building the random-ticket null and check they agree.
+
+    The old way generated and sorted 5,000 random tickets per draw; the new one
+    samples the hypergeometric match count directly. Same distribution, faster.
+    """
     def previous():
         rng = np.random.default_rng(7)
         hot = draws.multi_hot[-300:].astype(bool)

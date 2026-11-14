@@ -47,8 +47,8 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.special import logsumexp
 
-from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 from lotto.approaches.statistical import Predictor
+from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 
 logger = logging.getLogger(__name__)
 
@@ -290,6 +290,7 @@ class CBFit:
     train_dates: frozenset
 
     def logits(self, dates: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Ball logits (n, 37) and strong logits (n, 7) for each date."""
         phi = date_features(dates, self.ref)
         return self.alpha[None, :] + phi @ self.W.T, self.beta[None, :] + phi @ self.V.T
 

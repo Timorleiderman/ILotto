@@ -2,7 +2,7 @@
 
 !!! info "Generated output"
 
-    Rebuilt 2026-11-14 00:06 UTC from 1,661 draws through 2026-11-03. **Note: the newest draw here is 11 days old** — the upstream archive is not reachable from the CI runners, so new draws arrive only via a local refresh. Do not edit by hand — `lotto/experiments/benchmark_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
+    Rebuilt 2026-11-14 11:46 UTC from 1,661 draws through 2026-11-03. **Note: the newest draw here is 11 days old** — the upstream archive is not reachable from the CI runners, so new draws arrive only via a local refresh. Do not edit by hand — `lotto/experiments/benchmark_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
 
 ## Strategy scoreboard
 
@@ -30,7 +30,7 @@ Every strategy was asked to pick 6 numbers for each of the last **300 draws**, s
 | Perfect-fit function (polynomial) | 1.0067 | +3.5% | +0.70 | 0.506 | — | <span class="pill ok">no signal</span> |
 | Random ticket | 0.9933 | +2.1% | +0.42 | 0.696 | — | <span class="pill ok">no signal</span> |
 | Overdue (longest absence) | 0.9933 | +2.1% | +0.42 | 0.696 | — | <span class="pill ok">no signal</span> |
-| Rank ensemble | 0.9833 | +1.1% | +0.21 | 0.853 | — | <span class="pill ok">no signal</span> |
+| Rank ensemble | 0.9933 | +2.1% | +0.42 | 0.696 | — | <span class="pill ok">no signal</span> |
 | Cold numbers (all-time) | 0.9767 | +0.4% | +0.08 | 0.962 | — | <span class="pill ok">no signal</span> |
 | Fibonacci ticket (control) | 0.9767 | +0.4% | +0.08 | 0.962 | — | <span class="pill ok">no signal</span> |
 | Neural (gru, set prediction) | 0.9700 | -0.3% | -0.06 | 0.983 | 3.6242 | <span class="pill ok">no signal</span> |

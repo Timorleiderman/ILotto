@@ -21,9 +21,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-
-from lotto.seedsearch.rust_engine import DEFAULT_BINARY
 from lotto.seedsearch.generator import write_json
+from lotto.seedsearch.rust_engine import DEFAULT_BINARY
 
 ROOT = Path(__file__).resolve().parents[2]
 

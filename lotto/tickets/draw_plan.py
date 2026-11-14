@@ -73,14 +73,17 @@ class Result:
 
     @property
     def jackpot_won(self) -> bool:
+        """True if any row, regular or Double, won the first prize."""
         return self.winners[0] + self.double_winners[0] > 0
 
     @property
     def second_won(self) -> bool:
+        """True if any row won the second prize."""
         return self.winners[1] + self.double_winners[1] > 0
 
     @property
     def was_bonus(self) -> bool:
+        """True if three main numbers paid 15 NIS, the mark of a bonus draw."""
         return self.prizes[7] == 15
 
 

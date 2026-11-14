@@ -13,27 +13,21 @@ import argparse
 import logging
 from pathlib import Path
 
-
-from lotto.core import backtest
-
-from lotto.core import data
-
 from lotto.approaches import statistical as predictors
-
-from lotto.core import randomness
-
+from lotto.core import backtest, data, randomness
 from lotto.report import html as report
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-7s %(message)s")
-logger = logging.getLogger("build_report")
+logger = logging.getLogger("lotto.report")
 
 
 def main() -> int:
+    """Run the benchmark and write the report pages."""
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-7s %(message)s")
     ap = argparse.ArgumentParser()
     ap.add_argument("--refresh", action="store_true", help="re-download the draw archive")
     ap.add_argument("--n-test", type=int, default=300, help="walk-forward window length")
     ap.add_argument("--quick", action="store_true", help="skip neural models")
-    ap.add_argument("--out-dir", default="docs", help="MkDocs source tree")
+    ap.add_argument("--out-dir", default=str(data.REPO_ROOT / "docs"), help="MkDocs source tree")
     ap.add_argument("--null-trials", type=int, default=5000)
     args = ap.parse_args()
 
@@ -80,8 +74,8 @@ def main() -> int:
     # measured explicitly and shown next to its walk-forward score.
     memorisation = None
     if not args.quick:
-        from lotto.approaches.date_conditioned import DateConditionedCB, MemorisingDateLookup
         from lotto.approaches import date_conditioned as gen
+        from lotto.approaches.date_conditioned import DateConditionedCB, MemorisingDateLookup
 
         memorisation = []
         for p in (DateConditionedCB(), MemorisingDateLookup()):

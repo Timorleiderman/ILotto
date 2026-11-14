@@ -33,6 +33,7 @@ def _enumerate_draws(total):
 
 @lru_cache(maxsize=1)
 def outcomes():
+    """All 2,324,784 main draws as ball arrays and bit masks, built once and cached."""
     draws, masks = _enumerate_draws(comb(37, 6))
     draws.setflags(write=False)
     masks.setflags(write=False)
@@ -50,6 +51,7 @@ def _popcount(value):
 
 @njit(cache=True)
 def match_histogram(draw_masks, ticket_masks):
+    """How many draws have each best-row match count (0-6) for this portfolio."""
     histogram = np.zeros(7, dtype=np.int64)
     for draw in draw_masks:
         best = 0
@@ -107,6 +109,7 @@ def best_strong_partition(coverage, groups):
 
 @njit(cache=True)
 def coverage_counts(draw_masks, ticket_masks):
+    """For each draw, how many rows match it in three or more numbers."""
     counts = np.zeros(len(draw_masks), dtype=np.int32)
     for i, draw in enumerate(draw_masks):
         for ticket in ticket_masks:
@@ -116,6 +119,7 @@ def coverage_counts(draw_masks, ticket_masks):
 
 @njit(cache=True)
 def update_coverage(draw_masks, counts, old, new):
+    """Update ``counts`` in place after one row's mask changes from ``old`` to ``new``."""
     for i, draw in enumerate(draw_masks):
         counts[i] += int(_popcount(draw & new) >= 3) - int(_popcount(draw & old) >= 3)
 

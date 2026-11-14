@@ -13,9 +13,9 @@ from math import comb, log
 import numpy as np
 from scipy.special import logsumexp
 
-from lotto.forecasting.calibration import frequency_forecasts
-from lotto.core.data import Draws, N_DRAWN, N_NUMBERS, N_STRONG
 from lotto.approaches.date_conditioned import log_partition, marginals
+from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
+from lotto.forecasting.calibration import frequency_forecasts
 
 LOG_FULL_OUTCOMES = log(comb(N_NUMBERS, N_DRAWN) * N_STRONG)
 FAMILY_PRIOR = {"uniform": 0.5, "single_ball": 0.2, "single_strong": 0.1, "dense": 0.2}

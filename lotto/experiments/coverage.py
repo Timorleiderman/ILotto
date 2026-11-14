@@ -12,9 +12,11 @@ import argparse
 import json
 from pathlib import Path
 
-
 from lotto.tickets.coverage import (
-    greedy_coverage_tickets, portfolio_odds, refine_coverage_tickets, search_coverage_tickets,
+    greedy_coverage_tickets,
+    portfolio_odds,
+    refine_coverage_tickets,
+    search_coverage_tickets,
 )
 
 

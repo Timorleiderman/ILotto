@@ -13,9 +13,9 @@ from math import comb
 
 import numpy as np
 
-from lotto.core.validation import is_integer
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG
 from lotto.core.metrics import prize_tier
+from lotto.core.validation import is_integer
 
 
 def tickets_to_masks(rows):

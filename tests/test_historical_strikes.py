@@ -1,10 +1,9 @@
 import numpy as np
 import pytest
 
-from lotto.tickets.forecast_portfolios import longest_run, ranked_portfolios, score_portfolios
 from lotto.tickets.coverage import portfolio_odds
+from lotto.tickets.forecast_portfolios import longest_run, ranked_portfolios, score_portfolios
 from lotto.tickets.strong_assignment import strong_prize_odds
-
 
 TEMPLATE = [[1, 2, 3, 4, 5, 6, 1], [2, 7, 8, 9, 10, 11, 2], [3, 7, 12, 13, 14, 15, 1]]
 

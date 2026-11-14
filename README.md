@@ -10,7 +10,7 @@ taught, from basic probability to neural networks and exact algorithms.
 
 | Finding | Number | Read more |
 |---|---|---|
-| The draw cannot be picked | 19 strategies, from hot numbers to a Transformer, replayed over 1,661 draws: none beats a random ticket after correction | [Scoreboard](https://timorleiderman.github.io/ILotto/results/) |
+| The draw cannot be picked | 19 strategies, from hot numbers to a Transformer, each replayed over the latest 300 of 1,661 draws using only earlier draws: none beats a random ticket after correction | [Scoreboard](https://timorleiderman.github.io/ILotto/results/) |
 | Looking impressive is cheap | A lookup table reconstructs every past draw (6.000 of 6) and scores chance on the next one | [Memorisation](https://timorleiderman.github.io/ILotto/approaches/date-conditioned/) |
 | The ticket can be designed | One row wins a prize in 4.18% of draws; ten designed rows win in 38.60%, fourteen in 51.01%, counted exactly | [Coverage](https://timorleiderman.github.io/ILotto/approaches/ticket-generators/) |
 | Three bugs once looked like skill | An earlier version reported 30% accuracy, all of it from data handling | [Measurement](https://timorleiderman.github.io/ILotto/evaluation/) |

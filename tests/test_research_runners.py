@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 
 from lotto.core.data import load
-from tests import SNAPSHOT
 from lotto.experiments import joint_mixture as research
+from tests import SNAPSHOT
 
 
 def protocol():

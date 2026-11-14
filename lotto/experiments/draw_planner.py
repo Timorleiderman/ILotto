@@ -14,11 +14,15 @@ from pathlib import Path
 
 import requests
 
-
-from lotto.tickets.draw_plan import (
-    LOTTO_URL, RESULT_URL, ParseError, latest_draw_id, parse_result, plan,
-)
 from lotto.tickets.coverage import portfolio_odds
+from lotto.tickets.draw_plan import (
+    LOTTO_URL,
+    RESULT_URL,
+    ParseError,
+    latest_draw_id,
+    parse_result,
+    plan,
+)
 from lotto.tickets.strong_assignment import strong_prize_odds
 
 #: pais.co.il serves the result pages to browsers only.

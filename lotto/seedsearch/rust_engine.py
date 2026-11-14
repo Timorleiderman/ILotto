@@ -13,13 +13,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from lotto.seedsearch.generator import (
-    GENERATOR, MAX_SEED, Observation, prefix_hash, validate_checkpoint, world_outcome, write_json,
+    GENERATOR,
+    MAX_SEED,
+    Observation,
+    prefix_hash,
+    validate_checkpoint,
+    world_outcome,
+    write_json,
 )
 
 DEFAULT_BINARY = Path(__file__).resolve().parents[2] / "native/seed-search/target/release/ilotto-seed-search"
 
 
 def native_batch(prefix, start, stop, workers, binary=DEFAULT_BINARY):
+    """Search seeds ``[start, stop)`` with the Rust binary and validate its result."""
     request = {"generator": GENERATOR, "start": str(start), "stop": str(stop),
                "workers": workers, "prefix": [asdict(x) for x in prefix]}
     process = subprocess.Popen([str(binary)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,

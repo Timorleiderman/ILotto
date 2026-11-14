@@ -13,17 +13,11 @@ import numpy as np
 import pytest
 from scipy.optimize import check_grad
 
-from lotto.core import backtest
-
-from lotto.core import data
-
 from lotto.approaches import date_conditioned as generative
-
-from lotto.core import metrics
-
 from lotto.approaches import statistical as predictors
-from tests import SNAPSHOT
 from lotto.approaches.date_conditioned import DateConditionedCB, LeakageError
+from lotto.core import backtest, data, metrics
+from tests import SNAPSHOT
 
 from .test_pipeline import fake_draws
 

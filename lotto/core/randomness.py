@@ -36,6 +36,7 @@ def uniformity(draws: Draws) -> dict:
 
 
 def strong_uniformity(draws: Draws) -> dict:
+    """Are the seven strong numbers drawn equally often? Plain chi-square over 7 cells."""
     counts = np.bincount(draws.strong, minlength=N_STRONG + 1)[1:]
     res = stats.chisquare(counts)
     return {
@@ -323,4 +324,5 @@ ALL_TESTS = (
 
 
 def run_all(draws: Draws) -> list[dict]:
+    """Run every test in ``ALL_TESTS`` and return their result dicts in that order."""
     return [test(draws) for test in ALL_TESTS]

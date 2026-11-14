@@ -29,8 +29,8 @@ import logging
 
 import numpy as np
 
-from lotto.core.data import N_NUMBERS, N_STRONG, Draws
 from lotto.approaches.statistical import Predictor
+from lotto.core.data import N_NUMBERS, N_STRONG, Draws
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-11-14T00:06:00+00:00",
+  "generated_utc": "2026-11-14T11:46:21+00:00",
   "n_draws": 1661,
   "last_draw_date": "2026-11-03",
   "randomness_tests": [
@@ -213,7 +213,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 1.48
+      "seconds": 1.51
     },
     {
       "name": "Method of analogues (chaos)",
@@ -234,7 +234,7 @@
       "strong_accuracy": 0.16,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.1
+      "seconds": 0.11
     },
     {
       "name": "Perfect-fit function (polynomial)",
@@ -297,28 +297,28 @@
       "strong_accuracy": 0.13333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.11
+      "seconds": 0.1
     },
     {
       "name": "Rank ensemble",
       "description": "Averages the normalised ranks of the statistical predictors.",
       "n_draws": 300,
-      "mean_matches": 0.9833333333333333,
+      "mean_matches": 0.9933333333333333,
       "baseline_matches": 0.972972972972973,
-      "lift_pct": 1.0648148148147962,
+      "lift_pct": 2.0925925925925792,
       "match_se": 0.04837259012129297,
-      "z_score": 0.21417832566711706,
-      "p_value": 0.8531655502280439,
-      "p_value_greater": 0.42658277511402193,
+      "z_score": 0.42090697044146713,
+      "p_value": 0.6956812274375307,
+      "p_value_greater": 0.34784061371876535,
       "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
       "mean_log_loss": null,
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 4,
-      "hit_3plus_rate": 0.05,
-      "strong_accuracy": 0.16,
+      "hit_3plus_rate": 0.05333333333333334,
+      "strong_accuracy": 0.15333333333333332,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.27
+      "seconds": 0.38
     },
     {
       "name": "Cold numbers (all-time)",
@@ -381,7 +381,7 @@
       "strong_accuracy": 0.16333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 47.62
+      "seconds": 46.34
     },
     {
       "name": "Date-conditioned generative (CB-6/37)",
@@ -402,7 +402,7 @@
       "strong_accuracy": 0.17,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 2.9
+      "seconds": 2.92
     },
     {
       "name": "Pairwise co-occurrence (Markov)",
@@ -444,7 +444,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.09
+      "seconds": 0.08
     },
     {
       "name": "Neural (transformer, set prediction)",
@@ -465,7 +465,7 @@
       "strong_accuracy": 0.11333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 36.58
+      "seconds": 36.08
     }
   ],
   "monte_carlo_null": {

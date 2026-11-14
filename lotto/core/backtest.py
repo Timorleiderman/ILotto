@@ -20,9 +20,9 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from lotto.approaches.statistical import Predictor
 from lotto.core import metrics
 from lotto.core.data import Draws
-from lotto.approaches.statistical import Predictor
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +127,7 @@ def random_ticket_null(draws: Draws, n_test: int, n_trials: int = 5000, seed: in
 
 
 def run_suite(predictors: list[Predictor], draws: Draws, n_test: int = 300) -> list[Result]:
+    """Backtest every predictor, sort by mean matches, and mark which survive Holm-Bonferroni."""
     results = []
     for p in predictors:
         logger.info("Backtesting %s", p.name)

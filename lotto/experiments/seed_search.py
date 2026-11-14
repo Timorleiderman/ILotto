@@ -19,11 +19,17 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-
-from lotto.seedsearch.generator import (
-    GENERATOR, Observation, prefix_hash, index_ticket, search, ticket_index, world_outcome, write_json,
-)
 from lotto.seedsearch.campaign import continue_search
+from lotto.seedsearch.generator import (
+    GENERATOR,
+    Observation,
+    index_ticket,
+    prefix_hash,
+    search,
+    ticket_index,
+    world_outcome,
+    write_json,
+)
 
 RUN_ROOT = Path(__file__).resolve().parents[2] / "experiments/seed_search_runs"
 

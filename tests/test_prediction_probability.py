@@ -7,16 +7,14 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from lotto.core import backtest
-
-from lotto.core import data
-
-from lotto.core import metrics
-
-from lotto.core import randomness
+from lotto.core import backtest, data, metrics, randomness
 from lotto.forecasting.calibration import frequency_forecasts, past_loss_choices
 from lotto.tickets.coverage import (
-    best_match_counts, greedy_coverage_tickets, portfolio_odds, refine_coverage_tickets, single_ticket_prize_odds,
+    best_match_counts,
+    greedy_coverage_tickets,
+    portfolio_odds,
+    refine_coverage_tickets,
+    single_ticket_prize_odds,
 )
 
 

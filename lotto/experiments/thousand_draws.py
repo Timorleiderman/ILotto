@@ -5,22 +5,19 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import platform
 import tempfile
+from pathlib import Path
 
 import numpy as np
 from scipy.stats import binom
 
-
-from lotto.core import data
-
-from lotto.core import metrics
-from lotto.tickets.forecast_portfolios import longest_run, ranked_portfolios, score_portfolios
+from lotto.core import data, metrics
+from lotto.experiments.joint_mixture import build, mixtures
 from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES
 from lotto.tickets.coverage import portfolio_odds
+from lotto.tickets.forecast_portfolios import longest_run, ranked_portfolios, score_portfolios
 from lotto.tickets.strong_assignment import strong_prize_odds
-from lotto.experiments.joint_mixture import build, mixtures
 
 ROOT = Path(__file__).resolve().parents[2]
 # The dated run is pinned to the archive as it stood on 2026-11-03. Reading that saved
@@ -32,10 +29,12 @@ OUTPUT = ROOT / 'results/thousand-draws/historical_strikes.json'
 
 
 def sha256(path):
+    """Hex SHA-256 of a file's bytes."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def summarize(matches, strong_hit, p_win):
+    """Winning-draw counts, the fair expectation and a binomial p-value for one budget."""
     best = matches.max(axis=1)
     wins = best >= 3
     count, n = int(wins.sum()), len(wins)
@@ -56,7 +55,7 @@ def main():
             or config['selection_draws'] != 500):
         raise ValueError('Require the fixed 1000-draw protocol, four 250-draw blocks and a 500-draw selector')
     for filename, expected in config['input_sha256'].items():
-        if sha256(ARCHIVE if filename == data.RAW_CSV else ROOT / filename) != expected:
+        if sha256(ARCHIVE if filename == data.RAW_CSV_IN_REPO else ROOT / filename) != expected:
             raise ValueError(f'Input changed since protocol freeze: {filename}')
     draws = data.load(raw_csv=str(ARCHIVE), clean_csv=None, refresh=False)
     n = config['n_test']

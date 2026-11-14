@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 from lotto.core.validation import is_integer
-from lotto.core.data import Draws, N_DRAWN, N_NUMBERS, N_STRONG
 
 
 def frequency_forecasts(draws: Draws, *, min_history=200,

@@ -5,15 +5,17 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import platform
 import time
+from pathlib import Path
 
 import numpy as np
 
-
 from lotto.tickets.coverage import (
-    best_match_counts, greedy_coverage_tickets, portfolio_odds, refine_coverage_tickets,
+    best_match_counts,
+    greedy_coverage_tickets,
+    portfolio_odds,
+    refine_coverage_tickets,
 )
 
 

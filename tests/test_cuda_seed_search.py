@@ -1,15 +1,15 @@
 """Fail closed on bad GPU output; exercise the live device when explicitly set."""
 
-from copy import deepcopy
 import os
-from pathlib import Path
 import sys
+from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
 from lotto.seedsearch.cuda_engine import CudaWorker
-from lotto.seedsearch.rust_engine import validate_native_result
 from lotto.seedsearch.generator import GENERATOR, Observation, world_outcome
+from lotto.seedsearch.rust_engine import validate_native_result
 
 
 def fixture():

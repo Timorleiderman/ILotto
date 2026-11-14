@@ -5,14 +5,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-from math import comb
-from pathlib import Path
 import platform
 import tempfile
 import time
+from math import comb
+from pathlib import Path
 
 import numpy as np
-
 
 from lotto.tickets.coverage import best_match_counts, portfolio_odds, search_coverage_tickets
 from lotto.tickets.strong_assignment import optimize_strong_numbers, strong_prize_odds
@@ -24,15 +23,18 @@ OUTPUT = ROOT / 'results/strong-numbers/ticket_chances.json'
 
 
 def sha256(path):
+    """Hex SHA-256 of a file's bytes."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def verify_mains(tickets, odds):
+    """Recount main-number coverage with the independent reference engine."""
     reference = best_match_counts([row[:6] for row in tickets], engine='reference')
     np.testing.assert_array_equal(reference, odds['best_match_counts'])
 
 
 def verify_strong(tickets, expected):
+    """Recount strong-number coverage with the independent reference engine."""
     reference = strong_prize_odds(tickets, engine='reference')
     if reference['covered_full_outcomes'] != expected:
         raise RuntimeError('Independent strong-prize coverage verification failed')

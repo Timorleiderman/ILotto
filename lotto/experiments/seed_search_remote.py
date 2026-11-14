@@ -11,25 +11,29 @@ import argparse
 import hashlib
 import json
 import math
-from pathlib import Path
 import re
 import shlex
 import time
+from pathlib import Path
 
-
-from lotto.seedsearch.cuda_engine import MAX_BATCH, CudaWorker
+from lotto.experiments.seed_search_cuda_benchmark import validate_worker
 from lotto.seedsearch.allocations import get_remote, reserve_remote
 from lotto.seedsearch.campaign import campaign_lock
+from lotto.seedsearch.cuda_engine import MAX_BATCH, CudaWorker
 from lotto.seedsearch.generator import (
-    GENERATOR, Observation, prefix_hash, validate_checkpoint, write_json,
+    GENERATOR,
+    Observation,
+    prefix_hash,
+    validate_checkpoint,
+    write_json,
 )
-from lotto.experiments.seed_search_cuda_benchmark import validate_worker
 
 ROOT = Path(__file__).resolve().parents[2]
 RUN_ROOT = ROOT / "experiments/seed_search_runs"
 
 
 def ssh_command(worker):
+    """The ssh argument list that starts the CUDA worker on the remote host."""
     host, directory = worker["host"], worker["directory"]
     if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.@:-]*", host) or not directory.startswith("/"):
         raise ValueError("Expected an SSH host and an absolute remote checkout path")
@@ -40,6 +44,7 @@ def ssh_command(worker):
 
 
 def run_allocation(manifest, *, run_root, seconds, worker_factory=None, validator=validate_worker):
+    """Search one reserved seed range on the remote GPU, checkpointing locally after each batch."""
     if not math.isfinite(seconds) or not 0 < seconds <= 86400:
         raise ValueError("Require a finite time limit in (0, 86400]")
     if not re.fullmatch(r"[a-f0-9]{32}", manifest["id"]):

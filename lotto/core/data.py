@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -26,11 +27,17 @@ import requests
 logger = logging.getLogger(__name__)
 
 CSV_URL = "https://pais.co.il/Lotto/lotto_resultsDownload.aspx"
-RAW_CSV = "input/Orig_IL_lotto.csv"
-#: Deliberately not `lotto_IL_filtered.csv`: `helpers.ILottoCSV` regenerates that
-#: file with the legacy value-based filter, so the two would overwrite each
-#: other with incompatible contents. Both readers get their own artifact.
-CLEAN_CSV = "input/lotto_IL_modern.csv"
+
+#: The repository root. Paths are resolved from here, not from the working
+#: directory, so ``uv run lotto ...`` works from any folder.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+#: The raw archive's path inside the repository, as the dated protocols record it.
+RAW_CSV_IN_REPO = "input/Orig_IL_lotto.csv"
+RAW_CSV = str(REPO_ROOT / RAW_CSV_IN_REPO)
+#: The cleaned modern-era draws. Deliberately not `lotto_IL_filtered.csv`: the
+#: legacy exhibit regenerates that file with its value-based filter, so the two
+#: would overwrite each other with incompatible contents.
+CLEAN_CSV = str(REPO_ROOT / "input/lotto_IL_modern.csv")
 
 BALL_COLS = [f"Ball_{i}" for i in range(1, 7)]
 ALL_COLS = BALL_COLS + ["Ball_Bonus"]
@@ -70,6 +77,7 @@ class Draws:
         return m
 
     def slice(self, start: int | None = None, stop: int | None = None) -> "Draws":
+        """The draws in ``[start, stop)``, like slicing a list; dates stay chronological."""
         s = slice(start, stop)
         return Draws(self.dates[s], self.balls[s], self.strong[s])
 

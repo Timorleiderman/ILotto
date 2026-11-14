@@ -44,9 +44,9 @@ import logging
 
 import numpy as np
 
+from lotto.approaches.statistical import Predictor
 from lotto.core import metrics
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
-from lotto.approaches.statistical import Predictor
 
 logger = logging.getLogger(__name__)
 
@@ -167,4 +167,5 @@ class MethodOfAnalogues(Predictor):
 
 
 def chaos_suite() -> list[Predictor]:
+    """The chaos-theory strategies, in report order."""
     return [MethodOfAnalogues()]

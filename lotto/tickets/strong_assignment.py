@@ -10,7 +10,7 @@ from math import comb
 import numpy as np
 
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG
-from lotto.tickets.coverage import full_tickets, is_integer, tickets_to_masks, best_match_counts
+from lotto.tickets.coverage import best_match_counts, full_tickets, is_integer, tickets_to_masks
 
 
 def _threshold(value):

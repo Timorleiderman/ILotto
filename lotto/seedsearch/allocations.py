@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
 import json
-from pathlib import Path
 import uuid
+from dataclasses import asdict
+from pathlib import Path
 
 from lotto.seedsearch.generator import GENERATOR, MAX_SEED, prefix_hash, write_json
 
@@ -86,6 +86,7 @@ def reserve_remote(prefix, *, root: Path, run_root: Path, candidates: int, worke
 
 
 def get_remote(root: Path, allocation_id: str):
+    """The manifest of a reserved remote range, by its id."""
     for record in remote_ranges(root):
         if record["id"] == allocation_id:
             return record["manifest"]

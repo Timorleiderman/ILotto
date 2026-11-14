@@ -9,11 +9,10 @@ from datetime import datetime, timezone
 import numpy as np
 from scipy import stats
 
-from lotto.report import charts
-
+from lotto.approaches.statistical import Predictor
 from lotto.core import metrics
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
-from lotto.approaches.statistical import Predictor
+from lotto.report import charts
 
 CSS = """
 :root{color-scheme:light dark}
@@ -634,6 +633,7 @@ def dump_markdown(
 
 
 def dump_json(path: str, draws: Draws, tests, results, null_dist, predictions) -> None:
+    """Write the machine-readable results next to the HTML report."""
     payload = {
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "n_draws": len(draws),

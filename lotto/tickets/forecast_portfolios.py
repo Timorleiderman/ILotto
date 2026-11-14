@@ -61,6 +61,7 @@ def score_portfolios(tickets, actual_balls, actual_strong):
 
 
 def longest_run(events):
+    """Length of the longest run of consecutive true values."""
     longest = current = 0
     for event in events:
         current = current + 1 if event else 0

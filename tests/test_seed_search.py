@@ -5,7 +5,12 @@ from dataclasses import replace
 import pytest
 
 from lotto.seedsearch.generator import (
-    OUTCOMES, Observation, index_ticket, search, ticket_index, world_outcome,
+    OUTCOMES,
+    Observation,
+    index_ticket,
+    search,
+    ticket_index,
+    world_outcome,
 )
 
 

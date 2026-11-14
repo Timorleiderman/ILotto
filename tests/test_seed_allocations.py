@@ -4,11 +4,11 @@ import json
 
 import pytest
 
-from lotto.seedsearch.allocations import get_remote, reserve_remote
+from lotto.experiments.seed_search_remote import run_allocation, ssh_command
 from lotto.seedsearch import campaign as seed_campaign
+from lotto.seedsearch.allocations import get_remote, reserve_remote
 from lotto.seedsearch.campaign import campaign_lock, continue_search
 from lotto.seedsearch.generator import Observation, prefix_hash, world_outcome, write_json
-from lotto.experiments.seed_search_remote import run_allocation, ssh_command
 
 
 def history():

@@ -38,6 +38,7 @@ def ticket_index(balls, strong: int) -> int:
 
 
 def index_ticket(outcome: int) -> dict:
+    """Inverse of ``ticket_index``: the six balls and strong number for an outcome index."""
     if not isinstance(outcome, int) or not 0 <= outcome < OUTCOMES:
         raise ValueError("Outcome index outside the lottery support")
     rank, strong = divmod(outcome, 7)
@@ -71,6 +72,7 @@ def _outcome(seed_bytes: bytes, date_bytes: bytes) -> int:
 
 
 def world_outcome(seed: int, target_date: str) -> int:
+    """The draw the artificial generator produces for this seed on this date, as an outcome index."""
     if not isinstance(seed, int) or not 0 <= seed < MAX_SEED:
         raise ValueError("Seed must be an unsigned 64-bit integer")
     return _outcome(seed.to_bytes(8, "big"), _date_bytes(target_date))

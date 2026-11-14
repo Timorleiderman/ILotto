@@ -3,12 +3,11 @@
 
 import hashlib
 import json
-from pathlib import Path
 import tempfile
 import time
+from pathlib import Path
 
 import numpy as np
-
 
 from lotto.tickets.coverage import best_match_counts, portfolio_odds, search_coverage_tickets
 

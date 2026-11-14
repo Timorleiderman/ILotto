@@ -11,15 +11,12 @@ from pathlib import Path
 
 import pytest
 
-from lotto.core import backtest
-
-from lotto.core import data
-
 from lotto.approaches import statistical as predictors
 from lotto.approaches.chaos import chaos_suite
 from lotto.approaches.golden_ratio import golden_suite
-from lotto.tickets.coverage import portfolio_odds
 from lotto.approaches.perfect_fit import spacetime_suite
+from lotto.core import backtest, data
+from lotto.tickets.coverage import portfolio_odds
 from lotto.tickets.strong_assignment import strong_prize_odds
 from tests import SNAPSHOT
 
