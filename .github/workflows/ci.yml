@@ -49,7 +49,7 @@ jobs:
       - name: Build report (quick)
         env:
           TF_CPP_MIN_LOG_LEVEL: "3"
-        run: uv run lotto report --quick --n-test 100 --null-trials 500
+        run: uv run lotto report --offline --quick --n-test 100 --null-trials 500
 
       # --strict turns broken internal links and nav references into failures.
       - name: Build docs site

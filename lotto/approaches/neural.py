@@ -25,7 +25,10 @@ control of the same variable. Only the plateau-based reduction survives.
 
 from __future__ import annotations
 
+import contextlib
 import logging
+import os
+import sys
 
 import numpy as np
 
@@ -35,6 +38,49 @@ from lotto.core.data import N_NUMBERS, N_STRONG, Draws
 logger = logging.getLogger(__name__)
 
 WINDOW = 20
+
+
+@contextlib.contextmanager
+def _quiet_stderr():
+    """Send this process's C-level stderr to /dev/null for the duration.
+
+    TensorFlow's C++ libraries print start-up chatter (CUDA probes on a CPU
+    build, duplicate-registration warnings) straight to file descriptor 2,
+    before any logging setting is read, so only redirecting the descriptor
+    silences it. Python exceptions are unaffected: they are printed after the
+    descriptor is restored.
+    """
+    sys.stderr.flush()
+    saved = os.dup(2)
+    with open(os.devnull, "w") as devnull:
+        os.dup2(devnull.fileno(), 2)
+        try:
+            yield
+        finally:
+            sys.stderr.flush()
+            os.dup2(saved, 2)
+            os.close(saved)
+
+
+def _tensorflow():
+    """Import TensorFlow quietly, unless ``TF_CPP_MIN_LOG_LEVEL`` asks for its logs.
+
+    Set ``TF_CPP_MIN_LOG_LEVEL=0`` to see everything TensorFlow prints, for
+    example when debugging a GPU setup.
+    """
+    if "tensorflow" in sys.modules:
+        return sys.modules["tensorflow"]
+    os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+    if os.environ["TF_CPP_MIN_LOG_LEVEL"] != "3":
+        import tensorflow as tf
+
+        return tf
+    with _quiet_stderr():
+        import tensorflow as tf
+
+        tf.get_logger().setLevel("ERROR")
+        tf.config.list_physical_devices()  # device probing prints too; do it now, quietly
+    return tf
 
 
 def _features(multi_hot: np.ndarray) -> np.ndarray:
@@ -70,7 +116,7 @@ def make_windows(draws: Draws, window: int = WINDOW) -> tuple[np.ndarray, np.nda
 
 def build_model(window: int = WINDOW, arch: str = "gru", seed: int = 42):
     """Small dual-head network: 37 sigmoids for the set, 7 softmax for strong."""
-    import tensorflow as tf
+    tf = _tensorflow()
     from tensorflow.keras import layers
 
     tf.keras.utils.set_random_seed(seed)
@@ -159,7 +205,7 @@ class NeuralPredictor(Predictor):
         self.history: list[dict] = []
 
     def fit(self, history: Draws) -> None:
-        import tensorflow as tf
+        tf = _tensorflow()
 
         X, y, s = make_windows(history, self.window)
         n_val = max(int(len(X) * self.val_frac), 20)

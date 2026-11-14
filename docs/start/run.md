@@ -40,7 +40,8 @@ gap is what overlap costs, and the design keeps it small.
 uv run lotto report --quick --n-test 100 --null-trials 500
 ```
 
-About ten seconds. It runs nine randomness tests and sixteen prediction strategies on the real
+About ten seconds. It first checks pais.co.il for draws newer than the archive and adds them to
+`input/` (add `--offline` to skip that). It then runs nine randomness tests and sixteen prediction strategies on the real
 archive and writes the report to `results/report/`: open `results/report/benchmark/index.html`
 in a browser. The published site is untouched; it is rebuilt with `--out-dir docs`.
 

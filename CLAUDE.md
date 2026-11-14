@@ -23,8 +23,9 @@ uv run ruff check .          # must pass over the whole repo
 
 # Everything runs through one command.
 uv run lotto list                                   # the experiment catalog
-uv run lotto report --quick                         # benchmark report into results/report/, skip neural models
-uv run lotto report --refresh --out-dir docs        # fresh draws, full run (~2 min), rebuilds the site pages
+uv run lotto report --quick                         # checks for new draws, report into results/report/, no neural models
+uv run lotto report --out-dir docs                  # checks for new draws, full run (~2 min), rebuilds the site pages
+uv run lotto report --offline --quick               # same, without contacting pais.co.il
 uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json
 uv run lotto plan                                   # which form to play next
 
@@ -65,9 +66,9 @@ than surprising.
 
 ## Operational fact: CI cannot reach pais.co.il
 
-The scheduled publish runs `--refresh`, but the download times out from GitHub's runners
+Every `lotto report` checks pais.co.il for new draws first (`--offline` skips it), but from GitHub's runners the download times out
 (geo/cloud-IP blocking) and falls back to the committed archive — so **new draws only land
-when someone runs `uv run lotto report --refresh --out-dir docs` locally and
+when someone runs `uv run lotto report --out-dir docs` locally and
 commits `input/` and `docs/`**. The workflow prints archive freshness to the job summary and warns past 7 days;
 the generated pages carry the same warning. Do not "fix" the fallback by making the
 download fatal: the site must still rebuild when the source is down.
@@ -111,7 +112,8 @@ Removed deliberately. Do not add ticket scoring based on what other players pick
 ### Data files
 
 `lotto.core.data.load` reads `input/Orig_IL_lotto.csv` (committed so builds survive pais.co.il
-being unreachable) and writes `input/lotto_IL_modern.csv`. A refresh replaces the archive only
+being unreachable) and writes `input/lotto_IL_modern.csv`. The check for new draws (`data.download`, run by every
+`lotto report` unless `--offline`) replaces the archive only
 if the download parses and still contains every draw already on record.
 
 ## Invariants that make the results valid

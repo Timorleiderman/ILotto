@@ -568,10 +568,48 @@ def test_refresh_rejects_an_archive_that_lost_draws(tmp_path, monkeypatch):
     assert raw.read_bytes() == original
 
 
-def test_refresh_accepts_an_archive_that_keeps_every_draw(tmp_path, monkeypatch):
-    raw, _ = _local_archive(tmp_path, monkeypatch, None)
-    assert data.download(str(raw)) is True
+def test_refresh_adds_new_draws(tmp_path, monkeypatch, caplog):
+    from pathlib import Path
+
+    lines = Path(SNAPSHOT).read_bytes().split(b"\n")
+    raw = tmp_path / "archive.csv"
+    raw.write_bytes(b"\n".join(lines[:1] + lines[3:]))  # local copy lacks the two newest draws
+    served = b"\n".join(lines)
+    monkeypatch.setattr(data.requests, "get", lambda *a, **k: _Response(served))
+    with caplog.at_level("INFO"):
+        assert data.download(str(raw)) is True
+    assert raw.read_bytes() == served
+    assert "Added 2 new draws" in caplog.text
     assert not (tmp_path / "archive.csv.download").exists()
+
+
+def test_refresh_leaves_an_up_to_date_archive_untouched(tmp_path, monkeypatch, caplog):
+    raw, original = _local_archive(tmp_path, monkeypatch, None)
+    before = raw.stat().st_mtime_ns
+    with caplog.at_level("INFO"):
+        assert data.download(str(raw)) is False
+    assert raw.read_bytes() == original and raw.stat().st_mtime_ns == before
+    assert "up to date" in caplog.text
+
+
+@pytest.mark.parametrize("argv,expect_refresh", [([], True), (["--offline"], False)])
+def test_report_checks_for_new_draws_unless_offline(monkeypatch, argv, expect_refresh):
+    from lotto.experiments import benchmark_report
+
+    seen = {}
+
+    class Stop(Exception):
+        pass
+
+    def fake_load(**kwargs):
+        seen.update(kwargs)
+        raise Stop
+
+    monkeypatch.setattr(benchmark_report.data, "load", fake_load)
+    monkeypatch.setattr("sys.argv", ["lotto report", *argv])
+    with pytest.raises(Stop):
+        benchmark_report.main()
+    assert seen["refresh"] is expect_refresh
 
 
 @pytest.mark.parametrize("old,new", [(b",7,25,27,31,32,34,", b",7.5,25,27,31,32,34,"),

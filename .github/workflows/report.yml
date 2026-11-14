@@ -73,13 +73,13 @@ jobs:
           case "$N_TEST" in
             ''|*[!0-9]*) echo "n_test must be a positive integer, got: $N_TEST" >&2; exit 1 ;;
           esac
+          # The report checks pais.co.il for new draws on its own.
           uv run lotto report \
-            --refresh \
             --n-test "$N_TEST" \
             --out-dir docs
 
       # pais.co.il is not reachable from GitHub's runners (connect timeout —
-      # likely geo/cloud-IP blocking), so --refresh above silently falls back to
+      # likely geo/cloud-IP blocking), so the check for new draws falls back to
       # the committed archive. Surface that instead of letting green runs hide
       # a stale site: the end date goes in the job summary, with a warning
       # annotation once it is more than a week old.

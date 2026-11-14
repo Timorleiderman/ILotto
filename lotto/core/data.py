@@ -83,13 +83,14 @@ class Draws:
         return Draws(self.dates[s], self.balls[s], self.strong[s])
 
 
-def download(raw_csv: str = RAW_CSV, timeout: int = 15) -> bool:
-    """Refresh the raw archive from pais.co.il. Returns True if it was replaced.
+def download(raw_csv: str = RAW_CSV, timeout: float | tuple[float, float] = (5, 30)) -> bool:
+    """Check pais.co.il for new draws. Returns True if the archive gained draws.
 
     The download replaces the local file only after it has been parsed and
     shown to contain every draw already on record: an archive only grows.
-    Any failure keeps the committed copy, which is what keeps CI green when
-    the site is unreachable.
+    An identical archive is left untouched. Any failure keeps the committed
+    copy, which is what keeps CI green when the site is unreachable; the
+    default timeout gives up after 5 seconds if the site does not answer.
     """
     os.makedirs(os.path.dirname(raw_csv) or ".", exist_ok=True)
     try:
@@ -103,29 +104,34 @@ def download(raw_csv: str = RAW_CSV, timeout: int = 15) -> bool:
     with open(candidate, "wb") as fh:
         fh.write(res.content)
     try:
-        problem = _refresh_problem(candidate, raw_csv)
+        problem, added = _refresh_problem(candidate, raw_csv)
     except Exception as exc:  # an HTML error page, or a changed column layout
-        problem = f"it could not be parsed ({exc})"
-    if problem:
+        problem, added = f"it could not be parsed ({exc})", None
+    if problem or added is None or added.empty:
         os.remove(candidate)
-        logger.warning("Downloaded archive rejected: %s; keeping local copy", problem)
+        if problem:
+            logger.warning("Downloaded archive rejected: %s; keeping local copy", problem)
+        else:
+            logger.info("Draw archive is up to date; no new draws")
         return False
     os.replace(candidate, raw_csv)
-    logger.info("Downloaded %d bytes of draw history", len(res.content))
+    newest = added["date"].max().date()
+    logger.info("Added %d new draw%s to the archive (newest %s)", len(added), "" if len(added) == 1 else "s", newest)
     return True
 
 
-def _refresh_problem(candidate: str, current: str) -> str | None:
-    """Why `candidate` must not replace `current`, or None if it may."""
+def _refresh_problem(candidate: str, current: str) -> tuple[str | None, pd.DataFrame | None]:
+    """Why `candidate` must not replace `current` (or None), and the draws it adds."""
     new = _read_raw(candidate)
     if new.empty:
-        return "no draws were parsed from it"
+        return "no draws were parsed from it", None
     if not os.path.exists(current):
-        return None
-    missing = set(_read_raw(current)["draw_id"]) - set(new["draw_id"])
+        return None, new
+    old_ids = set(_read_raw(current)["draw_id"])
+    missing = old_ids - set(new["draw_id"])
     if missing:
-        return f"{len(missing)} draws already on record are missing from it"
-    return None
+        return f"{len(missing)} draws already on record are missing from it", None
+    return None, new[~new["draw_id"].isin(old_ids)]
 
 
 def _read_raw(raw_csv: str) -> pd.DataFrame:

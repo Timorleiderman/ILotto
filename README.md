@@ -82,11 +82,12 @@ uv run mkdocs build --strict
 ```
 
 CI runs all of these on every push. A scheduled workflow rebuilds the report and the site on the
-mornings after draw days. The draw archive itself can only be refreshed from a machine that can
-reach pais.co.il, which GitHub's runners cannot:
+mornings after draw days. Every `lotto report` first checks pais.co.il for new draws and adds
+them to `input/` (`--offline` skips the check). GitHub's runners cannot reach the site, so new
+draws reach the published site when someone runs this on their own machine:
 
 ```bash
-uv run lotto report --refresh --out-dir docs
+uv run lotto report --out-dir docs
 ```
 
 Then commit `input/` and `docs/`.

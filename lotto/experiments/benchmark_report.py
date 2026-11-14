@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Run the full analysis and write the benchmark report.
 
-    uv run lotto report [--refresh] [--n-test 300] [--quick] [--out-dir DIR]
+    uv run lotto report [--offline] [--n-test 300] [--quick] [--out-dir DIR]
 
-`--refresh` re-downloads the draw archive. `--quick` skips the neural models.
+Every run first checks pais.co.il for new draws and adds any it finds to the
+archive (validated; a failure falls back to the committed copy). `--offline`
+skips that check. `--quick` skips the neural models.
 Pages go to `results/report/` by default, so trying the command never touches
 the published site; pass `--out-dir docs` to rebuild the pages the site serves.
 """
@@ -25,7 +27,10 @@ def main() -> int:
     """Run the benchmark and write the report pages."""
     logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-7s %(message)s")
     ap = argparse.ArgumentParser()
-    ap.add_argument("--refresh", action="store_true", help="re-download the draw archive")
+    ap.add_argument("--offline", action="store_true",
+                    help="use the committed archive without checking pais.co.il for new draws")
+    # Checking for new draws is now the default; the old flag is still accepted.
+    ap.add_argument("--refresh", action="store_true", help=argparse.SUPPRESS)
     ap.add_argument("--n-test", type=int, default=300, help="walk-forward window length")
     ap.add_argument("--quick", action="store_true", help="skip neural models")
     ap.add_argument("--out-dir", default=str(data.REPO_ROOT / "results/report"),
@@ -33,7 +38,7 @@ def main() -> int:
     ap.add_argument("--null-trials", type=int, default=5000)
     args = ap.parse_args()
 
-    draws = data.load(refresh=args.refresh)
+    draws = data.load(refresh=not args.offline)
 
     logger.info("Running randomness tests")
     tests = randomness.run_all(draws)
