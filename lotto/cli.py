@@ -6,6 +6,7 @@
     uv run lotto report --quick            rebuild the benchmark report  (= lotto run report)
     uv run lotto plan                      which form to play next       (= lotto run plan)
     uv run lotto predict                   every model's 10-row form for the next draw
+    uv run lotto ui                        the dashboard, in your browser at localhost:6037
 
 Everything after the experiment id is passed to that experiment unchanged.
 """
@@ -50,6 +51,10 @@ def main(argv: list[str] | None = None) -> int:
         print(__doc__)
         return 0
     command, rest = argv[0], argv[1:]
+    if command == "ui":
+        from lotto.ui.server import main as ui_main
+
+        return ui_main(rest)
     if command == "list":
         print(catalog_markdown() if rest == ["--markdown"] else catalog_text())
         return 0

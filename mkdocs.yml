@@ -77,6 +77,7 @@ nav:
   - Start here:
       - The game in five minutes: start/the-game.md
       - Run it yourself: start/run.md
+      - The dashboard: start/dashboard.md
       - Glossary: start/glossary.md
   - 1 · Measuring:
       - How results are measured: evaluation.md

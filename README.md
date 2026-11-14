@@ -41,6 +41,12 @@ uv run lotto report --quick --n-test 100 --null-trials 500
 uv run lotto predict --quick
 ```
 
+```bash
+uv run lotto ui
+```
+
+`lotto ui` opens the [dashboard](docs/start/dashboard.md) in your browser: pick a model, change its
+settings, get a form and its exact odds, test settings on past draws, and keep a prediction log.
 `lotto predict` prints every model's best ticket and a 10-row form for the next draw.
 `lotto list` shows every experiment with the question it answers. The light install above runs
 everything except the two neural predictors; add them with `uv sync --extra neural`, then
@@ -68,6 +74,7 @@ lotto/            the package
   tickets/        coverage, strong numbers, the draw planner
   seedsearch/     the seed-search side quest
   report/         rendering of the published report
+  ui/             the local dashboard (`lotto ui`)
   experiments/    one runnable module per experiment, and the catalog
 experiments/      frozen protocols and results of the dated research runs
 input/            the draw archive

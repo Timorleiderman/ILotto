@@ -84,7 +84,12 @@ class Draws:
 
 
 def download(raw_csv: str = RAW_CSV, timeout: float | tuple[float, float] = (5, 30)) -> bool:
-    """Check pais.co.il for new draws. Returns True if the archive gained draws.
+    """Check pais.co.il for new draws. Returns True if the archive gained draws."""
+    return check_for_new_draws(raw_csv, timeout) == "updated"
+
+
+def check_for_new_draws(raw_csv: str = RAW_CSV, timeout: float | tuple[float, float] = (5, 30)) -> str:
+    """Check pais.co.il for new draws: "updated", "unchanged" or "failed".
 
     The download replaces the local file only after it has been parsed and
     shown to contain every draw already on record: an archive only grows.
@@ -98,7 +103,7 @@ def download(raw_csv: str = RAW_CSV, timeout: float | tuple[float, float] = (5, 
         res.raise_for_status()
     except requests.RequestException as exc:
         logger.warning("Could not refresh archive (%s); using committed copy", exc)
-        return False
+        return "failed"
 
     candidate = raw_csv + ".download"
     with open(candidate, "wb") as fh:
@@ -111,13 +116,13 @@ def download(raw_csv: str = RAW_CSV, timeout: float | tuple[float, float] = (5, 
         os.remove(candidate)
         if problem:
             logger.warning("Downloaded archive rejected: %s; keeping local copy", problem)
-        else:
-            logger.info("Draw archive is up to date; no new draws")
-        return False
+            return "failed"
+        logger.info("Draw archive is up to date; no new draws")
+        return "unchanged"
     os.replace(candidate, raw_csv)
     newest = added["date"].max().date()
     logger.info("Added %d new draw%s to the archive (newest %s)", len(added), "" if len(added) == 1 else "s", newest)
-    return True
+    return "updated"
 
 
 def _refresh_problem(candidate: str, current: str) -> tuple[str | None, pd.DataFrame | None]:

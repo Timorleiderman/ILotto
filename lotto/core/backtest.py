@@ -55,14 +55,22 @@ def walk_forward(
     draws: Draws,
     n_test: int = 300,
     min_history: int = 200,
+    on_step=None,
 ) -> Result:
-    """Score `predictor` over the final `n_test` draws, one draw at a time."""
+    """Score `predictor` over the final `n_test` draws, one draw at a time.
+
+    `on_step(done, total)`, if given, is called before each draw is scored. It
+    is for progress display; raising from it stops the run, which is how a
+    caller cancels. It never changes a result.
+    """
     window = evaluation_window(len(draws), n_test, min_history)
 
     match_counts, losses, strong_hits = [], [], []
     t0 = time.perf_counter()
 
     for i in window:
+        if on_step is not None:
+            on_step(i - window.start, len(window))
         history = draws.slice(0, i)
         if predictor.refit_every and (i - window.start) % predictor.refit_every == 0:
             predictor.fit(history)
@@ -94,20 +102,25 @@ def walk_forward(
     )
 
 
-def next_draw_scores(predictor: Predictor, draws: Draws) -> tuple[np.datetime64 | None, np.ndarray, np.ndarray]:
+def next_draw_scores(
+    predictor: Predictor, draws: Draws, target_date: np.datetime64 | None = None,
+) -> tuple[np.datetime64 | None, np.ndarray, np.ndarray]:
     """What a predictor says about the next, undrawn result, using every draw on record.
 
     Models with a fit step are refitted on the whole history first. Models that
-    read the calendar get the next scheduled draw date, which is public in
-    advance. Returns (that date or None, 37 ball scores, 7 strong scores).
+    read the calendar get `target_date`, or the next scheduled draw date when it
+    is not given; both are public in advance, and such models still refuse a
+    date their history has already reached. Returns (the date used or None, 37
+    ball scores, 7 strong scores).
     """
     from lotto.core.data import N_NUMBERS, N_STRONG, next_draw_date
 
     if predictor.refit_every:
         predictor.fit(draws)
-    target_date = None
+    if not predictor.wants_target_date:
+        target_date = None
     if predictor.wants_target_date:
-        target_date = next_draw_date(draws)
+        target_date = next_draw_date(draws) if target_date is None else np.datetime64(target_date, "D")
         ball_scores, strong_scores = predictor.scores(draws, target_date)
     else:
         ball_scores, strong_scores = predictor.scores(draws)

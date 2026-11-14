@@ -29,6 +29,7 @@ uv run lotto report --offline --quick               # same, without contacting p
 uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json
 uv run lotto plan                                   # which form to play next
 uv run lotto predict --quick                        # every model's best ticket and 10-row form for the next draw
+uv run lotto ui                                     # the dashboard at http://localhost:6037
 
 uv run mkdocs serve                # live preview
 uv run mkdocs build --strict       # what CI runs; broken links fail the build
@@ -85,6 +86,18 @@ download fatal: the site must still rebuild when the source is down.
 `legacy/` is the 2023–2025 Keras stack, kept as an exhibit. It is untested on purpose except
 for `tests/test_legacy_exhibit.py`, which pins its split defect; do not repair it without
 updating `legacy/README.md` and `docs/approaches/legacy-models.md`.
+
+### The dashboard (`lotto/ui/`)
+
+Presentation only, standard library only. Rules:
+
+- No statistics in `lotto/ui`: `service.py` calls `lotto.core`, `lotto.approaches`, `lotto.tickets`.
+- `registry.py` is the only list of models and editable settings. Its presets must equal
+  `full_suite()`; `tests/test_ui_service.py` compares them score for score.
+- A fresh predictor per job; reads use `clean_csv=None`; writes go only under `results/ui/`.
+- The server binds to 127.0.0.1, checks the Host header, and requires the page's Origin and
+  token for anything that changes state. Do not add a `--host` option or relax these.
+- Log entries are append-only in the UI. Lab verdicts are labelled exploratory, never "signal".
 
 ### The seed-search ledger is the one exception
 

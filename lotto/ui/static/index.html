@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="lotto-token" content="{{TOKEN}}">
+<title>ILotto dashboard</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="bar">
+      <div class="brand">ILotto <span>dashboard</span></div>
+      <nav id="tabs" role="tablist" aria-label="Screens">
+        <button role="tab" data-tab="predict" aria-selected="true">Predict</button>
+        <button role="tab" data-tab="compare" aria-selected="false">Compare</button>
+        <button role="tab" data-tab="lab" aria-selected="false">Lab</button>
+        <button role="tab" data-tab="log" aria-selected="false">Log</button>
+      </nav>
+      <div class="spacer"></div>
+      <button class="btn" id="theme" type="button">Dark theme</button>
+    </div>
+    <div class="status">
+      <span>Next draw (estimated): <b id="next">…</b></span>
+      <span>Archive: <b id="archive">…</b></span>
+      <span id="refreshstate" class="muted"></span>
+      <button class="btn" id="refresh" type="button">Check for new draws</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banner" class="note error" hidden></div>
+
+  <section class="screen on" id="predict" role="tabpanel">
+    <div class="head"><h1>Predict the next draw</h1>
+      <p>Pick a model, change its settings, and get its ticket, a form to fill in and the exact odds.</p></div>
+    <div class="two">
+      <form class="card" id="controls" autocomplete="off">
+        <h3>Model</h3>
+        <label for="model" class="sr">Model</label>
+        <select id="model"></select>
+        <p class="hint" id="modeldesc"></p>
+        <h3>Settings</h3>
+        <div id="params"></div>
+        <div id="seedbox">
+          <label for="seed">Seed</label>
+          <div class="row"><input id="seed" type="text" inputmode="numeric" spellcheck="false">
+            <button class="btn" id="dice" type="button">New seed</button></div>
+          <p class="hint">Same seed, same ticket.</p>
+          <p class="fielderror" data-error="seed"></p>
+        </div>
+        <h3>Form</h3>
+        <span class="label" id="rowslabel">Rows</span>
+        <div class="seg" id="rows" role="group" aria-labelledby="rowslabel"></div>
+        <p class="hint">One row is the model's ticket alone. 2, 10 and 14 are the project's coverage designs.</p>
+        <p class="fielderror" data-error="rows"></p>
+        <label for="date">Draw date</label>
+        <input id="date" type="date">
+        <p class="hint" id="datehint"></p>
+        <p class="fielderror" data-error="date"></p>
+        <div class="actions"><button class="btn primary" id="generate" type="submit">Generate</button>
+          <button class="btn" id="reset" type="button">Reset settings</button></div>
+        <p class="fielderror" data-error="model"></p>
+      </form>
+      <div id="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="compare" role="tabpanel">
+    <div class="head"><h1>Compare every model</h1>
+      <p>What each scoreboard model picks for the next draw, and which numbers they agree on.</p></div>
+    <div class="actions"><button class="btn primary auto" id="runcompare" type="button">Run all models</button>
+      <span id="comparestatus" class="muted" aria-live="polite"></span></div>
+    <div id="compareout"></div>
+  </section>
+
+  <section class="screen" id="lab" role="tabpanel">
+    <div class="head"><h1>Test a setting against chance</h1>
+      <p>Replay the settings from Predict over past draws. Each forecast sees only the draws before it.</p></div>
+    <div class="two">
+      <div class="card">
+        <h3>Settings under test</h3>
+        <p id="labconfig"></p>
+        <p class="hint">Taken from the Predict screen. Change them there.</p>
+        <label for="ntest">Replay over <b id="ntestv">300</b> past draws</label>
+        <input id="ntest" type="range" min="100" max="1000" step="50" value="300">
+        <div class="actions"><button class="btn primary" id="runlab" type="button">Run backtest</button></div>
+        <p id="labstatus" class="muted" aria-live="polite"></p>
+        <p class="fielderror" id="laberror"></p>
+      </div>
+      <div id="labout"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="log" role="tabpanel">
+    <div class="head"><h1>Prediction log</h1>
+      <p>Predictions saved before a draw, scored once its result is in the archive. Entries cannot be changed or deleted here.</p></div>
+    <div id="logout"></div>
+  </section>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

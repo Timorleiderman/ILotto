@@ -54,7 +54,16 @@ uv run lotto predict --quick
 A few seconds. Every model's best ticket for the next draw, and a 10-row form from each, built
 on the exact coverage design. See [every model's form](../levers/predict.md).
 
-## 6. Add the neural networks
+## 6. Open the dashboard
+
+```bash
+uv run lotto ui
+```
+
+Everything above, in the browser, with controls for every model's settings. See
+[the dashboard](dashboard.md).
+
+## 7. Add the neural networks
 
 ```bash
 uv sync --extra neural
@@ -64,7 +73,7 @@ uv run lotto report
 About two minutes. This adds the GRU, the Transformer and the date-conditioned model, for
 nineteen strategies in all.
 
-## 7. Check everything
+## 8. Check everything
 
 ```bash
 uv sync --extra neural --group docs
@@ -83,6 +92,7 @@ uv run mkdocs serve         # this site, on http://localhost:8000
 | `lotto/tickets/` | coverage, strong numbers, the draw planner |
 | `lotto/seedsearch/` | the seed-search side quest |
 | `lotto/experiments/` | one runnable module per experiment |
+| `lotto/ui/` | the dashboard |
 | `experiments/` | frozen protocols and results of the dated research runs |
 | `legacy/` | the first attempt, kept as an exhibit |
 | `tests/` | the test suite, including a pinned copy of the archive |
