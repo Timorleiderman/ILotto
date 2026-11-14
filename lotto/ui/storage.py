@@ -15,6 +15,8 @@ from pathlib import Path
 from lotto.core.files import write_json
 
 _ID = re.compile(r"[0-9a-f]{16}")
+#: How many result files to keep. Log entries carry their own copy, so pruning never loses one.
+KEEP_RESULTS = 300
 
 
 def valid_id(value) -> bool:
@@ -38,6 +40,14 @@ class Storage:
             self._results[result["id"]] = result
             if not path.exists():
                 write_json(path, result)
+                self._prune()
+
+    def _prune(self) -> None:
+        """Drop the oldest result files beyond `KEEP_RESULTS`. Call with the lock held."""
+        files = sorted((self.root / "results").glob("*.json"), key=lambda p: p.stat().st_mtime)
+        for old in files[:-KEEP_RESULTS]:
+            old.unlink(missing_ok=True)
+            self._results.pop(old.stem, None)
 
     def get_result(self, result_id: str) -> dict | None:
         """The result with this id, or None."""

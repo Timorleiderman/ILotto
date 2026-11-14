@@ -317,7 +317,7 @@ function renderResult() {
     <div class="card">
       <h2>${esc(r.model_label)}</h2>
       <p class="sub">${esc(settingsText(r) || "no settings")} · ${rowsLabel} · draw of ${day(r.target_date)}</p>
-      ${lookBack ? `<p class="note">A look back, not a prediction: the model was given only the ${r.history_draws.toLocaleString("en")} draws before ${day(r.target_date)}.</p>` : ""}
+      ${lookBack ? `<p class="note">A look back, not a prediction: ${r.benchmark ? `the model was given only the ${r.history_draws.toLocaleString("en")} draws before ${day(r.target_date)}` : "this date has already passed"}.</p>` : ""}
       <div class="balls">${r.ticket.slice(0, 6).map(n => `<div class="ball">${n}</div>`).join("")}
         <span class="plus">strong</span><div class="ball strong">${r.ticket[6]}</div></div>
       <p class="sub">${r.ticket_kind === "sampled" ? "A ticket sampled from the model with this seed." : "Best single ticket: the model's six highest-scored numbers and its top strong number."}
@@ -325,13 +325,18 @@ function renderResult() {
       ${r.actual ? `<p class="sub" style="margin-top:10px">Actual result that day: ${balls(r.actual)} · the ticket matched
         <b>${r.ticket.slice(0, 6).filter(n => actualHits.has(n)).length} of 6</b>${r.ticket[6] === r.actual[6] ? " and the strong number" : ""}.</p>` : ""}
     </div>
-    <div class="tiles">
-      <div class="tile hero"><div class="k">A prize, any size</div><div class="v">${percent(o.p_any_prize)}</div><div class="n">1 in ${(1 / o.p_any_prize).toFixed(1)} draws</div></div>
-      <div class="tile"><div class="k">3 or more, with the strong number</div><div class="v">${percent(o.p_three_plus_and_strong)}</div><div class="n">1 in ${oneIn(o.p_three_plus_and_strong)}</div></div>
-      <div class="tile"><div class="k">First prize</div><div class="v">1 in ${compact(1 / o.p_first_prize)}</div><div class="n">${o.first_prize_ways} of ${o.total_outcomes.toLocaleString("en")} outcomes</div></div>
-      <div class="tile"><div class="k">Base cost</div><div class="v">${o.cost} NIS</div><div class="n">${rowsLabel} at ${STATE.row_price} NIS</div></div>
-    </div>
-    <p class="sub">Exact odds of this form under a fair draw. They come from how the rows are arranged, so every model's form of this size has the same odds. A prize is not necessarily a profit.</p>
+    <details class="odds">
+      <summary><span class="oddsline"><b>${percent(o.p_any_prize)}</b> any prize</span>
+        <span class="oddsline"><b>${percent(o.p_three_plus_and_strong)}</b> 3+ with strong</span>
+        <span class="oddsline"><b>1 in ${compact(1 / o.p_first_prize)}</b> first prize</span>
+        <span class="oddsline"><b>${o.cost} NIS</b> ${rowsLabel}</span>
+        <span class="oddsmore">Fixed odds for ${rowsLabel}; details</span></summary>
+      <p class="sub">Exact odds of a ${rowsLabel === "1 row" ? "single row" : rowsLabel + " form"} under a fair draw. They depend only on the number of rows and how they are arranged, so they are the same for every model and every seed. A prize is not necessarily a profit.</p>
+      <div class="scroll"><table><thead><tr><th>At least one row matches</th><th class="num">Chance</th><th class="num">1 in</th></tr></thead><tbody>
+      ${[["3 or more numbers (any prize)", o.p_at_least["3"]], ["4 or more", o.p_at_least["4"]], ["5 or more", o.p_at_least["5"]], ["all 6", o.p_at_least["6"]],
+         ["3 or more, with the strong number", o.p_three_plus_and_strong], ["all 6 and the strong number (first prize)", o.p_first_prize]]
+        .map(([k, p]) => `<tr><td>${k}</td><td class="num">${percent(p)}</td><td class="num">${oneIn(p)}</td></tr>`).join("")}</tbody></table></div>
+    </details>
     <div class="cols" style="margin-top:16px">
       <div class="card">
         <h2>The form, ${rowsLabel}</h2>
@@ -350,14 +355,7 @@ function renderResult() {
         <div class="legend"><span>low<span class="ramp"></span>high</span><span><span class="ringkey"></span>in the ticket</span></div>
       </div>
     </div>
-    <div class="cols" style="margin-top:16px">
-      <div class="card">
-        <h2>Odds in detail</h2>
-        <div class="scroll"><table><thead><tr><th>At least one row matches</th><th class="num">Chance</th><th class="num">1 in</th></tr></thead><tbody>
-        ${[["3 or more numbers", o.p_at_least["3"]], ["4 or more", o.p_at_least["4"]], ["5 or more", o.p_at_least["5"]], ["all 6", o.p_at_least["6"]],
-           ["3 or more, with the strong number", o.p_three_plus_and_strong], ["all 6 and the strong number", o.p_first_prize]]
-          .map(([k, p]) => `<tr><td>${k}</td><td class="num">${percent(p)}</td><td class="num">${oneIn(p)}</td></tr>`).join("")}</tbody></table></div>
-      </div>
+    <div style="margin-top:16px">
       <div class="card">
         <h2>Record</h2>
         <p class="sub">${record}</p>
@@ -512,5 +510,6 @@ async function loadLog() {
   renderTopBar(); renderControls();
   $("#result").innerHTML = emptyResult();
   renderLab(await api("GET", "/api/notebook"));
-  $("#generate").click();   // show something useful straight away
+  // Show something useful straight away, unless that would start a long training run.
+  if (modelSpec(draft.model).family !== "Neural") $("#generate").click();
 })();

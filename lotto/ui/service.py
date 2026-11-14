@@ -166,7 +166,7 @@ class Service:
         history = draws
         if mode == "retrospective":
             history = draws.slice(0, int(np.searchsorted(draws.dates.astype("datetime64[D]"), np.datetime64(target))))
-            if len(history) < MIN_HISTORY:
+            if spec.benchmark and len(history) < MIN_HISTORY:  # the seed-world toy reads no history
                 raise Invalid({"date": f"needs at least {MIN_HISTORY} earlier draws; choose a later date"})
         predictor = registry.build(spec, params, seed)
         _, balls, strong = backtest.next_draw_scores(predictor, history, target_date=np.datetime64(target))
@@ -178,7 +178,7 @@ class Service:
         if spec.needs_tensorflow and not registry.tensorflow_available():
             raise Invalid({"model": "Needs TensorFlow: uv sync --extra neural"})
         rows = request.get("rows", 10)
-        if isinstance(rows, bool) or rows not in ROW_CHOICES:
+        if isinstance(rows, bool) or not isinstance(rows, int) or rows not in ROW_CHOICES:
             raise Invalid({"rows": f"choose one of {', '.join(map(str, ROW_CHOICES))}"})
         draws, archive = self.snapshot()
         target, mode = self._target(spec, request.get("date"), draws)
@@ -205,7 +205,8 @@ class Service:
             "id": hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:16],
             "kind": "prediction", **identity,
             "model_label": spec.label, "family": spec.family, "strategy_name": predictor.name,
-            "mode": mode, "trained_through": _day(history.dates[-1]), "history_draws": len(history),
+            "mode": mode, "trained_through": _day(history.dates[-1]) if len(history) else None,
+            "history_draws": len(history),
             "actual": actual, "ticket": ticket, "ticket_kind": ticket_kind, "form": form,
             "scores": _finite(balls), "strong_scores": _finite(strong),
             "score_kind": "probability" if predictor.emits_probabilities else "score",

@@ -45,6 +45,8 @@ def _settings(result: dict) -> list[tuple[str, str]]:
 
 
 def _mode_note(result: dict) -> str:
+    if result["mode"] == "retrospective" and not result["benchmark"]:
+        return f"A look back at {result['target_date']}, a date that has already passed. This is not a prediction."
     if result["mode"] == "retrospective":
         return (f"A look back: the model was given only the {result['history_draws']:,} draws before "
                 f"{result['target_date']}. This is not a prediction made in advance.")

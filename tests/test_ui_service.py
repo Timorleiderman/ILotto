@@ -178,3 +178,29 @@ def test_reading_never_writes_the_archive_folder(tmp_path):
     before = sorted(p.name for p in data.paths.REPO_ROOT.joinpath("tests/golden").iterdir())
     Service(Storage(tmp_path), raw_csv=SNAPSHOT, offline=True).state()
     assert sorted(p.name for p in data.paths.REPO_ROOT.joinpath("tests/golden").iterdir()) == before
+
+
+def test_seed_world_takes_any_date_because_it_reads_no_history(service):
+    result = service.predict({"model": "seed_world", "seed": "7", "date": "1999-12-31", "rows": 1}, job())
+    assert result["mode"] == "retrospective" and result["actual"] is None and len(result["ticket"]) == 7
+    with pytest.raises(Invalid):
+        service.predict({"model": "date_cb", "date": "1999-12-31"}, job())  # a real model needs history
+
+
+def test_rows_must_be_a_whole_number(service):
+    for rows in (10.0, "10", True, 3):
+        with pytest.raises(Invalid):
+            service.predict({"model": "hot", "rows": rows}, job())
+
+
+def test_old_results_are_pruned_but_never_a_logged_one(tmp_path, monkeypatch):
+    from lotto.ui import storage
+
+    monkeypatch.setattr(storage, "KEEP_RESULTS", 3)
+    store = storage.Storage(tmp_path)
+    for i in range(6):
+        store.put_result({"id": f"{i:016x}", "kind": "prediction"})
+    assert len(list((tmp_path / "results").glob("*.json"))) == 3
+    assert store.get_result(f"{0:016x}") is None and store.get_result(f"{5:016x}") is not None
+    store.add_log_entry({"id": f"{0:016x}", "saved_utc": "2026-01-01T00:00:00+00:00", "result": {"id": f"{0:016x}"}})
+    assert store.log_entries()[0]["result"]["id"] == f"{0:016x}"

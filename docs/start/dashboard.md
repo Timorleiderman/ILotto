@@ -26,9 +26,10 @@ Pick a model, change its settings and seed, choose how many rows to fill in, and
 **Generate**.
 
 - **The ticket**: the model's six numbers and strong number.
-- **Odds tiles**: the chance of any prize, of three or more with the strong number, of the
-  first prize, and the cost. They are exact, and the same for every model: they come from how
-  the rows are arranged, not from the numbers in them.
+- **The odds line**: the chance of any prize, of three or more with the strong number, of the
+  first prize, and the cost. Click it for the full table. The odds are exact and depend only on
+  the number of rows, so they are the same for every model and seed; that is why they take one
+  line.
 - **The form**: one row per line, with a button to copy them.
 - **Why these numbers**: the numbers 1–37 shaded by the model's score, with the chosen ones
   ringed. Point at a number to see its value.
@@ -66,7 +67,8 @@ dashboard cannot tell whether it was saved before the draw.
 ## Using it from another machine
 
 The dashboard listens only on the machine it runs on. To run it on one machine and view it on
-another, forward the port over SSH, then open `http://localhost:6037` as usual:
+another, forward the port over SSH, then open `http://localhost:6037` as usual. Keep the same
+port number on both sides: the dashboard refuses requests addressed to any other name or port.
 
 ```bash
 ssh -L 6037:localhost:6037 user@other-machine

@@ -108,3 +108,12 @@ td.nowrap{white-space:nowrap}
 .chart svg{width:100%;height:auto;display:block}
 details summary{cursor:pointer;color:var(--series-1);font-size:.85rem}
 .stale{opacity:.55}
+
+/* Odds are fixed by the form size, so they sit in one slim line that opens for detail. */
+.odds{margin:14px 0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0 14px}
+.odds summary{display:flex;gap:6px 22px;flex-wrap:wrap;align-items:baseline;padding:9px 0;color:var(--text-secondary);font-size:.86rem;list-style:none}
+.odds summary::-webkit-details-marker{display:none}
+.odds .oddsline b{color:var(--text-primary);font-size:1rem;font-variant-numeric:tabular-nums;margin-right:4px}
+.odds .oddsmore{margin-left:auto;color:var(--series-1)}
+.odds[open]{padding-bottom:12px}
+.odds[open] .oddsmore{visibility:hidden}
