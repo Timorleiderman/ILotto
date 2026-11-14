@@ -17,7 +17,7 @@
     confident-looking rankings, made of noise. More capacity does not help when there is
     nothing to fit.
 
-In `bench/nn.py`. Three interchangeable encoders — GRU, Transformer, MLP — behind one input
+In `lotto/approaches/neural.py`. Three interchangeable encoders — GRU, Transformer, MLP — behind one input
 encoding and one dual output head. The architecture choice is deliberately the *only*
 variable, so the comparison says something about architectures rather than about
 preprocessing.

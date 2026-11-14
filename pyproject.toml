@@ -5,41 +5,23 @@ description = "An honest benchmark of lottery-prediction methods against the Isr
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "black>=25.1.0",
-    "flake8>=7.1.2",
-    "h5py>=3.13.0",
-    "ipykernel>=6.29.5",
-    "matplotlib>=3.10.1",
-    "mdutils>=1.6.0",
     "numba>=0.61.0",
+    "numpy>=1.26",
     "pandas>=2.2.3",
-    "pydot>=3.0.4",
-    "pydotplus>=2.0.2",
-    "pyyaml>=6.0.2",
     "requests>=2.32.0",
-    "ruff>=0.11.2",
-    "scikit-learn>=1.6.1",
     "scipy>=1.15.2",
-    # TensorFlow dropped Intel-macOS wheels after 2.16.2 (verified against PyPI:
-    # 2.17/2.18/2.19 publish no macosx x86_64 artifact). Pinning >=2.19
-    # unconditionally would therefore fail to resolve on an Intel Mac exactly the
-    # way tensorflow[and-cuda] used to fail on Apple Silicon.
-    "tensorflow>=2.19.0; sys_platform != 'darwin' or platform_machine != 'x86_64'",
-    "tensorflow>=2.16.2,<2.17; sys_platform == 'darwin' and platform_machine == 'x86_64'",
-    "tqdm>=4.67.1",
 ]
 
+[project.scripts]
+lotto = "lotto.cli:main"
 
 [tool.ruff]
 line-length = 110
 
-[tool.ruff.lint.per-file-ignores]
-"*.ipynb" = ["F401"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# `uv run pytest` does not put the project root on sys.path the way
-# `python -m pytest` does, so `bench` would not import under CI without this.
+# Puts the project root on sys.path so `tests` is importable as a package
+# (the suite shares the pinned archive path through `tests.SNAPSHOT`).
 pythonpath = ["."]
 filterwarnings = ["ignore::DeprecationWarning"]
 
@@ -50,9 +32,23 @@ build-backend = "hatchling.build"
 # Only the benchmark package is distributable; the root-level legacy scripts are
 # run from a checkout, not installed.
 [tool.hatch.build.targets.wheel]
-packages = ["bench"]
+packages = ["lotto"]
 
 [project.optional-dependencies]
+# TensorFlow is an extra so that the statistical benchmark, the ticket tools and
+# the docs install in seconds. Only the neural predictors and the legacy exhibit
+# need it.
+#
+#     uv sync --extra neural
+#
+# TensorFlow dropped Intel-macOS wheels after 2.16.2 (verified against PyPI:
+# 2.17/2.18/2.19 publish no macosx x86_64 artifact). Pinning >=2.19
+# unconditionally would therefore fail to resolve on an Intel Mac exactly the
+# way tensorflow[and-cuda] used to fail on Apple Silicon.
+neural = [
+    "tensorflow>=2.19.0; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    "tensorflow>=2.16.2,<2.17; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
 # CUDA is opt-in rather than the default, for two reasons. The CI runner has no
 # GPU, so the ~3 GB of nvidia-* wheels the `and-cuda` extra pulls are downloaded
 # and never used; and the models here are small enough (GRU 96/64, 4-head
@@ -64,10 +60,15 @@ packages = ["bench"]
 gpu = [
     "tensorflow[and-cuda]>=2.19.0; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
+# Only for running the exhibit in legacy/ (together with `neural`).
+legacy = [
+    "matplotlib>=3.10.1",
+]
 
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "ruff>=0.11.2",
 ]
 # Docs build only; kept out of `dev` so `uv sync --group docs` in CI does not
 # drag in the test stack, and out of the runtime deps so users installing the

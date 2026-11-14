@@ -7,9 +7,15 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from bench import backtest, data, metrics, randomness
-from bench.calibration import frequency_forecasts, past_loss_choices
-from bench.portfolio import (
+from lotto.core import backtest
+
+from lotto.core import data
+
+from lotto.core import metrics
+
+from lotto.core import randomness
+from lotto.forecasting.calibration import frequency_forecasts, past_loss_choices
+from lotto.tickets.coverage import (
     best_match_counts, greedy_coverage_tickets, portfolio_odds, refine_coverage_tickets, single_ticket_prize_odds,
 )
 
@@ -148,7 +154,7 @@ def test_compiled_coverage_matches_independent_reference(tickets):
 
 
 def test_exchange_gain_matches_every_swap_on_an_independent_small_universe():
-    from bench._portfolio_exact import best_exchange, update_coverage
+    from lotto.tickets._kernels import best_exchange, update_coverage
 
     # Include the high bit (number 37); use sets for the independent oracle.
     pool = [0, 1, 2, 3, 4, 5, 6, 10, 20, 30, 36]
@@ -256,7 +262,8 @@ def test_drift_matches_full_without_replacement_covariance():
 
 
 def test_published_tied_ticket_matches_backtest_and_rank_scores_are_not_probabilities():
-    from bench import predictors, report
+    from lotto.approaches import statistical as predictors
+    from lotto.report import html as report
 
     class Tied(predictors.Predictor):
         name = "tied ranks"

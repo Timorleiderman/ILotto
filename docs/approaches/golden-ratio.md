@@ -12,11 +12,8 @@
     **What it teaches.** An inversion. φ's real mathematical distinction is being the
     *most irrational* number — the constant of maximal pattern **avoidance**, which is why
     its schedule spreads picks more evenly than any other rule and therefore converges to
-    a plain random ticket. Nothing golden marks the archive. But avoidance is the one
-    thing worth buying in a lottery where prizes are split: golden-angle tickets measurably
-    beat random ones at being *unpopular* (they cannot contain the number-runs humans
-    love). Nature uses φ to keep seeds apart; a player can use it to keep away from other
-    players. Nobody gets to use it to see the future.
+    a plain random ticket. Nothing golden marks the archive. Nature uses φ to keep seeds
+    apart; nobody gets to use it to see the future.
 
 *φ organises sunflower heads, pinecones, spiral galaxies and quasicrystals. Nature's
 favourite constant should leave fingerprints on other numbers too — find them in the draw
@@ -104,47 +101,20 @@ Walk-forward, 300 held-out draws: **1.037** matches (p = 0.19) for the golden sc
 **0.970** (p = 0.95) for the fixed Fibonacci ticket, against chance 0.973. Both on the
 [scoreboard](../results.md) as labelled controls.
 
-## The one honest job for φ
+## A property that is real
 
-Here the page turns around, because avoidance — φ's real superpower — is the one thing
-worth buying in a pari-mutuel game. Prizes are split; humans pick birthdays, clusters and
-arithmetic runs; a ticket that avoids looking human wins no more often but *shares less*.
-So we scored 1,000 tickets from each of three generators with the repository's own
-unpopularity scorer:
-
-| Population | Spread | Sequence avoidance | Total unpopularity |
-|---|---:|---:|---:|
-| **Golden-angle tickets** | **0.917** | **1.000** | **0.736** |
-| Uniform random tickets | 0.867 | 0.925 | 0.703 |
-| Birthday-style human picks | 0.766 | 0.892 | 0.561 |
-
-The perfect 1.000 on sequence avoidance is not luck — it is the **three-distance theorem**:
-points placed by an irrational rotation take at most three distinct gap sizes, so a golden
-ticket *cannot* contain the arithmetic runs (4-8-12-16…) that crowd human play. φ beats
-uniform random at being unpopular, by construction rather than by sampling.
-
-Three honest caveats, in descending order of importance:
-
-1. **This is a payout effect, not a prediction effect** — the same distinction as
-   [ticket generators](ticket-generators.md). Odds identical; share better.
-2. **The all-high ticket 32–37 still edges it** on this scorer (0.754 vs 0.736), because
-   `high_numbers` carries the strongest behavioural evidence and golden tickets are
-   deliberately uniform over the board. But 32-33-34-35-36-37 is itself a famous pick — a
-   consecutive run in the slip's corner — which the scorer partially catches
-   (sequence avoidance 0.75, spread 0.57). Golden spacing is the principled *spread*
-   generator; tilting it toward high numbers would no longer be φ.
-3. **A published schedule defeats itself.** If everyone plays "the golden ticket for draw
-   N", they share the pot they meant to avoid. The fix is mathematically free: the spread
-   guarantee is **rotation-invariant** — frac(t·φ + c) has identical discrepancy for any
-   private offset c — so every player can hold their own uncrowded golden ticket.
+One thing about golden-angle tickets is provable rather than statistical. By the
+**three-distance theorem**, points placed by an irrational rotation take at most three
+distinct gap sizes, so a golden ticket *cannot* contain an arithmetic run of four numbers
+(4-8-12-16…). `test_golden_tickets_never_contain_arithmetic_runs` checks it over 3,000
+tickets. It is a fact about spacing, not about winning: every six numbers have the same
+odds.
 
 ## Verdict
 
 φ found nothing in the draws, because there is nothing to find and because *finding
-patterns is the opposite of what φ does*. Its one legitimate role in a lottery is the one
-its mathematics actually supports: designing tickets that are maximally unlike everyone
-else's. Nature uses φ to keep seeds out of each other's way. A lottery player can use it
-to keep out of other players' way. Nobody gets to use it to see the future.
+patterns is the opposite of what φ does*. The better it spreads its picks, the more exactly
+it becomes a random ticket.
 
 ---
 

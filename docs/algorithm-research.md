@@ -1,6 +1,29 @@
-# Algorithm research: learning structure and improving coverage
+# A mixture of 57 experts
 
-Research date: 2026-11-06. This follows the [progress report](progress.md) and investigates whether an algorithm can start from guesses, improve them iteratively, and produce a useful advantage. Literature was checked against primary papers, author/institution pages, and official documentation; experiments use the existing 1,661-draw archive through 2026-11-03.
+!!! abstract "In one minute"
+
+    **The question.** Can a learner that starts out believing the draw is fair, and updates
+    after every draw, discover a bias if there is one?
+
+    **The answer.** On simulated draws with a planted bias, yes. On the real archive its
+    forecast is no better than uniform. The same research found that basin hopping improves
+    ticket coverage, which is covered in [coverage](approaches/ticket-generators.md).
+
+    **Why it matters.** It scores a forecast of the *whole* draw, six numbers and the strong
+    number together, with a proper scoring rule, instead of counting matched numbers.
+
+## Run it
+
+```bash
+uv run lotto run joint-mixture
+```
+
+About 50 seconds. It rebuilds the 57 experts and the mixture, runs the simulated controls, and
+writes `results/joint-mixture/`.
+
+## The dated report
+
+Research date: 2026-11-06. This follows the [progress report](reference/research-log/progress.md) and investigates whether an algorithm can start from guesses, improve them iteratively, and produce a useful advantage. Literature was checked against primary papers, author/institution pages, and official documentation; experiments use the existing 1,661-draw archive through 2026-11-03.
 
 **Two useful directions emerged.** A discrete basin-hopping search measurably improves fixed-budget ticket coverage beyond the previous local search. A new sparse/dense probability mixture learns planted biases and gives coherent full-draw scores, but does not establish a predictive edge on the real archive. No production forecasting default was changed.
 
@@ -126,13 +149,13 @@ From the repository root:
 
 ```bash
 # New probability learner: historical comparison + 256 synthetic histories + local-optimum probe
-uv run python scripts/research_joint_mixture.py
+uv run lotto run joint-mixture
 
 # Five saved portfolios, twenty basin-hopping proposals each
-uv run python scripts/research_coverage_search.py
+uv run lotto run coverage-search
 
 # Generate a new ten-row portfolio with the optional additional search
-uv run python scripts/optimize_ticket_coverage.py --count 10 --seed 0 --search-steps 20 --search-seed 70106 --out /tmp/lotto-coverage-search.json
+uv run lotto run coverage --count 10 --seed 0 --search-steps 20 --search-seed 70106 --out results/coverage-search.json
 
 uv run pytest -q
 uv run ruff check .
@@ -148,8 +171,8 @@ The coverage CLI keeps its previous two-pass default; `--search-steps 20` explic
 | [Per-draw arrays](https://github.com/Timorleiderman/ILotto/blob/main/experiments/joint_mixture_research_2026_11_06.npz) | 59 × 1,461 full-draw log probabilities, marginal forecasts, matches, strong hits, dates, names and both mixture weight paths; no pickled objects |
 | [Coverage follow-up protocol](https://github.com/Timorleiderman/ILotto/blob/main/experiments/coverage_search_protocol_2026_11_06.json) | Five seeds, fixed proposal budget, temperature schedule and validation rule |
 | [Coverage search results](https://github.com/Timorleiderman/ILotto/blob/main/experiments/coverage_search_2026_11_06.json) | Before/after tickets and exact odds, all 100 proposal audits, independent reference verification and timings |
-| [Prediction implementation](https://github.com/Timorleiderman/ILotto/blob/main/bench/joint_mixture.py) | Normalized sparse/dense forecasts and past-only mixture updates |
-| [Coverage implementation](https://github.com/Timorleiderman/ILotto/blob/main/bench/portfolio.py) | Exact local search and discrete basin hopping |
+| [Prediction implementation](https://github.com/Timorleiderman/ILotto/blob/main/lotto/forecasting/joint_mixture.py) | Normalized sparse/dense forecasts and past-only mixture updates |
+| [Coverage implementation](https://github.com/Timorleiderman/ILotto/blob/main/lotto/tickets/coverage.py) | Exact local search and discrete basin hopping |
 
 Load the array artifact with `numpy.load(path, allow_pickle=False)`. Axes are method × draw × ball/strong where applicable; mixture weights are draw × component expert, aligned with the first 57 names. Probabilities are forecasts made before each target; stored log probabilities and match counts additionally use that target’s realized outcome for scoring. The JSON records archive/protocol hashes and the NPZ checksum. Individual run timings are descriptive, not isolated performance benchmarks.
 

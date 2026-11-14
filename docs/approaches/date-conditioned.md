@@ -224,8 +224,8 @@ Two phrasings are **banned**, and the docs say so out loud:
 ## Generating a ticket
 
 ```python
-from bench.data import load
-from bench.generative import DateConditionedCB
+from lotto.core.data import load
+from lotto.approaches.date_conditioned import DateConditionedCB
 
 model = DateConditionedCB()
 model.fit(load())

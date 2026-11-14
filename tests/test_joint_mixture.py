@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 from scipy.special import logsumexp
 
-from bench.data import Draws
-from bench.joint_mixture import LOG_FULL_OUTCOMES, build_experts, event_log_ratio, mix_experts
+from lotto.core.data import Draws
+from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES, build_experts, event_log_ratio, mix_experts
 
 
 def fixture_draws(n=60):

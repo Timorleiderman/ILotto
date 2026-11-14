@@ -1,4 +1,26 @@
-# Fixed budget ticket chances experiment
+# Strong-number assignment
+
+!!! abstract "In one minute"
+
+    **The question.** Ten rows are fixed. Which strong number should each one carry?
+
+    **The answer.** Not one each, spread evenly. An exact dynamic program over every way of
+    grouping the rows raises the chance of three-or-more plus the strong number from 5.926%
+    to 5.957%, and proves no assignment does better for those rows.
+
+    **Why it matters.** It is a small gain with a proof, found by exact search, not by
+    simulation.
+
+## Run it
+
+```bash
+uv run lotto run strong-numbers
+```
+
+About three minutes. It repeats the 15 coverage searches and the exact assignment, and writes
+`results/strong-numbers/`.
+
+## The dated report
 
 Experiment date: 2026-11-07. Ten distinct tickets per draw, using the portfolios from the [previous algorithm research](algorithm-research.md). All probabilities assume independent uniform fair draws.
 
@@ -8,7 +30,7 @@ Experiment date: 2026-11-07. Ten distinct tickets per draw, using the portfolios
 
 ## Outcomes for the selected portfolio
 
-The game uses six distinct main numbers from 1–37 and one strong number from 1–7. [Official game guide](https://www.pais.co.il/info/lotto-how-to-play.aspx). The experiment uses the existing [eight prize tiers](progress.md#exact-single-ticket-prize-probabilities); any prize requires at least three main matches.
+The game uses six distinct main numbers from 1–37 and one strong number from 1–7. [Official game guide](https://www.pais.co.il/info/lotto-how-to-play.aspx). The experiment uses the existing [eight prize tiers](start/the-game.md#the-prizes); any prize requires at least three main matches.
 
 | Event on at least one ticket | Previous best portfolio | Selected portfolio | Change in percentage points |
 | --- | --- | --- | --- |
@@ -91,7 +113,7 @@ This is a coverage design, not a prediction of a particular draw. A consistent p
 Run from the repository root:
 
 ```bash
-uv run python scripts/research_ticket_chances.py
+uv run lotto run strong-numbers
 uv run pytest -q
 uv run ruff check .
 uv run mkdocs build --strict

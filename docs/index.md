@@ -1,25 +1,46 @@
 # ILotto
 
-An honest benchmark of lottery-prediction methods against the Israeli Lotto (6/37 + strong
-1–7), with every approach in the repository documented, diagrammed, and scored against the
-same exact null.
+A reproducible study of the Israeli Lotto (6 of 37, plus a strong number 1–7): what can be
+measured, what can be predicted, and what a ticket buyer can actually control. It is built to
+be taught, from basic probability to neural networks and exact algorithms.
 
-[Open the live benchmark report](benchmark/index.html){ .md-button .md-button--primary }
-[How each approach works](approaches/index.md){ .md-button }
+[Start here: the game in five minutes](start/the-game.md){ .md-button .md-button--primary }
+[Run it yourself](start/run.md){ .md-button }
 
 ---
 
-## The short version
+## The story, from basics to advanced
 
-Every strategy in this repository — counting heuristics, Markov models, GRU and Transformer
-networks, a date-conditioned generative model, exact interpolators over the whole history,
-and chaos-theoretic analogues — is backtested walk-forward against 1,600+ draws. **None beats a randomly filled ticket by a
-margin that survived multiple-testing correction in the November 6 research run**.
-Its probability-emitting models also had worse marginal log loss than uniform.
-These results have not established a prediction advantage; they do not prove
-the absence of every possible signal.
+Each chapter builds on the one before. Every claim is a command you can run.
 
-That is the expected answer. The value here is the measurement:
+| | Chapter | The question | What you learn |
+|---|---|---|---|
+| 1 | [The game](start/the-game.md) | What are the odds? | Counting, the hypergeometric distribution, the two baselines: 0.973 matches and 4.18% |
+| 2 | [Measuring honestly](evaluation.md) | How do you know a result is real? | Leakage, walk-forward backtesting, exact nulls, multiple-testing correction |
+| 3 | [Simple strategies](approaches/index.md) | Do hot numbers, due numbers or patterns work? | Why each folk method fails, with its own mechanism |
+| 4 | [Neural networks](approaches/set-prediction.md) | Can a network find what counting misses? | Sequence models, set prediction, a generative model, memorisation versus prediction |
+| 5 | [Probability forecasts](algorithm-research.md) | Can we forecast the whole draw, not just six numbers? | Proper scoring, expert mixtures, training on simulated data |
+| 6 | [Algorithms for the ticket](levers/index.md) | Given a budget, which rows? | Covering designs, exact search with bit masks, dynamic programming |
+| 7 | [Side quest](side-quests/seed-search.md) | What if the lottery had a seed? | Exhaustive search in Python, Rust and CUDA |
+
+## What was found
+
+**The draw cannot be picked.** Nineteen strategies, from hot numbers to a Transformer, were
+replayed draw by draw over 1,661 draws. None beats a random ticket after correcting for the number
+of strategies tried. [Live scoreboard](results.md).
+
+**Looking impressive is cheap.** A lookup table reconstructs every past draw, 6.000 numbers out
+of 6, and scores chance on the next one. [Memorisation versus prediction](approaches/date-conditioned.md).
+
+**The ticket can be designed.** One row wins a prize in 4.18% of draws. Ten rows chosen to overlap
+as little as possible win in 38.60%, and fourteen in 51.01%, counted exactly over every possible
+draw. [Coverage](approaches/ticket-generators.md).
+
+**Three bugs once looked like skill.** An earlier version reported 30% accuracy. Filtering by
+ball value, reading the archive backwards and grading sorted balls produced all of it.
+[How it is measured](evaluation.md).
+
+## How the measurement works
 
 ```mermaid
 flowchart LR
@@ -39,40 +60,8 @@ flowchart LR
   classDef flaw fill:#e3494826,stroke:#e34948,stroke-width:3px
 ```
 
-## Where to start
+!!! note "Scope"
 
-<div class="grid cards" markdown>
-
-- :material-scale-balance: **[How it is measured](evaluation.md)**
-
-    The walk-forward harness, the two scoring rules, and the three data bugs that made the
-    old numbers look like signal.
-
-- :material-shape-outline: **[The approaches](approaches/index.md)**
-
-    Diagrams and explanations for every method: statistical rules, neural set prediction,
-    the four legacy sequence models, and the ticket generators.
-
-- :material-chart-box-outline: **[Results](results.md)**
-
-    The current scoreboard, regenerated from the latest run.
-
-- :material-book-open-variant: **[Reference](reference/architectures.md)**
-
-    Layer-by-layer deep dive and the full user guide.
-
-</div>
-
-## What portfolio coverage improves
-
-At a fixed ticket count, choosing complementary rows can increase the probability
-of at least one smaller prize. The coverage optimizer verifies every accepted
-refinement against all possible main draws. Jackpot odds still depend on the
-number of distinct full combinations. See [ticket generators](approaches/ticket-generators.md)
-for exact results, the command, and the distinction from unvalidated prize-sharing heuristics.
-
-!!! note "Scope of the evidence"
-
-    Passing a randomness test does not prove perfect randomness. A smaller-prize
-    win does not necessarily cover the cost of the portfolio, and neither the
-    prediction models nor the coverage optimizer establish positive net returns.
+    These results describe this archive and these methods. Passing a randomness test is not
+    proof of perfect randomness, and winning a small prize more often is not a profit: the
+    expected return of a row stays below its price.

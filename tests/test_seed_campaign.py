@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from bench.seed_campaign import campaign_lock, continue_search, inherit_rejections
-from bench.seed_search import Observation, search, world_outcome
+from lotto.seedsearch.campaign import campaign_lock, continue_search, inherit_rejections
+from lotto.seedsearch.generator import Observation, search, world_outcome
 
 
 def history():
@@ -15,7 +15,7 @@ def history():
 
 
 def test_import_then_continue_does_not_retest_any_seed(tmp_path, monkeypatch):
-    import bench.seed_search as module
+    import lotto.seedsearch.generator as module
 
     prefix = history()
     old = tmp_path / "legacy.json"
@@ -172,7 +172,7 @@ def test_lock_wait_cannot_overrun_the_time_budget(tmp_path, monkeypatch, acquisi
     from contextlib import ExitStack, contextmanager
     from types import SimpleNamespace
 
-    from bench import seed_campaign
+    from lotto.seedsearch import campaign as seed_campaign
 
     prefix = history()
     root = tmp_path / "campaigns"
@@ -224,7 +224,7 @@ def test_lock_wait_cannot_overrun_the_time_budget(tmp_path, monkeypatch, acquisi
 
 
 def test_lock_timeout_before_search_deadline_still_raises(tmp_path, monkeypatch):
-    from bench import seed_campaign
+    from lotto.seedsearch import campaign as seed_campaign
 
     monkeypatch.setattr(seed_campaign, "ALLOCATION_WAIT_SECONDS", 0.01)
     with campaign_lock(tmp_path / "allocation.lock"):

@@ -3,9 +3,9 @@
 import numpy as np
 import pytest
 
-from bench.data import Draws
-from bench.joint_mixture import LOG_FULL_OUTCOMES
-from bench.synthetic_learning import components, fit_mixture, frozen_forecast, simulate_episode
+from lotto.core.data import Draws
+from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES
+from lotto.forecasting.synthetic_learning import components, fit_mixture, frozen_forecast, simulate_episode
 
 
 def test_fair_generator_has_correct_marginals_and_exact_oracle():

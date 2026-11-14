@@ -3,7 +3,7 @@ import copy
 import numpy as np
 import pytest
 
-from bench.portfolio import best_match_counts, search_coverage_tickets
+from lotto.tickets.coverage import best_match_counts, search_coverage_tickets
 
 
 def test_search_retains_best_preserves_input_and_reproduces_exact_counts():

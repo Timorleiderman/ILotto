@@ -7,9 +7,9 @@ import sys
 
 import pytest
 
-from bench.cuda_seed_search import CudaWorker
-from bench.native_seed_search import validate_native_result
-from bench.seed_search import GENERATOR, Observation, world_outcome
+from lotto.seedsearch.cuda_engine import CudaWorker
+from lotto.seedsearch.rust_engine import validate_native_result
+from lotto.seedsearch.generator import GENERATOR, Observation, world_outcome
 
 
 def fixture():
@@ -47,7 +47,7 @@ def test_stalled_worker_is_killed(tmp_path):
 
 @pytest.mark.skipif(not os.environ.get("ILOTTO_CUDA_BINARY"), reason="Requires an explicit CUDA device binary")
 def test_live_gpu_matches_independent_reference():
-    from scripts.benchmark_cuda_search import validate_worker
+    from lotto.experiments.seed_search_cuda_benchmark import validate_worker
 
     with CudaWorker(Path(os.environ["ILOTTO_CUDA_BINARY"])) as worker:
         result = validate_worker(worker)
@@ -112,7 +112,7 @@ for line in sys.stdin:
 
 
 def test_legacy_worker_is_restarted_and_limited_to_its_old_batch_size(tmp_path):
-    from bench.cuda_seed_search import LEGACY_MAX_BATCH
+    from lotto.seedsearch.cuda_engine import LEGACY_MAX_BATCH
 
     history = [Observation("2020-01-01", world_outcome(123, "2020-01-01"))]
     with CudaWorker(_fake_worker(tmp_path, legacy=True), timeout=5) as worker:
@@ -123,7 +123,7 @@ def test_legacy_worker_is_restarted_and_limited_to_its_old_batch_size(tmp_path):
 
 
 def test_current_worker_reports_its_batch_limit(tmp_path):
-    from bench.cuda_seed_search import MAX_BATCH
+    from lotto.seedsearch.cuda_engine import MAX_BATCH
 
     with CudaWorker(_fake_worker(tmp_path, legacy=False), timeout=5) as worker:
         assert worker.max_batch == MAX_BATCH

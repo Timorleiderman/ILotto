@@ -4,9 +4,9 @@ from math import comb
 import numpy as np
 import pytest
 
-from bench._portfolio_exact import best_strong_partition, coverage_signatures
-from bench.portfolio import portfolio_odds
-from bench.strong_assignment import optimize_strong_numbers, strong_prize_odds, subset_union_counts
+from lotto.tickets._kernels import best_strong_partition, coverage_signatures
+from lotto.tickets.coverage import portfolio_odds
+from lotto.tickets.strong_assignment import optimize_strong_numbers, strong_prize_odds, subset_union_counts
 
 
 def test_signature_counts_subset_transform_and_partition_match_exhaustive_oracles():

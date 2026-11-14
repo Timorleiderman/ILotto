@@ -37,7 +37,7 @@ philosophical hand-waving: it is a specific, measurable step, and this page meas
 
 ## Granting the premise
 
-In `bench/spacetime.py`, three function families, each an *exact* fit:
+In `lotto/approaches/perfect_fit.py`, three function families, each an *exact* fit:
 
 | Family | Construction | Max error on all past draws |
 |---|---|---:|

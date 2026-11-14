@@ -1,10 +1,10 @@
 import pytest
 
-from bench.draw_plan import (
+from lotto.tickets.draw_plan import (
     BONUS_FORM, ORDINARY_FORM, ParseError, Result, latest_draw_id, parse_result, plan,
 )
-from bench.portfolio import portfolio_odds
-from bench.strong_assignment import optimize_strong_numbers, strong_prize_odds
+from lotto.tickets.coverage import portfolio_odds
+from lotto.tickets.strong_assignment import optimize_strong_numbers, strong_prize_odds
 
 LABELS = ("6 + חזק", "6", "5 + חזק", "5", "4 + חזק", "4", "3 + חזק", "3")
 

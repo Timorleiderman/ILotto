@@ -1,4 +1,4 @@
-# The four legacy models
+# The first attempt: four sequence models
 
 !!! abstract "The concept, in a minute"
 
@@ -16,7 +16,7 @@
     behaves while knowing nothing about the lottery — which is where the old "30% accuracy"
     came from. The one sound variant predicts the unordered set, and lands on chance.
 
-In `models.py` and `ilotto.py`, trained via `train.py --model <name>`. All four take the
+In `legacy/models.py` and `legacy/ilotto.py`, trained via `legacy/train.py --model <name>`. The folder is kept as an exhibit; `legacy/README.md` lists every known defect with its line number. All four take the
 same input — 10 previous draws as `(batch, 10, 7)` integer ball IDs — and, except for the
 last, emit `(batch, 7, 37)`: a probability distribution per output position.
 
@@ -184,7 +184,7 @@ flowchart TB
   classDef flaw fill:#e3494826,stroke:#e34948,stroke-width:3px
 ```
 
-Same insight as [`bench/nn.py`](set-prediction.md), reached independently. The differences
+Same insight as [`lotto/approaches/neural.py`](set-prediction.md), reached independently. The differences
 are that `bench` adds recency features, base-rate bias initialisation, and — crucially — a
 walk-forward harness that scores it against an exact null.
 

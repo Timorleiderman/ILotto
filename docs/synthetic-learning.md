@@ -1,4 +1,28 @@
-# Synthetic training and the full real archive
+# Training on a million simulated draws
+
+!!! abstract "In one minute"
+
+    **The question.** A model cannot learn from 1,661 real draws. What if it trains on a
+    million simulated ones, some fair and some deliberately biased, and is then frozen and
+    tested on the real archive?
+
+    **The answer.** It learns the planted biases in simulation, and on the real draws it
+    wins with ten tickets on 657 of 1,661 draws against 663 for the uniform baseline.
+
+    **Why it matters.** It separates two failures that look alike: a method that cannot
+    learn, and data with nothing to learn. This method can learn; the draws have nothing.
+
+## Run it
+
+```bash
+uv run lotto run synthetic-training
+```
+
+About a second: it scores the saved trained weights on the real draws and writes
+`results/synthetic-training/`. To regenerate the million simulated draws and refit first,
+add `--stage all`; that takes much longer.
+
+## The dated report
 
 **Training on one million simulated draws produced a model that learns planted biases, but did not improve the real-draw win count over the fixed uniform baseline.** With ten tickets per draw, the mixed-simulation model won on **657 of 1,661 draws**, compared with **663** for the baseline and **641.12** expected under fair draws. None of the eight method/budget comparisons passes the statistical correction.
 
@@ -119,8 +143,8 @@ The next useful step would be to test a specifically supported mechanism or obta
 ## Reproduce and audit
 
 ```bash
-uv run python scripts/research_synthetic_learning.py --stage train
-uv run python scripts/research_synthetic_learning.py --stage evaluate
+uv run lotto run synthetic-training --stage train
+uv run lotto run synthetic-training --stage evaluate
 uv run pytest -q
 uv run ruff check .
 uv run mkdocs build --strict

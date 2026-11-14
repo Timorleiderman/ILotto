@@ -14,37 +14,33 @@ makes a strategy look good, suspect the change.
 ## Commands
 
 ```bash
-# Setup. The docs group is separate so library users and the test job don't pull
-# in a site generator. CUDA is an opt-in extra — see "GPU" below.
-uv sync --group docs
+# Setup. The light install has no TensorFlow; `neural` adds it, `docs` adds the site generator.
+uv sync --extra neural --group docs
 
-# Tests (47, ~10s). testpaths=tests and pythonpath=["."] come from pyproject.
-uv run pytest -q
-uv run pytest tests/test_pipeline.py::test_walk_forward_never_sees_the_future  # single test
-uv run pytest -k "log_loss"                                                    # by pattern
+uv run pytest -q             # ~250 tests, ~35s; neural tests skip without the extra
+uv run pytest -k "log_loss"  # by pattern
+uv run ruff check .          # must pass over the whole repo
 
-uv run ruff check .          # must pass over the whole repo, both stacks
+# Everything runs through one command.
+uv run lotto list                                   # the experiment catalog
+uv run lotto report --quick                         # benchmark report, skip neural models
+uv run lotto report --refresh                       # fresh draws, full run (~2 min)
+uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json
+uv run lotto plan                                   # which form to play next
 
-# Benchmark + report. Writes docs/benchmark/index.html and docs/results.md.
-uv run python scripts/build_report.py --quick            # skip neural models (fast iteration)
-uv run python scripts/build_report.py --refresh          # fresh draws, full run
-uv run python scripts/build_report.py --n-test 300 --null-trials 5000
-
-# Docs site
 uv run mkdocs serve                # live preview
 uv run mkdocs build --strict       # what CI runs; broken links fail the build
 
-# Legacy stack
-uv run python train.py --model multi_output --epochs 50   # original|multi_output|transformer|set_prediction
-uv run python predict.py                                  # writes PREDICTION.md
-uv run python smart_generator.py --model multi_output --count 5
+# Legacy exhibit
+uv sync --extra neural --extra legacy
+uv run python legacy/train.py --model multi_output --epochs 5
 ```
 
 **There is a `.dockerignore` and it matters.** Docker does not read `.gitignore`, and the Dockerfile creates a Linux virtualenv at `/app/.venv` before copying the source over it — without the exclusion a host `.venv` (1.9 GB of arm64 wheels on this Mac) would overwrite it and `uv run` would fail inside the image.
 
-**Dependencies live in `pyproject.toml` + `uv.lock` only.** The Dockerfile installs from that pair too; a parallel `requirements.txt` used to exist and had silently drifted out of sync (it was missing `requests`, which both `helpers.py` and `bench/data.py` import).
+**Dependencies live in `pyproject.toml` + `uv.lock` only.** The Dockerfile installs from that pair too; a parallel `requirements.txt` used to exist and had silently drifted out of sync (it was missing `requests`, which `lotto/core/data.py` imports).
 
-**GPU.** The default install is CPU TensorFlow, on every platform. CUDA is the `gpu` extra:
+**TensorFlow is the `neural` extra**, so the light install takes seconds. CUDA is the `gpu` extra:
 
 ```bash
 uv sync --extra gpu      # x86_64 Linux with an NVIDIA GPU
@@ -61,7 +57,7 @@ make `uv sync` and `uv run` fail outright on macOS.
 **TensorFlow version is platform-split.** Upstream stopped publishing Intel-macOS wheels
 after 2.16.2 — 2.17, 2.18 and 2.19 have no `macosx x86_64` artifact at all — so an
 unconditional `>=2.19` would fail to resolve on an Intel Mac in exactly the way
-`tensorflow[and-cuda]` used to fail on Apple Silicon. The base dependency therefore carries
+`tensorflow[and-cuda]` used to fail on Apple Silicon. The `neural` extra therefore carries
 two markered entries: `>=2.19` everywhere, `>=2.16.2,<2.17` on Intel macOS. That path is
 resolvable but **untested** — nobody working on this has an Intel Mac — and it pins Keras
 3.0 rather than 3.x-latest, so treat a bug report from that platform as plausible rather
@@ -71,47 +67,51 @@ than surprising.
 
 The scheduled publish runs `--refresh`, but the download times out from GitHub's runners
 (geo/cloud-IP blocking) and falls back to the committed archive — so **new draws only land
-when someone runs `uv run python scripts/build_report.py --refresh` locally and commits
+when someone runs `uv run lotto report --refresh` locally and commits
 `input/`**. The workflow prints archive freshness to the job summary and warns past 7 days;
 the generated pages carry the same warning. Do not "fix" the fallback by making the
 download fatal: the site must still rebuild when the source is down.
 
-## Two parallel stacks
+## Layout: three homes
 
-This is the single most important structural fact. They share the `input/` data and nothing
-else, and both are live.
-
-| | `bench/` + `scripts/` + `tests/` | Repo root (`models.py`, `train.py`, `predict.py`, …) |
+| Kind of thing | Lives in | Rule |
 |---|---|---|
-| Purpose | measure whether anything beats chance | train and sample from Keras models |
-| Data path | `bench/data.py` | `helpers.py` |
-| Metrics | `bench/metrics.py` | `metrics.py` (different file, similar name) |
-| Covered by tests | yes | no |
+| Code that computes | `lotto/` (`core`, `approaches`, `forecasting`, `tickets`, `seedsearch`, `report`) | importable and tested; no side effects on import |
+| An experiment | `lotto/experiments/<name>.py` + frozen evidence in `experiments/` | one catalog entry in `lotto/experiments/__init__.py`; exposes `main()`; writes to `results/` (untracked), never to `experiments/` |
+| Words | `docs/` | dated reports go under `docs/reference/research-log/` and are not rewritten |
 
-`bench.metrics` and root `metrics.py` do not collide only because `bench/` uses relative
-imports internally and legacy code imports the top-level module.
+`legacy/` is the 2023–2025 Keras stack, kept as an exhibit. It is untested on purpose except
+for `tests/test_legacy_exhibit.py`, which pins its split defect; do not repair it without
+updating `legacy/README.md` and `docs/approaches/legacy-models.md`.
 
-### Naming hazard
+### Adding an experiment
 
-`ilotto.py` is a top-level module holding the original Seq2Seq model. **Never create a package
-directory named `ilotto/`** — it shadows the module and breaks `train.py`, `predict.py` and
-`evaluate.py` with `ImportError: cannot import name 'ILotto'`. This happened once; the
-benchmark package is called `bench/` for exactly this reason.
+Add a module with `main()` to `lotto/experiments/`, one `Experiment` entry to the catalog, a
+docs page, then regenerate the index: `uv run lotto list --markdown` into
+`docs/reference/experiments.md` (keep its four header lines). `tests/test_cli.py` fails if the
+page is missing or the index is stale.
 
-### Data file ownership
+### Tests read a pinned archive
 
-Two writers with incompatible semantics — do not point them at the same file:
+`tests/golden/archive_2026-11-03.csv` via `tests.SNAPSHOT`, never the live `input/` file.
+`tests/test_golden.py` pins scoreboard and coverage numbers; after an intended change run
+`uv run python -m tests.golden.regenerate` and report the before/after.
 
-- `helpers.ILottoCSV` regenerates `input/lotto_IL_filtered.csv` using the legacy value filter.
-- `bench.data.load` writes `input/lotto_IL_modern.csv` (2012+, one game format).
+### No popularity or birthday logic
 
-Both read `input/Orig_IL_lotto.csv`, the raw archive, which is committed so builds survive
-pais.co.il being unreachable.
+Removed deliberately. Do not add ticket scoring based on what other players pick.
+
+### Data files
+
+`lotto.core.data.load` reads `input/Orig_IL_lotto.csv` (committed so builds survive pais.co.il
+being unreachable) and writes `input/lotto_IL_modern.csv`. A refresh replaces the archive only
+if the download parses and still contains every draw already on record.
 
 ## Invariants that make the results valid
 
 Each corresponds to a bug that made the old pipeline report ~30% top-10 "accuracy" against a
 ~27% random baseline. All are enforced by tests in `tests/test_pipeline.py`.
+Ties between equal scores go to the lower number (`metrics.top_k`), so tickets are the same on every machine.
 
 1. **Filter draws by date, never by ball value.** The archive spans several games (6/49-ish to
    2004, 6/34 through 2008, 6/37 from 2009, strong 1–7 only from 2012). Dropping rows whose
@@ -121,7 +121,7 @@ Each corresponds to a bug that made the old pipeline report ~30% top-10 "accurac
    predict the past from the future.
 3. **Order-invariant targets.** Balls are published ascending, so `Ball_1` is the minimum of six
    draws and `Ball_6` the maximum. Per-position top-k accuracy mostly measures order statistics.
-   `bench/` predicts the drawn *set* (37-way multi-hot, BCE).
+   `lotto/approaches/neural.py` predicts the drawn *set* (37-way multi-hot, BCE).
 4. **Baselines are stated, not implied.** `BASELINE_MATCHES = 6*6/37 = 0.9730` (hypergeometric
    mean), `BASELINE_LOGLOSS = ln 37 = 3.6109`.
 5. **Holm–Bonferroni over every family**, both the strategy table and the randomness tests. The
@@ -129,7 +129,7 @@ Each corresponds to a bug that made the old pipeline report ~30% top-10 "accurac
 
 ## The date-conditioned model is a special case
 
-`bench/generative.py` is conditioned on the draw's *date* rather than on preceding draws,
+`lotto/approaches/date_conditioned.py` is conditioned on the draw's *date* rather than on preceding draws,
 which makes it the one model here that can cheat spectacularly: there is exactly one draw
 per calendar date, so the date is a unique key and enough capacity turns the model into a
 lookup table that "predicts the past" perfectly.
@@ -150,7 +150,7 @@ if the history ever reaches the target date.
 
 ## Adding a predictor
 
-Subclass `bench.predictors.Predictor` and implement:
+Subclass `lotto.approaches.statistical.Predictor` and implement:
 
 ```python
 def scores(self, history: Draws) -> tuple[np.ndarray, np.ndarray]:  # (37,), (7,)
@@ -172,14 +172,13 @@ Set `refit_every` for models with a `fit` step; the harness refits on history on
 MkDocs Material. `docs/` is the *source* tree, `site/` is the build output and the Pages
 artifact.
 
-Generated — never hand-edit, `scripts/build_report.py` overwrites them:
+Generated — never hand-edit, `lotto report` overwrites them:
 
 - `docs/benchmark/index.html` and `docs/benchmark/results.json` (standalone report, copied
   through verbatim by MkDocs)
 - `docs/results.md` (the scoreboard page)
 
-`docs/reference/*.md` pull `ARCHITECTURES.md` and `GUIDE.md` from the repo root via
-`pymdownx.snippets`, so those files stay where the README links to them.
+`docs/reference/architectures.md` pulls `legacy/ARCHITECTURES.md` in via `pymdownx.snippets`.
 
 ### Mermaid constraints
 
@@ -202,6 +201,6 @@ the *following* morning UTC. Changing this schedule means re-deriving it from th
 
 ## Chart rendering
 
-`bench/charts.py` emits hand-rolled inline SVG (no plotting library) so the standalone report
+`lotto/report/charts.py` emits hand-rolled inline SVG (no plotting library) so the standalone report
 stays a single self-contained file. Colours come in as CSS custom properties so the page's
 light/dark theming applies without regenerating anything.

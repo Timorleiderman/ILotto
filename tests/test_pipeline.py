@@ -9,12 +9,21 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from bench import backtest, data, metrics, predictors, randomness
+from lotto.core import backtest
+
+from lotto.core import data
+
+from lotto.core import metrics
+
+from lotto.approaches import statistical as predictors
+
+from lotto.core import randomness
+from tests import SNAPSHOT
 
 
 @pytest.fixture(scope="module")
 def draws():
-    return data.load(clean_csv=None)
+    return data.load(raw_csv=SNAPSHOT, clean_csv=None)
 
 
 def fake_draws(n=400, seed=0):
@@ -154,7 +163,7 @@ def test_rank_only_predictors_declare_themselves():
 
 def test_verdict_covers_randomness_tests_too(tmp_path):
     """A significant randomness test must flip the headline even if no strategy wins."""
-    from bench import report
+    from lotto.report import html as report
 
     d = fake_draws(300, seed=6)
     results = backtest.run_suite([predictors.UniformRandom(seed=1)], d, n_test=30)
@@ -182,7 +191,8 @@ def test_verdict_covers_randomness_tests_too(tmp_path):
 
 
 def test_neural_predictor_end_to_end():
-    from bench.nn import NeuralPredictor
+    pytest.importorskip("tensorflow", reason="needs the `neural` extra: uv sync --extra neural")
+    from lotto.approaches.neural import NeuralPredictor
 
     d = fake_draws(300, seed=2)
     p = NeuralPredictor(arch="mlp", epochs=3, refit_every=100, window=10)
@@ -192,7 +202,7 @@ def test_neural_predictor_end_to_end():
 
 
 def test_nn_windows_are_causal():
-    from bench.nn import make_windows
+    from lotto.approaches.neural import make_windows
 
     d = fake_draws(60)
     X, y, s = make_windows(d, window=10)
@@ -240,12 +250,12 @@ def test_hostile_csv_content_never_reaches_the_report(tmp_path):
     assert d.balls.min() >= 1 and d.balls.max() <= data.N_NUMBERS
 
 
-# --- perfect-fit interpolators (bench/spacetime.py) -------------------------
+# --- perfect-fit interpolators (lotto/approaches/perfect_fit.py) -------------------------
 
 
 def test_perfect_fits_are_actually_perfect():
     """The premise is granted, not strawmanned: the fits must be exact."""
-    from bench import spacetime
+    from lotto.approaches import perfect_fit as spacetime
 
     d = fake_draws(400, seed=13)
     dft = spacetime.PerfectFitDFT()
@@ -262,7 +272,7 @@ def test_perfect_fits_are_actually_perfect():
 
 def test_dft_extrapolation_is_the_first_draw():
     """f(n) = f(0) by periodicity — computed from the coefficients, not assumed."""
-    from bench import spacetime
+    from lotto.approaches import perfect_fit as spacetime
 
     d = fake_draws(200, seed=14)
     n = len(d)
@@ -287,7 +297,8 @@ def test_perfect_fit_families_disagree_about_the_future():
     This is the identifiability argument made constructive: if the data
     determined the continuation, exact fits would have to agree on it.
     """
-    from bench import metrics, spacetime
+    from lotto.core import metrics
+    from lotto.approaches import perfect_fit as spacetime
 
     d = fake_draws(400, seed=15)
     tickets = []
@@ -298,7 +309,7 @@ def test_perfect_fit_families_disagree_about_the_future():
 
 
 def test_perfect_fit_walk_forward_is_chance():
-    from bench import spacetime
+    from lotto.approaches import perfect_fit as spacetime
 
     d = fake_draws(700, seed=16)
     for p in spacetime.spacetime_suite():
@@ -327,13 +338,13 @@ def test_compression_passes_fair_data():
     assert t["p_value"] > 0.05
 
 
-# --- chaos theory (bench/chaos.py) ------------------------------------------
+# --- chaos theory (lotto/approaches/chaos.py) ------------------------------------------
 
 
 def test_correlation_dimension_separates_chaos_from_noise():
     """The instrument check: GP dimension must saturate on a chaotic series and
     keep climbing with embedding dimension on iid noise."""
-    from bench import chaos
+    from lotto.approaches import chaos
 
     rng = np.random.default_rng(4)
     lx = np.empty(1600)
@@ -348,9 +359,9 @@ def test_correlation_dimension_separates_chaos_from_noise():
 
 def test_draw_sums_have_no_attractor():
     """The real archive must look like the noise column, not the chaos column."""
-    from bench import chaos
+    from lotto.approaches import chaos
 
-    d = data.load(clean_csv=None)
+    d = data.load(raw_csv=SNAPSHOT, clean_csv=None)
     sums = d.balls.sum(axis=1).astype(float)
     assert chaos.correlation_dimension(sums, m=4) > 2.5
 
@@ -358,7 +369,7 @@ def test_draw_sums_have_no_attractor():
 def test_analogues_nail_a_deterministic_sequence():
     """Positive control: on a periodic sequence, similar pasts genuinely have
     similar futures, and the method must recover them perfectly."""
-    from bench import chaos
+    from lotto.approaches import chaos
 
     d = fake_draws(700, seed=18)
     cyc = np.tile(d.multi_hot[:7], (100, 1))[:700]
@@ -366,7 +377,7 @@ def test_analogues_nail_a_deterministic_sequence():
 
 
 def test_analogues_walk_forward_is_chance_on_fair_draws():
-    from bench.chaos import MethodOfAnalogues
+    from lotto.approaches.chaos import MethodOfAnalogues
 
     d = fake_draws(900, seed=19)
     r = backtest.walk_forward(MethodOfAnalogues(), d, n_test=150, min_history=500)
@@ -403,11 +414,11 @@ def test_surrogate_test_detects_determinism():
     assert max(ps) > 0.1, ps
 
 
-# --- golden ratio (bench/golden.py) ------------------------------------------
+# --- golden ratio (lotto/approaches/golden_ratio.py) ------------------------------------------
 
 
 def test_golden_schedule_is_valid_and_deterministic():
-    from bench import golden
+    from lotto.approaches import golden_ratio as golden
 
     for t in (0, 1, 1629, 99999):
         a, b = golden.golden_ticket(t), golden.golden_ticket(t)
@@ -418,7 +429,7 @@ def test_golden_schedule_is_valid_and_deterministic():
 def test_golden_schedule_is_equidistributed():
     """phi's one superpower, verified: the long-run pick rate of every number
     converges to exactly 6/37 — the schedule is a random ticket with extra steps."""
-    from bench import golden
+    from lotto.approaches import golden_ratio as golden
 
     counts = np.zeros(37)
     n = 8000
@@ -430,7 +441,7 @@ def test_golden_schedule_is_equidistributed():
 
 
 def test_golden_predictors_walk_forward_at_chance():
-    from bench.golden import golden_suite
+    from lotto.approaches.golden_ratio import golden_suite
 
     d = fake_draws(700, seed=23)
     for p in golden_suite():
@@ -442,9 +453,9 @@ def test_golden_predictors_walk_forward_at_chance():
 def test_fibonacci_numbers_are_not_special_in_the_archive():
     """The folk hypothesis, pinned against the real data: Fibonacci appearances
     must sit within noise of their 8/37 share."""
-    from bench import golden
+    from lotto.approaches import golden_ratio as golden
 
-    d = data.load(clean_csv=None)
+    d = data.load(raw_csv=SNAPSHOT, clean_csv=None)
     obs = np.isin(d.balls, np.array(golden.FIBONACCI)).sum()
     n = len(d)
     exp = n * 6 * len(golden.FIBONACCI) / 37
@@ -454,9 +465,8 @@ def test_fibonacci_numbers_are_not_special_in_the_archive():
 
 def test_golden_tickets_never_contain_arithmetic_runs():
     """The three-distance theorem, checked empirically: golden-angle tickets
-    cannot contain arithmetic progressions of length 4 — the crowd-favourite
-    pattern. This is the property behind their measured unpopularity edge."""
-    from bench import golden
+    cannot contain arithmetic progressions of length 4."""
+    from lotto.approaches import golden_ratio as golden
 
     for t in range(3000):
         ticket = golden.golden_ticket(t)
@@ -472,7 +482,7 @@ def test_stale_archive_is_declared_in_generated_pages(tmp_path):
     ages; the generated pages carry the warning. Synthetic draws end in 2012,
     which is maximally stale relative to any wall clock this test runs under.
     """
-    from bench import report
+    from lotto.report import html as report
 
     d = fake_draws(300, seed=6)
     results = backtest.run_suite([predictors.UniformRandom(seed=1)], d, n_test=30)
@@ -488,3 +498,97 @@ def test_next_draw_date_is_never_in_the_past():
     d = fake_draws(300, seed=7)  # dates end in 2014 — very stale
     nxt = data.next_draw_date(d)
     assert nxt >= np.datetime64("today", "D")
+
+
+# --- review fixes, 2026-11 ---------------------------------------------------
+
+
+def test_every_monte_carlo_test_can_survive_holm():
+    """A test that can never be flagged is not a test.
+
+    Holm compares the smallest p-value of m tests with alpha / m. A simulated
+    test whose floor, 1 / (1 + n_sim), sits above that bar cannot be flagged
+    whatever the data do. Half the bar leaves room for the family to double.
+    """
+    import inspect
+
+    bar = 0.05 / len(randomness.ALL_TESTS)
+    for test in randomness.ALL_TESTS:
+        n_sim = inspect.signature(test).parameters.get("n_sim")
+        if n_sim is not None:
+            floor = 1 / (1 + n_sim.default)
+            assert floor <= bar / 2, f"{test.__name__}: floor {floor:.5f} vs bar {bar:.5f}"
+
+
+def test_top_k_breaks_ties_toward_the_lower_index():
+    scores = np.array([1.0, 3.0, 3.0, 3.0, 2.0, 3.0])
+    assert metrics.top_k(scores, k=2).tolist() == [1, 2]
+    assert metrics.top_k(np.zeros(37)).tolist() == [0, 1, 2, 3, 4, 5]
+
+
+def test_backtest_and_null_share_one_window():
+    d = fake_draws(400)
+    window = backtest.evaluation_window(len(d), n_test=1000)
+    assert len(window) == 200  # 400 draws minus the 200-draw warm-up
+    result = backtest.walk_forward(predictors.Frequency(), d, n_test=1000)
+    assert result.summary["n_draws"] == len(window)
+
+
+def test_sum_null_is_exact():
+    pmf = randomness.sum_pmf()
+    assert pmf.sum() == pytest.approx(1.0, abs=1e-12)
+    assert np.flatnonzero(pmf)[[0, -1]].tolist() == [21, 207]  # 1+...+6 and 32+...+37
+    assert (np.arange(len(pmf)) * pmf).sum() == pytest.approx(114.0)
+
+
+class _Response:
+    def __init__(self, content: bytes):
+        self.content = content
+
+    def raise_for_status(self) -> None:
+        pass
+
+
+def _local_archive(tmp_path, monkeypatch, served: bytes | None):
+    from pathlib import Path
+
+    raw = tmp_path / "archive.csv"
+    original = Path(SNAPSHOT).read_bytes()
+    raw.write_bytes(original)
+    body = original if served is None else served
+    monkeypatch.setattr(data.requests, "get", lambda *a, **k: _Response(body))
+    return raw, original
+
+
+def test_refresh_rejects_a_large_error_page(tmp_path, monkeypatch):
+    raw, original = _local_archive(tmp_path, monkeypatch, b"<html>" + b"x" * 20_000 + b"</html>")
+    assert data.download(str(raw)) is False
+    assert raw.read_bytes() == original
+
+
+def test_refresh_rejects_an_archive_that_lost_draws(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    lines = Path(SNAPSHOT).read_bytes().split(b"\n")
+    raw, original = _local_archive(tmp_path, monkeypatch, b"\n".join(lines[:1] + lines[200:]))
+    assert data.download(str(raw)) is False
+    assert raw.read_bytes() == original
+
+
+def test_refresh_accepts_an_archive_that_keeps_every_draw(tmp_path, monkeypatch):
+    raw, _ = _local_archive(tmp_path, monkeypatch, None)
+    assert data.download(str(raw)) is True
+    assert not (tmp_path / "archive.csv.download").exists()
+
+
+@pytest.mark.parametrize("old,new", [(b",7,25,27,31,32,34,", b",7.5,25,27,31,32,34,"),
+                                      (b",7,25,27,31,32,34,", b",25,25,27,31,32,34,")])
+def test_fractional_and_repeated_balls_are_rejected(tmp_path, old, new):
+    from pathlib import Path
+
+    body = Path(SNAPSHOT).read_bytes()
+    assert body.count(old) >= 1
+    raw = tmp_path / "archive.csv"
+    raw.write_bytes(body.replace(old, new, 1))
+    with pytest.raises(ValueError):
+        data.load(raw_csv=str(raw), clean_csv=None)

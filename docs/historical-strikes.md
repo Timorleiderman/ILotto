@@ -1,4 +1,34 @@
-# Historical prediction test over one thousand draws
+# The 1,000-draw test
+
+!!! abstract "In one minute"
+
+    **The question.** If you had bought tickets ranked by a forecast for the last 1,000
+    draws, would you have won more often than chance?
+
+    **The answer.** No. The best of 59 forecasts won with ten tickets on 422 of 1,000
+    draws against 386 expected, which does not survive correction for 118 comparisons;
+    the forecast that led the first 500 draws (211 wins) fell to 187 in the second 500.
+
+    **Why it matters.** It turns "forecast quality" into the thing a player cares about,
+    winning draws, and shows what picking the best of many looks like.
+
+## Run it
+
+```bash
+uv run lotto run thousand-draws
+```
+
+About three seconds. It rebuilds all 59 forecasts from the archive, checks them against the
+saved ones, and writes `results/thousand-draws/`.
+
+!!! note "One-ticket numbers differ slightly from the report below"
+
+    The report was written before tied scores were given a fixed rule (lowest number first).
+    Single tickets from tied forecasts now pick different numbers, so today's run gives a best
+    one-ticket result of 53 wins where the report says 62. Ten-ticket results are identical,
+    and no comparison is significant either way.
+
+## The dated report
 
 **The best one-ticket method won on 62 of 1,000 draws, versus 41.75 expected under fair draws. The best ten-ticket method won on 422, versus 385.98 expected. Neither survives the correction for comparing 59 models at two ticket budgets.** The ten-ticket model selected using the first 500 draws won 211 times there and 187 times in the next 500.
 
@@ -135,7 +165,7 @@ All counts below are out of 1,000 draws. The last column covers the two primary 
 ## Reproduce and inspect
 
 ```bash
-uv run python scripts/research_historical_strikes.py
+uv run lotto run thousand-draws
 uv run pytest -q
 uv run ruff check .
 uv run mkdocs build --strict
