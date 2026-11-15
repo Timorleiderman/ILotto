@@ -8,8 +8,10 @@ written once and never changed; the notebook is rewritten as attempts finish.
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
+from contextlib import contextmanager
 from pathlib import Path
 
 from lotto.core.files import write_json
@@ -17,6 +19,38 @@ from lotto.core.files import write_json
 _ID = re.compile(r"[0-9a-f]{16}")
 #: How many result files to keep. Log entries carry their own copy, so pruning never loses one.
 KEEP_RESULTS = 300
+
+
+class DashboardInUse(RuntimeError):
+    """Another dashboard owns this folder's mutable notebook."""
+
+
+@contextmanager
+def dashboard_lock(root: Path):
+    """Own a dashboard folder until shutdown; the OS releases the lock after a crash.
+
+    Acquire this before constructing Service: startup also changes the notebook.
+    Keep the file in place so all launches lock the same inode.
+    """
+    root.mkdir(parents=True, exist_ok=True)
+    with (root / ".dashboard.lock").open("a+b") as handle:
+        try:
+            if os.name == "nt":
+                import msvcrt
+
+                if handle.tell() == 0:
+                    handle.write(b"\0")
+                    handle.flush()
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except (BlockingIOError, PermissionError) as exc:
+            raise DashboardInUse("A dashboard is already using results/ui. Stop it before starting another.") from exc
+        yield
+        # Closing the handle releases the lock, including on exceptional exits.
 
 
 def valid_id(value) -> bool:

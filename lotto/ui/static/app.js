@@ -24,6 +24,7 @@ let predicting = false, testing = false;
 
 // ---------------------------------------------------------------- formatting
 const percent = (p, digits = 2) => (100 * p).toFixed(p < 0.001 ? 5 : digits) + "%";
+const pValue = p => p < 0.001 ? "<0.001" : p.toFixed(3);
 const oneIn = p => Math.round(1 / p).toLocaleString("en");
 // Large counts shortened for a tile: 1,627,349 -> 1.63M.
 const compact = n => n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : n >= 1e4 ? Math.round(n / 1e3) + "k" : Math.round(n).toLocaleString("en");
@@ -50,7 +51,7 @@ async function api(method, path, body) {
 // Start a job and wait for it. `onProgress` gets each status; returns the result.
 // The returned promise has a `cancel()` method.
 function runJob(path, body, onProgress, resumeId = null) {
-  let jobId = null, stopped = false;
+  let jobId = null, cancelling = false;
   const promise = (async () => {
     let job = resumeId ? await api("GET", `/api/jobs/${resumeId}`) : await api("POST", path, body);
     jobId = job.id;
@@ -63,7 +64,13 @@ function runJob(path, body, onProgress, resumeId = null) {
     if (job.state === "cancelled") throw { cancelled: true, message: "Cancelled.", fields: {} };
     throw job.error || { message: "The job failed.", fields: {} };
   })();
-  promise.cancel = () => { if (jobId && !stopped) { stopped = true; api("DELETE", `/api/jobs/${jobId}`).catch(() => {}); } };
+  promise.cancel = async () => {
+    if (!jobId || cancelling) return;
+    cancelling = true;
+    try { await api("DELETE", `/api/jobs/${jobId}`); showBanner(""); }
+    catch (error) { showBanner(`Could not cancel. ${error.message} You can try Cancel again.`); }
+    finally { cancelling = false; }
+  };
   return promise;
 }
 
@@ -144,10 +151,14 @@ function loadDraft() {
       const spec = modelSpec(saved.model), params = defaults(spec);
       for (const p of spec.params) {
         const value = saved.params[p.name];
-        if (p.kind === "subset" && Array.isArray(value) && value.every(v => p.choices.includes(v))) params[p.name] = value;
+        if (p.kind === "subset" && Array.isArray(value) && value.length && value.every(v => p.choices.includes(v))) {
+          params[p.name] = p.choices.filter(v => value.includes(v));
+        }
         else if (p.kind === "choice" && p.choices.includes(value)) params[p.name] = value;
         else if (p.kind === "int_or_all" && value === null) params[p.name] = null;
-        else if (typeof value === "number" && Number.isFinite(value)) params[p.name] = value;
+        else if (["int", "float", "int_or_all"].includes(p.kind) && typeof value === "number"
+          && Number.isFinite(value) && value >= p.low && value <= p.high
+          && (p.kind === "float" || Number.isInteger(value))) params[p.name] = value;
       }
       return {model: saved.model, params, seed: typeof saved.seed === "string" ? saved.seed : spec.seed_default,
         rows: STATE.rows.includes(saved.rows) ? saved.rows : 10,
@@ -215,8 +226,11 @@ function readParams() {
     if (p.kind === "subset") params[p.name] = $$(`[data-param="${p.name}"]:checked`).map(i => i.value);
     else if (p.kind === "choice") params[p.name] = $(`[data-param="${p.name}"]`).value;
     else {
-      const raw = $(`[data-param="${p.name}"]`).value.trim();
-      params[p.name] = raw === "" ? (p.kind === "int_or_all" ? null : NaN) : Number(raw);
+      const input = $(`[data-param="${p.name}"]`), raw = input.value.trim();
+      // Browsers expose an unfinished number (such as "1e") as empty with badInput.
+      // Keep it invalid through JSON: NaN would become null, which means "all draws".
+      params[p.name] = input.validity.badInput ? "" : raw === "" ? (p.kind === "int_or_all" ? null : "")
+        : Number.isFinite(Number(raw)) ? Number(raw) : raw;
     }
   }
   return params;
@@ -317,8 +331,8 @@ function gridHTML(values, picks, describe, strong = false) {
 }));
 
 function settingsText(r) {
-  const parts = Object.entries(r.params).map(([k, v]) => `${k.replace(/_/g, " ")} ${v === null ? "all" : Array.isArray(v) ? v.length + " models" : v}`);
-  if (r.seed !== null) parts.push(`seed ${r.seed}`);
+  const parts = Object.entries(r.params).map(([k, v]) => `${k.replace(/_/g, " ")} ${v === null ? "all" : Array.isArray(v) ? v.map(id => STATE.preset_names[id] || id).join(", ") : v}`);
+  if (r.seed != null) parts.push(`seed ${r.seed}`);
   return parts.join(" · ");
 }
 
@@ -481,7 +495,7 @@ async function runLab(resumeId = null) {
   const button = $("#runlab"), status = $("#labstatus"), r = request();
   button.disabled = true; $("#laberror").textContent = "";
   const job = runJob("/api/backtest", { model: r.model, params: r.params, seed: r.seed, n_test: Number($("#ntest").value) }, s => {
-    status.innerHTML = `${esc(s.progress.stage)} <button class="btn" type="button" data-cancel>Cancel</button>`;
+    status.innerHTML = `${esc(s.progress.stage)} <button class="btn" type="button" data-cancel${s.state === "cancel_requested" ? " disabled" : ""}>Cancel</button>`;
     $("[data-cancel]", status).addEventListener("click", () => job.cancel());
   }, resumeId);
   try { const done = await job; lastAttempt = done.attempt_id; renderLab(done.notebook); }
@@ -496,12 +510,12 @@ $("#runlab").addEventListener("click", () => runLab());
 function renderLab(notebook) {
   const done = notebook.attempts.filter(a => a.state === "complete");
   const a = done.find(x => x.id === lastAttempt) || done[done.length - 1];
-  const verdict = x => x.state !== "complete" ? `<span class="pill">${x.state}</span>`
+  const verdict = x => x.state !== "complete" ? `<span class="pill">${esc(x.state)}</span>${x.message ? `<p class="hint">${esc(x.message)}</p>` : ""}`
     : x.significant ? '<span class="pill warn">unusual in this notebook</span>' : '<span class="pill">not significant</span>';
   $("#labout").innerHTML = (a ? `
     <div class="tiles" style="margin-top:0">
       <div class="tile hero"><div class="k">Mean matches per draw</div><div class="v">${a.mean_matches.toFixed(3)}</div><div class="n">chance ${notebook.baseline.toFixed(3)}</div></div>
-      <div class="tile"><div class="k">p-value, two-sided</div><div class="v">${a.p_value.toFixed(3)}</div><div class="n">on its own, before correction</div></div>
+      <div class="tile"><div class="k">p-value, two-sided</div><div class="v">${esc(pValue(a.p_value))}</div><div class="n">on its own, before correction</div></div>
       <div class="tile"><div class="k">Across ${notebook.completed} attempt${notebook.completed === 1 ? "" : "s"}</div><div class="v" style="font-size:1.1rem;padding-top:9px">${a.significant ? "Unusual in this notebook" : "Not significant"}</div><div class="n">${a.significant ? "exploratory: confirm on future draws" : "Holm correction over this notebook"}</div></div>
     </div>
     <div class="card"><h2>${esc(a.label)}</h2>
@@ -512,7 +526,7 @@ function renderLab(notebook) {
       <p class="sub">Every setting tried, including abandoned runs, kept between visits. This is exploratory: choosing settings after seeing results reuses evaluation data. Holm adjustment alone does not validate that tuning; confirmation needs untouched future draws.</p>
       ${notebook.attempts.length ? `<div class="scroll"><table><thead><tr><th>Settings</th><th class="num">Draws</th><th class="num">Mean matches</th><th class="num">p</th><th>After correction</th></tr></thead><tbody>
       ${notebook.attempts.slice().reverse().map(x => `<tr><td>${esc(x.label)}</td><td class="num">${x.draws ?? "—"}</td>
-        <td class="num">${x.state === "complete" ? x.mean_matches.toFixed(3) : "—"}</td><td class="num">${x.state === "complete" ? x.p_value.toFixed(3) : "—"}</td><td>${verdict(x)}</td></tr>`).join("")}</tbody></table></div>`
+        <td class="num">${x.state === "complete" ? x.mean_matches.toFixed(3) : "—"}</td><td class="num">${x.state === "complete" ? esc(pValue(x.p_value)) : "—"}</td><td>${verdict(x)}</td></tr>`).join("")}</tbody></table></div>`
       : '<p class="hint">Nothing tried yet.</p>'}</div>`;
 }
 

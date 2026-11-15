@@ -86,7 +86,8 @@ class JobRunner:
         self._jobs: dict[str, Job] = {}
         self._lock = threading.Lock()
         self._closed = False
-        threading.Thread(target=self._run, name="lotto-ui-worker", daemon=True).start()
+        self._worker = threading.Thread(target=self._run, name="lotto-ui-worker", daemon=True)
+        self._worker.start()
 
     def submit(self, kind: str, key: str, work: Callable[[Job], dict]) -> Job:
         """Queue work. The same request already waiting or running is returned, not repeated."""
@@ -119,25 +120,27 @@ class JobRunner:
         job.cancel()
         return job
 
-    def close(self) -> None:
-        """Stop accepting work and cancel pending work, without interrupting an unsafe stage."""
+    def close(self, *, wait: bool = False) -> None:
+        """Cancel work, optionally waiting for the current stage and its disk writes to stop."""
         with self._lock:
-            if self._closed:
-                return
-            self._closed = True
-            for job in self._jobs.values():
-                job.cancel()
-            while True:
-                try:
-                    self._queue.get_nowait()
-                except queue.Empty:
-                    break
-            self._queue.put_nowait(None)
+            if not self._closed:
+                self._closed = True
+                for job in self._jobs.values():
+                    job.cancel()
+                while True:
+                    try:
+                        self._queue.get_nowait()
+                    except queue.Empty:
+                        break
+                self._queue.put_nowait(None)
+        if wait:
+            self._worker.join()
 
     def active(self) -> Job | None:
-        """The job running now, if any."""
+        """The running job, or the first queued job while the worker is starting."""
         with self._lock:
-            return next((j for j in self._jobs.values() if j.state in ("running", "cancel_requested")), None)
+            running = next((j for j in self._jobs.values() if j.state in ("running", "cancel_requested")), None)
+            return running or next((j for j in self._jobs.values() if j.state == "queued"), None)
 
     def _run(self) -> None:
         while True:

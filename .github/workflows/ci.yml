@@ -31,6 +31,11 @@ jobs:
       - name: Ruff
         run: uv run ruff check .
 
+      - name: Dashboard JavaScript
+        run: |
+          node --check lotto/ui/static/app.js
+          node --test tests/test_ui_frontend.cjs
+
       # The runner image ships cargo. Building first lets the Python tests drive
       # the real release binary, and the host-C++ test compiles the CUDA hash
       # header with g++, so both native engines are checked on every push.

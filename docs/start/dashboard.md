@@ -16,6 +16,9 @@ archive cadence, not an official schedule. A failed check leaves the saved archi
 | `--no-browser` | start without opening a browser |
 | `--offline` | disable checks for new draws |
 
+Run one dashboard per checkout. A second launch, even on another port, stops with an
+explanation before touching the notebook. Open another browser tab to use the running server.
+
 ![The prediction screen, using the pinned test archive](../images/dashboard.jpg)
 
 *Example from the pinned test archive through 3 November 2026. Your archive and results may differ.*
@@ -70,6 +73,9 @@ Predict to run that model's backtest. The Lab measures the single ticket, not th
 The notebook survives reloads and records failed/cancelled attempts. Retrying preserves
 abandoned attempts; a completed identical comparison is reused. Runs left unfinished when
 the server stopped are marked interrupted at the next startup.
+Older sampled-mode results that actually measured top-six tickets are retained as **invalid**,
+with an explanation, and excluded from the summary and correction. Switch to top six and
+run a new backtest to measure those settings correctly.
 
 Holm's step-down correction is recomputed across completed comparisons. This is **exploration**:
 choosing new settings after seeing results reuses evaluation data. Correction alone does not
@@ -92,6 +98,8 @@ of their individual fair-draw prize chances. Several forms on the same draw are 
 One worker runs jobs in order. Prediction, Compare and Lab offer cancellation; it takes effect
 at the next safe boundary. A neural fit may need to finish its current stage. Cancelling
 before publication prevents a result from being saved. Reloading reconnects to active work.
+If a cancellation request cannot reach the server, the page explains the failure and allows
+another try. Stopping the server also waits for its current stage to finish safely.
 
 HTML and Markdown reports carry the settings, archive fingerprint and algorithm provenance.
 Prediction reports also include the form's design fingerprint and training cutoff. Print from
@@ -101,6 +109,8 @@ Files live under `results/ui/`, which git ignores. Up to 300 completed result fi
 log entries include their own copy, so pruning reports does not remove saved predictions.
 The notebook and log persist until their owner removes their files. Reads do not rewrite the
 archive. Only an explicit check for new draws may update `input/`.
+The `.dashboard.lock` file stays in this folder; the operating system releases its lock when
+the server stops or crashes. There is no need to delete the file to restart.
 
 ## Remote viewing
 

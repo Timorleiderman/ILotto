@@ -309,6 +309,28 @@ def test_restart_marks_unfinished_notebook_attempts(tmp_path):
     assert service.notebook()["attempts"][0]["state"] == "interrupted"
 
 
+def test_restart_excludes_mislabelled_sampled_results_without_erasing_history(tmp_path):
+    store = Storage(tmp_path)
+    service = Service(store, raw_csv=SNAPSHOT, offline=True)
+    service.backtest({"model": "hot", "n_test": 100}, job())
+    good = store.notebook()[0]
+    legacy = {**good, "id": "0123456789abcdef", "model": "date_cb",
+              "params": {"ticket": "sampled"}, "p_value": 0.00001, "label": "Date-conditioned · sampled"}
+    store.save_notebook([good, legacy])
+
+    restarted = Service(store, raw_csv=SNAPSHOT, offline=True)
+    notebook = restarted.notebook()
+    assert notebook["completed"] == 1
+    invalid = notebook["attempts"][1]
+    assert invalid["state"] == "invalid" and invalid["significant"] is None
+    assert "top-six" in invalid["message"] and "chart" not in invalid
+    assert invalid["p_value"] == legacy["p_value"] and invalid["histogram"] == legacy["histogram"]
+    assert store.notebook()[0] == good
+    migrated = store.notebook()
+    Service(store, raw_csv=SNAPSHOT, offline=True)
+    assert store.notebook() == migrated  # migration is idempotent
+
+
 def test_reference_is_dated_without_claiming_verified_settings(service):
     result = service.predict({"model": "hot", "rows": 1}, job())
     assert result["reference"]["configuration_verified"] is False

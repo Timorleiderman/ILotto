@@ -29,7 +29,7 @@ from lotto.ui import report
 from lotto.ui.jobs import Busy, JobRunner
 from lotto.ui.registry import Invalid
 from lotto.ui.service import Service
-from lotto.ui.storage import Storage, valid_id
+from lotto.ui.storage import DashboardInUse, Storage, dashboard_lock, valid_id
 
 logger = logging.getLogger("lotto.ui")
 
@@ -214,7 +214,7 @@ def create_server(service: Service, port: int = DEFAULT_PORT) -> tuple[Threading
     app = App(service)
     class DashboardServer(ThreadingHTTPServer):
         def server_close(self):
-            app.jobs.close()
+            app.jobs.close(wait=True)
             super().server_close()
 
     try:
@@ -239,20 +239,25 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--port must be between 1 and 65535")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-7s %(message)s")
 
-    service = Service(Storage(paths.REPO_ROOT / "results/ui"), offline=args.offline)
+    root = paths.REPO_ROOT / "results/ui"
     try:
-        server, app = create_server(service, args.port)
-    except OSError as exc:
-        parser.error(f"cannot listen on port {args.port} ({exc.strerror}); try --port with another number")
-    url = f"http://localhost:{app.port}"
-    print(f"\n  ILotto dashboard: {url}\n  {service.archive['draws']:,} draws through "
-          f"{service.archive['last_date']}. Press Ctrl-C to stop.\n")
-    if not args.no_browser:
-        webbrowser.open(url)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\nStopped.")
-    finally:
-        server.server_close()
+        with dashboard_lock(root):
+            service = Service(Storage(root), offline=args.offline)
+            try:
+                server, app = create_server(service, args.port)
+            except OSError as exc:
+                parser.error(f"cannot listen on port {args.port} ({exc.strerror}); try --port with another number")
+            url = f"http://localhost:{app.port}"
+            print(f"\n  ILotto dashboard: {url}\n  {service.archive['draws']:,} draws through "
+                  f"{service.archive['last_date']}. Press Ctrl-C to stop.\n")
+            try:
+                if not args.no_browser:
+                    webbrowser.open(url)
+                server.serve_forever()
+            except KeyboardInterrupt:
+                print("\nStopping after the current stage finishes…")
+            finally:
+                server.server_close()
+    except DashboardInUse as exc:
+        parser.error(str(exc))
     return 0

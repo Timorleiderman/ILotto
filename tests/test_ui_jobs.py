@@ -51,3 +51,17 @@ def test_queued_cancel_and_shutdown_do_not_run_work():
         release.set()
         runner.close()
     assert exited.wait(5)
+    runner.close(wait=True)
+    assert active.state == "cancelled"
+
+
+def test_reload_can_find_a_job_before_the_worker_starts(monkeypatch):
+    monkeypatch.setattr(threading.Thread, "start", lambda thread: None)
+    runner = JobRunner()
+    try:
+        queued = runner.submit("test", "first", lambda job: {})
+        assert runner.active() is queued
+        runner.cancel(queued.id)
+        assert runner.active() is None
+    finally:
+        runner.close()

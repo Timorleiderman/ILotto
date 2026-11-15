@@ -88,10 +88,20 @@ class Service:
         self.algorithm = algorithm_fingerprint()
         self._load()
         attempts = self.storage.notebook()
-        interrupted = [a for a in attempts if a["state"] in ("queued", "running")]
-        if interrupted:
-            for attempt in interrupted:
+        changed = False
+        for attempt in attempts:
+            if attempt["state"] in ("queued", "running"):
                 attempt.update(state="interrupted", finished_utc=_now_utc())
+                changed = True
+            elif (attempt["state"] == "complete" and attempt.get("model") == "date_cb"
+                  and attempt.get("params", {}).get("ticket") == "sampled"):
+                # Older dashboards labelled top-six evaluations as sampled tickets.
+                # Retain that history, but never count it as evidence for the selected rule.
+                attempt.update(state="invalid", invalidated_utc=_now_utc(),
+                               message="An earlier dashboard tested top-six tickets for these sampled settings. "
+                                       "Excluded from the summary; switch to top six and run a new backtest.")
+                changed = True
+        if changed:
             self.storage.save_notebook(attempts)
 
     # ------------------------------------------------------------------ archive
@@ -393,7 +403,7 @@ class Service:
         parts = [f"{p.label.lower()} {'all' if params[p.name] is None else params[p.name]}"
                  for p in spec.params if p.kind != "subset"]
         if "members" in params:
-            parts.append(f"{len(params['members'])} members")
+            parts.append("members " + ", ".join(params["members"]))
         if seed is not None:
             parts.append(f"seed {seed}")
         return spec.label + (" · " + " · ".join(parts) if parts else "")

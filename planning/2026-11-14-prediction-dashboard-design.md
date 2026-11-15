@@ -331,6 +331,9 @@ Refresh is serialized with computation; every compare job sees one fixed archive
 Keep numerical tests on the pinned archive. Exercise parameter boundaries with bounded
 fixtures; do not train every large network at its maximum just to test input validation.
 Test refresh/cache invalidation, and prove read-only requests do not write `input/`.
+Also check legacy notebook migration, competing dashboard launches, safe worker shutdown,
+malformed browser preferences, unfinished numeric inputs and failed cancellation retries.
+The JavaScript regression checks run with Node's built-in test runner, without a build step.
 
 Page checks cover 320/768/1280px widths, labels, focus, contrast, table scrolling, disabled
 features, empty state, failed refresh, neural unavailable, job reconnect and print. An HTTP

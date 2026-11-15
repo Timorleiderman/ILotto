@@ -93,7 +93,15 @@ uv run ruff check .
 uv run mkdocs build --strict
 ```
 
-CI runs all of these on every push. A scheduled workflow rebuilds the report and the site on the
+The dashboard's JavaScript checks use Node's built-in test runner (Node 18 or newer), with no
+package installation:
+
+```bash
+node --check lotto/ui/static/app.js
+node --test tests/test_ui_frontend.cjs
+```
+
+CI runs these checks on pull requests and pushes to `main`. A scheduled workflow rebuilds the report and the site on the
 mornings after draw days. Every `lotto report` first checks pais.co.il for new draws and adds
 them to `input/` (`--offline` skips the check). GitHub's runners cannot reach the site, so new
 draws reach the published site when someone runs this on their own machine:

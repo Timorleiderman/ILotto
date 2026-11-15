@@ -17,9 +17,11 @@ makes a strategy look good, suspect the change.
 # Setup. The light install has no TensorFlow; `neural` adds it, `docs` adds the site generator.
 uv sync --extra neural --group docs
 
-uv run pytest -q             # ~250 tests, ~35s; neural tests skip without the extra
+uv run pytest -q             # neural tests skip without the extra
 uv run pytest -k "log_loss"  # by pattern
 uv run ruff check .          # must pass over the whole repo
+node --check lotto/ui/static/app.js
+node --test tests/test_ui_frontend.cjs  # built-in Node test runner; no npm dependencies
 
 # Everything runs through one command.
 uv run lotto list                                   # the experiment catalog
@@ -100,6 +102,10 @@ Presentation only, standard library only. Rules:
 - Log entries are append-only in the UI. Lab verdicts are labelled exploratory, never "signal".
 - The Lab currently rejects sampled date-conditioned tickets: the core harness evaluates
   top-six tickets, and must not silently measure a different selection rule.
+  Legacy notebook entries with that mismatch are retained as invalid, outside the correction.
+- Acquire `dashboard_lock()` before constructing the CLI's Service: startup recovers the
+  notebook. One dashboard owns `results/ui/`, even across different ports. Keep its lock
+  until the worker finishes shutdown; never delete the lock file while a process owns it.
 - Completed predictions are immutable and cached by archive/config/date/design plus source
   and runtime fingerprints. Publish through `Job.finish()` so cancellation cannot save a
   result that the UI calls cancelled. Cache hits preserve the original generation timestamp.
@@ -223,7 +229,8 @@ Generated — never hand-edit, `lotto report --out-dir docs` overwrites them (wi
 
 ## CI
 
-- `ci.yml` — ruff, pytest, a quick report build, and `mkdocs build --strict`, on push and PR.
+- `ci.yml` — ruff, Python and JavaScript tests, Rust engine checks, a quick report build,
+  and `mkdocs build --strict`, on pushes to main and PRs.
 - `report.yml` — full rebuild on a cron, commits the refreshed archive, deploys `site/` to Pages.
 
 The cron is `0 6 * * 0,3,5`. Draw days since 2012 are Tuesday (707) and Saturday (703) with an
