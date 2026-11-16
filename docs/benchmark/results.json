@@ -1,70 +1,70 @@
 {
-  "generated_utc": "2026-11-06T18:00:16+00:00",
-  "n_draws": 1661,
-  "last_draw_date": "2026-11-03",
+  "generated_utc": "2026-11-14T23:56:52+00:00",
+  "n_draws": 1664,
+  "last_draw_date": "2026-11-14",
   "randomness_tests": [
     {
       "test": "Ball frequency uniformity (without-replacement chi-square)",
-      "statistic": 42.521217300110706,
+      "statistic": 42.326612903225815,
       "dof": 36,
-      "p_value": 0.2106869827195804,
-      "detail": "counts range 234-308, expected 269.4; Pearson statistic multiplied by 1.161290"
+      "p_value": 0.21666684309390594,
+      "detail": "counts range 234-308, expected 269.8; Pearson statistic multiplied by 1.161290"
     },
     {
       "test": "Strong-number uniformity (chi-square)",
-      "statistic": 3.5966285370258877,
+      "statistic": 3.6237980769230766,
       "dof": 6,
-      "p_value": 0.7310724557903424,
+      "p_value": 0.7274326504581627,
       "detail": "counts range 226-254"
     },
     {
       "test": "Lag-1 serial independence (hot/due folklore)",
-      "statistic": 1.437070920692833,
+      "statistic": 1.512345947939461,
       "dof": 1,
-      "p_value": 0.23061391784420365,
-      "detail": "P(drawn again | drawn) = 0.1663 vs 0.1622 expected"
+      "p_value": 0.21878146423419484,
+      "detail": "P(drawn again | drawn) = 0.1664 vs 0.1622 expected"
     },
     {
       "test": "Appearance-gap distribution vs geometric",
-      "statistic": 12.46873919926173,
+      "statistic": 12.616735236066294,
       "dof": 11,
-      "p_value": 0.3294596831294988,
-      "detail": "9929 gaps, mean 6.15 vs 6.17 expected"
+      "p_value": 0.31911136943512436,
+      "detail": "9947 gaps, mean 6.14 vs 6.17 expected"
     },
     {
       "test": "Pairwise co-occurrence (666 pairs, exact-binomial Bonferroni)",
-      "statistic": 3.7356936315543425,
+      "statistic": 3.7211611167372847,
       "dof": null,
-      "p_value": 0.4620122795698057,
-      "detail": "most extreme pair 13&25: 60 co-occurrences vs 37.4 expected (z=3.74)"
+      "p_value": 0.4830293946700788,
+      "detail": "most extreme pair 13&25: 60 co-occurrences vs 37.5 expected (z=3.72)"
     },
     {
-      "test": "Draw-sum distribution (two-sample KS vs simulated fair draws)",
-      "statistic": 0.015981402769415953,
-      "dof": null,
-      "p_value": 0.7918919790786639,
-      "detail": "observed mean sum 114.3 vs 114.1 simulated"
+      "test": "Draw-sum distribution (chi-square vs exact null)",
+      "statistic": 20.072046225637386,
+      "dof": 19,
+      "p_value": 0.3902546106486971,
+      "detail": "observed mean sum 114.3 vs 114.0 expected; 20 bins"
     },
     {
       "test": "First half vs second half frequency drift (without-replacement Wald)",
-      "statistic": 30.0130776063113,
+      "statistic": 30.624844913151374,
       "dof": 36,
-      "p_value": 0.7483044416823524,
-      "detail": "830 vs 831 draws; asymptotic covariance under independent uniform 6/37 draws"
+      "p_value": 0.7218595267918514,
+      "detail": "832 vs 832 draws; asymptotic covariance under independent uniform 6/37 draws"
     },
     {
       "test": "Incompressibility (no generating function within compressor reach)",
-      "statistic": 24.05298013245033,
+      "statistic": 24.052884615384617,
       "dof": null,
       "p_value": 1.0,
       "detail": "zlib: 24.05 bits/draw vs entropy floor 23.96; fair-sim mean 24.05"
     },
     {
       "test": "Surrogate-data determinism (method of analogues vs shuffles)",
-      "statistic": 0.95,
+      "statistic": 1.0333333333333334,
       "dof": null,
-      "p_value": 0.6829268292682927,
-      "detail": "real ordering 0.950 matches vs 0.966 mean over 40 shuffled surrogates (chance 0.973)"
+      "p_value": 0.2175,
+      "detail": "real ordering 1.033 matches vs 0.968 mean over 399 shuffled surrogates (chance 0.973)"
     }
   ],
   "strategies": [
@@ -72,18 +72,18 @@
       "name": "Hot numbers (last 100 draws)",
       "description": "Ranks numbers by how often they appeared over the last 100 draws. The classic hot-hand heuristic.",
       "n_draws": 300,
-      "mean_matches": 1.0733333333333333,
+      "mean_matches": 1.08,
       "baseline_matches": 0.972972972972973,
-      "lift_pct": 10.314814814814799,
+      "lift_pct": 11.00000000000001,
       "match_se": 0.04837259012129297,
-      "z_score": 2.0747361286362653,
-      "p_value": 0.04299712339995087,
-      "p_value_greater": 0.021498561699975435,
+      "z_score": 2.2125552251525016,
+      "p_value": 0.030884402381764993,
+      "p_value_greater": 0.015442201190882496,
       "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": 3.6348822021139995,
+      "mean_log_loss": 3.6351797410236304,
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 4,
-      "hit_3plus_rate": 0.06333333333333334,
+      "hit_3plus_rate": 0.06,
       "strong_accuracy": 0.13333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
@@ -93,43 +93,22 @@
       "name": "Lag-1 persistence",
       "description": "Estimates, for each number independently, the probability it is drawn given whether it was drawn last time, then scores by that conditional probability.",
       "n_draws": 300,
-      "mean_matches": 1.07,
+      "mean_matches": 1.0666666666666667,
       "baseline_matches": 0.972972972972973,
-      "lift_pct": 9.972222222222227,
+      "lift_pct": 9.629629629629633,
       "match_se": 0.04837259012129297,
-      "z_score": 2.0058265803781516,
-      "p_value": 0.05043462907781072,
-      "p_value_greater": 0.02521731453890536,
+      "z_score": 1.9369170321200335,
+      "p_value": 0.05892739167842545,
+      "p_value_greater": 0.029463695839212725,
       "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": 3.6123812242950755,
+      "mean_log_loss": 3.612561347263859,
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 4,
-      "hit_3plus_rate": 0.04666666666666667,
-      "strong_accuracy": 0.11333333333333333,
+      "hit_3plus_rate": 0.05,
+      "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
       "seconds": 0.07
-    },
-    {
-      "name": "EWMA frequency (half-life 50)",
-      "description": "Frequency count where a draw 50 draws ago carries half the weight of the latest one. Smoothly interpolates between 'hot recently' and 'hot all-time'.",
-      "n_draws": 300,
-      "mean_matches": 1.0366666666666666,
-      "baseline_matches": 0.972972972972973,
-      "lift_pct": 6.546296296296283,
-      "match_se": 0.04837259012129297,
-      "z_score": 1.3167310977969833,
-      "p_value": 0.20092614991243513,
-      "p_value_greater": 0.10046307495621756,
-      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": 3.628969700008435,
-      "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 3,
-      "hit_3plus_rate": 0.04666666666666667,
-      "strong_accuracy": 0.14,
-      "baseline_strong_accuracy": 0.14285714285714285,
-      "significant_after_correction": false,
-      "seconds": 0.04
     },
     {
       "name": "Perfect-fit function (DFT)",
@@ -147,24 +126,45 @@
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 4,
       "hit_3plus_rate": 0.05,
-      "strong_accuracy": 0.11333333333333333,
+      "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
       "seconds": 0.02
     },
     {
+      "name": "EWMA frequency (half-life 50)",
+      "description": "Frequency count where a draw 50 draws ago carries half the weight of the latest one. Smoothly interpolates between 'hot recently' and 'hot all-time'.",
+      "n_draws": 300,
+      "mean_matches": 1.0333333333333334,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": 6.203703703703711,
+      "match_se": 0.04837259012129297,
+      "z_score": 1.2478215495388696,
+      "p_value": 0.2259249725347066,
+      "p_value_greater": 0.1129624862673533,
+      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+      "mean_log_loss": 3.6292802714875614,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 3,
+      "hit_3plus_rate": 0.043333333333333335,
+      "strong_accuracy": 0.14,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 0.04
+    },
+    {
       "name": "Hot numbers (all-time)",
       "description": "Ranks numbers by how often they appeared over the all-time. The classic hot-hand heuristic.",
       "n_draws": 300,
-      "mean_matches": 1.0266666666666666,
+      "mean_matches": 1.03,
       "baseline_matches": 0.972972972972973,
-      "lift_pct": 5.5185185185185,
+      "lift_pct": 5.861111111111117,
       "match_se": 0.04837259012129297,
-      "z_score": 1.1100024530226331,
-      "p_value": 0.2824692914172377,
-      "p_value_greater": 0.14123464570861885,
+      "z_score": 1.1789120012807515,
+      "p_value": 0.25308838662698596,
+      "p_value_greater": 0.12654419331349298,
       "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": 3.612283257169129,
+      "mean_log_loss": 3.6124396954941282,
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 3,
       "hit_3plus_rate": 0.043333333333333335,
@@ -177,43 +177,22 @@
       "name": "Golden ratio (Kronecker schedule)",
       "description": "Six numbers placed by the golden angle at the next draw's index \u2014 the phyllotaxis construction mapped onto the board. phi's low-discrepancy property makes this the most uniformly spread fixed schedule possible, i.e. a random ticket with extra steps.",
       "n_draws": 300,
-      "mean_matches": 1.0266666666666666,
+      "mean_matches": 1.0233333333333334,
       "baseline_matches": 0.972972972972973,
-      "lift_pct": 5.5185185185185,
+      "lift_pct": 5.175925925925928,
       "match_se": 0.04837259012129297,
-      "z_score": 1.1100024530226331,
-      "p_value": 0.2824692914172377,
-      "p_value_greater": 0.14123464570861885,
+      "z_score": 1.0410929047645197,
+      "p_value": 0.31410356154031516,
+      "p_value_greater": 0.15705178077015758,
       "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
       "mean_log_loss": null,
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 3,
       "hit_3plus_rate": 0.03,
-      "strong_accuracy": 0.14666666666666667,
+      "strong_accuracy": 0.15,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
       "seconds": 0.0
-    },
-    {
-      "name": "Perfect-fit function (polynomial)",
-      "description": "Degree-5 polynomial through the last six draws per number, evaluated one step ahead. Exact on its window; wildly divergent beyond it. A control.",
-      "n_draws": 300,
-      "mean_matches": 1.0166666666666666,
-      "baseline_matches": 0.972972972972973,
-      "lift_pct": 4.49074074074074,
-      "match_se": 0.04837259012129297,
-      "z_score": 0.9032738082482832,
-      "p_value": 0.3841792296396731,
-      "p_value_greater": 0.19208961481983655,
-      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": null,
-      "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 4,
-      "hit_3plus_rate": 0.043333333333333335,
-      "strong_accuracy": 0.11333333333333333,
-      "baseline_strong_accuracy": 0.14285714285714285,
-      "significant_after_correction": false,
-      "seconds": 0.21
     },
     {
       "name": "Perfect-fit function (spline)",
@@ -231,14 +210,77 @@
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 4,
       "hit_3plus_rate": 0.03666666666666667,
-      "strong_accuracy": 0.11333333333333333,
+      "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 1.31
+      "seconds": 1.48
+    },
+    {
+      "name": "Perfect-fit function (polynomial)",
+      "description": "Degree-5 polynomial through the last six draws per number, evaluated one step ahead. Exact on its window; wildly divergent beyond it. A control.",
+      "n_draws": 300,
+      "mean_matches": 1.0066666666666666,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": 3.4629629629629566,
+      "match_se": 0.04837259012129297,
+      "z_score": 0.6965451634739331,
+      "p_value": 0.5059163312074599,
+      "p_value_greater": 0.25295816560372997,
+      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+      "mean_log_loss": null,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 4,
+      "hit_3plus_rate": 0.03666666666666667,
+      "strong_accuracy": 0.11,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 0.22
     },
     {
       "name": "Random ticket",
       "description": "Six numbers drawn uniformly at random. The honest null hypothesis.",
+      "n_draws": 300,
+      "mean_matches": 0.9966666666666667,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": 2.4351851851851736,
+      "match_se": 0.04837259012129297,
+      "z_score": 0.4898165186995853,
+      "p_value": 0.645698348767028,
+      "p_value_greater": 0.322849174383514,
+      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+      "mean_log_loss": null,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 4,
+      "hit_3plus_rate": 0.03333333333333333,
+      "strong_accuracy": 0.17666666666666667,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 0.0
+    },
+    {
+      "name": "Method of analogues (chaos)",
+      "description": "Lorenz's nearest-neighbour forecaster from chaotic dynamics: find the k past 3-draw windows most similar to the current one and average their successors. The standard short-horizon predictor for real chaotic systems.",
+      "n_draws": 300,
+      "mean_matches": 0.9966666666666667,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": 2.4351851851851736,
+      "match_se": 0.04837259012129297,
+      "z_score": 0.4898165186995853,
+      "p_value": 0.645698348767028,
+      "p_value_greater": 0.322849174383514,
+      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+      "mean_log_loss": 3.702383677067024,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 4,
+      "hit_3plus_rate": 0.04,
+      "strong_accuracy": 0.16,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 0.1
+    },
+    {
+      "name": "Overdue (longest absence)",
+      "description": "Ranks numbers by draws elapsed since their last appearance. The gambler's-fallacy strategy, included because it is the most common thing players actually do.",
       "n_draws": 300,
       "mean_matches": 0.9933333333333333,
       "baseline_matches": 0.972972972972973,
@@ -251,11 +293,32 @@
       "mean_log_loss": null,
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 3,
-      "hit_3plus_rate": 0.03666666666666667,
-      "strong_accuracy": 0.18,
+      "hit_3plus_rate": 0.05,
+      "strong_accuracy": 0.13333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.0
+      "seconds": 0.1
+    },
+    {
+      "name": "Cold numbers (all-time)",
+      "description": "Ranks numbers by how rarely they appeared over the all-time. The classic due-number heuristic.",
+      "n_draws": 300,
+      "mean_matches": 0.9833333333333333,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": 1.0648148148147962,
+      "match_se": 0.04837259012129297,
+      "z_score": 0.21417832566711706,
+      "p_value": 0.8531655502280439,
+      "p_value_greater": 0.42658277511402193,
+      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+      "mean_log_loss": null,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 3,
+      "hit_3plus_rate": 0.05,
+      "strong_accuracy": 0.18333333333333332,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 0.01
     },
     {
       "name": "Rank ensemble",
@@ -272,36 +335,15 @@
       "mean_log_loss": null,
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 4,
-      "hit_3plus_rate": 0.05,
-      "strong_accuracy": 0.16,
+      "hit_3plus_rate": 0.05333333333333334,
+      "strong_accuracy": 0.15666666666666668,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.26
-    },
-    {
-      "name": "Overdue (longest absence)",
-      "description": "Ranks numbers by draws elapsed since their last appearance. The gambler's-fallacy strategy, included because it is the most common thing players actually do.",
-      "n_draws": 300,
-      "mean_matches": 0.98,
-      "baseline_matches": 0.972972972972973,
-      "lift_pct": 0.7222222222222241,
-      "match_se": 0.04837259012129297,
-      "z_score": 0.14526877740900113,
-      "p_value": 0.907426351102638,
-      "p_value_greater": 0.453713175551319,
-      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": null,
-      "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 3,
-      "hit_3plus_rate": 0.04666666666666667,
-      "strong_accuracy": 0.13333333333333333,
-      "baseline_strong_accuracy": 0.14285714285714285,
-      "significant_after_correction": false,
-      "seconds": 0.1
+      "seconds": 0.37
     },
     {
       "name": "Fibonacci ticket (control)",
-      "description": "The fixed ticket 2-3-5-8-13-21. Same odds as any six numbers, but Fibonacci picks are famously popular with humans, so the pari-mutuel share is worse than average.",
+      "description": "The fixed ticket 2-3-5-8-13-21. Same odds as any six numbers; included to show that a ticket with a famous pattern scores like any other fixed ticket.",
       "n_draws": 300,
       "mean_matches": 0.9766666666666667,
       "baseline_matches": 0.972972972972973,
@@ -315,56 +357,35 @@
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 4,
       "hit_3plus_rate": 0.05,
-      "strong_accuracy": 0.11333333333333333,
+      "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
       "seconds": 0.0
-    },
-    {
-      "name": "Unpopular numbers (EV-aware)",
-      "description": "Prefers 32-37 using a player-popularity heuristic. Single-ticket odds are unchanged under fair draws. Reduced prize sharing and an expected-return advantage have not been validated for these weights.",
-      "n_draws": 300,
-      "mean_matches": 0.97,
-      "baseline_matches": 0.972972972972973,
-      "lift_pct": -0.3055555555555589,
-      "match_se": 0.04837259012129297,
-      "z_score": -0.061459867365348926,
-      "p_value": 0.9828767007963135,
-      "p_value_greater": 0.536021456258823,
-      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": null,
-      "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 4,
-      "hit_3plus_rate": 0.03333333333333333,
-      "strong_accuracy": 0.11333333333333333,
-      "baseline_strong_accuracy": 0.14285714285714285,
-      "significant_after_correction": false,
-      "seconds": 0.0
-    },
-    {
-      "name": "Neural (gru, set prediction)",
-      "description": "A GRU over the last 20 draws encoded as 37-dim indicators plus recency features, trained with binary cross-entropy to predict the drawn *set*. Refit every 50 draws during the backtest so it never sees the future.",
-      "n_draws": 300,
-      "mean_matches": 0.97,
-      "baseline_matches": 0.972972972972973,
-      "lift_pct": -0.3055555555555589,
-      "match_se": 0.04837259012129297,
-      "z_score": -0.061459867365348926,
-      "p_value": 0.9828767007963135,
-      "p_value_greater": 0.536021456258823,
-      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": 3.6242470150396744,
-      "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 4,
-      "hit_3plus_rate": 0.03666666666666667,
-      "strong_accuracy": 0.16333333333333333,
-      "baseline_strong_accuracy": 0.14285714285714285,
-      "significant_after_correction": false,
-      "seconds": 55.87
     },
     {
       "name": "Date-conditioned generative (CB-6/37)",
       "description": "A conditional-Bernoulli log-linear model over the 37 balls with the set size fixed at 6, whose logits are linear in an 11-dimensional smooth basis of the draw's date (annual harmonics, weekday, day-of-month phase, linear trend). Exact normaliser, exact marginals, exact sampler. Generates a ticket for any date, past or future.",
+      "n_draws": 300,
+      "mean_matches": 0.9766666666666667,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": 0.37962962962962976,
+      "match_se": 0.04837259012129297,
+      "z_score": 0.07635922915088521,
+      "p_value": 0.9621644037463148,
+      "p_value_greater": 0.4810822018731574,
+      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+      "mean_log_loss": 3.63511517057351,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 3,
+      "hit_3plus_rate": 0.04,
+      "strong_accuracy": 0.17333333333333334,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 2.88
+    },
+    {
+      "name": "Sum-targeted combination",
+      "description": "Selects six numbers whose total lands near the centre of the historical sum distribution (~114). Does not improve win probability; included as a control.",
       "n_draws": 300,
       "mean_matches": 0.9666666666666667,
       "baseline_matches": 0.972972972972973,
@@ -374,119 +395,77 @@
       "p_value": 0.9279570874823538,
       "p_value_greater": 0.5633315410919969,
       "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": 3.6345266130063116,
-      "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 4,
-      "hit_3plus_rate": 0.05333333333333334,
-      "strong_accuracy": 0.17,
-      "baseline_strong_accuracy": 0.14285714285714285,
-      "significant_after_correction": false,
-      "seconds": 2.71
-    },
-    {
-      "name": "Cold numbers (all-time)",
-      "description": "Ranks numbers by how rarely they appeared over the all-time. The classic due-number heuristic.",
-      "n_draws": 300,
-      "mean_matches": 0.9566666666666667,
-      "baseline_matches": 0.972972972972973,
-      "lift_pct": -1.6759259259259363,
-      "match_se": 0.04837259012129297,
-      "z_score": -0.3370980603978149,
-      "p_value": 0.7660136446785183,
-      "p_value_greater": 0.6431008772085112,
-      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
       "mean_log_loss": null,
       "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 3,
-      "hit_3plus_rate": 0.03666666666666667,
-      "strong_accuracy": 0.18333333333333332,
+      "best_draw_matches": 4,
+      "hit_3plus_rate": 0.03333333333333333,
+      "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 0.01
+      "seconds": 0.08
     },
     {
       "name": "Pairwise co-occurrence (Markov)",
       "description": "Builds a 37x37 co-occurrence matrix over history, then scores each number by how often it has appeared alongside the numbers in the most recent draw. Laplace-smoothed.",
       "n_draws": 300,
-      "mean_matches": 0.9566666666666667,
+      "mean_matches": 0.9533333333333334,
       "baseline_matches": 0.972972972972973,
-      "lift_pct": -1.6759259259259363,
+      "lift_pct": -2.0185185185185195,
       "match_se": 0.04837259012129297,
-      "z_score": -0.3370980603978149,
-      "p_value": 0.7660136446785183,
-      "p_value_greater": 0.6431008772085112,
+      "z_score": -0.40600760865593083,
+      "p_value": 0.7137982455829779,
+      "p_value_greater": 0.6685744954356581,
       "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
       "mean_log_loss": null,
       "baseline_log_loss": 3.6109179126442243,
       "best_draw_matches": 3,
       "hit_3plus_rate": 0.04666666666666667,
-      "strong_accuracy": 0.11333333333333333,
+      "strong_accuracy": 0.11,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
       "seconds": 0.02
     },
     {
-      "name": "Sum-targeted combination",
-      "description": "Selects six numbers whose total lands near the centre of the historical sum distribution (~114). Does not improve win probability; included as a control.",
-      "n_draws": 300,
-      "mean_matches": 0.9433333333333334,
-      "baseline_matches": 0.972972972972973,
-      "lift_pct": -3.0462962962963025,
-      "match_se": 0.04837259012129297,
-      "z_score": -0.6127362534302809,
-      "p_value": 0.5655721116340569,
-      "p_value_greater": 0.7402023366624385,
-      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": null,
-      "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 3,
-      "hit_3plus_rate": 0.03666666666666667,
-      "strong_accuracy": 0.11333333333333333,
-      "baseline_strong_accuracy": 0.14285714285714285,
-      "significant_after_correction": false,
-      "seconds": 0.08
-    },
-    {
-      "name": "Method of analogues (chaos)",
-      "description": "Lorenz's nearest-neighbour forecaster from chaotic dynamics: find the k past 3-draw windows most similar to the current one and average their successors. The standard short-horizon predictor for real chaotic systems.",
-      "n_draws": 300,
-      "mean_matches": 0.9433333333333334,
-      "baseline_matches": 0.972972972972973,
-      "lift_pct": -3.0462962962963025,
-      "match_se": 0.04837259012129297,
-      "z_score": -0.6127362534302809,
-      "p_value": 0.5655721116340569,
-      "p_value_greater": 0.7402023366624385,
-      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": 3.71234199278539,
-      "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 3,
-      "hit_3plus_rate": 0.04666666666666667,
-      "strong_accuracy": 0.16666666666666666,
-      "baseline_strong_accuracy": 0.14285714285714285,
-      "significant_after_correction": false,
-      "seconds": 0.08
-    },
-    {
       "name": "Neural (transformer, set prediction)",
       "description": "A TRANSFORMER over the last 20 draws encoded as 37-dim indicators plus recency features, trained with binary cross-entropy to predict the drawn *set*. Refit every 50 draws during the backtest so it never sees the future.",
       "n_draws": 300,
-      "mean_matches": 0.86,
+      "mean_matches": 0.94,
       "baseline_matches": 0.972972972972973,
-      "lift_pct": -11.611111111111116,
+      "lift_pct": -3.388888888888897,
       "match_se": 0.04837259012129297,
-      "z_score": -2.3354749598831974,
-      "p_value": 0.019994931569313503,
-      "p_value_greater": 0.9917417700202859,
+      "z_score": -0.6816458016883991,
+      "p_value": 0.5195953266751231,
+      "p_value_greater": 0.7622036508332967,
       "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
-      "mean_log_loss": 3.617951453344335,
+      "mean_log_loss": 3.617753755854359,
       "baseline_log_loss": 3.6109179126442243,
-      "best_draw_matches": 3,
-      "hit_3plus_rate": 0.02,
-      "strong_accuracy": 0.11333333333333333,
+      "best_draw_matches": 4,
+      "hit_3plus_rate": 0.04666666666666667,
+      "strong_accuracy": 0.13333333333333333,
       "baseline_strong_accuracy": 0.14285714285714285,
       "significant_after_correction": false,
-      "seconds": 35.81
+      "seconds": 35.08
+    },
+    {
+      "name": "Neural (gru, set prediction)",
+      "description": "A GRU over the last 20 draws encoded as 37-dim indicators plus recency features, trained with binary cross-entropy to predict the drawn *set*. Refit every 50 draws during the backtest so it never sees the future.",
+      "n_draws": 300,
+      "mean_matches": 0.8733333333333333,
+      "baseline_matches": 0.972972972972973,
+      "lift_pct": -10.240740740740751,
+      "match_se": 0.04837259012129297,
+      "z_score": -2.059836766850731,
+      "p_value": 0.040988686409711025,
+      "p_value_greater": 0.9827530900904384,
+      "p_value_method": "Doubled inclusive tail of convolved hypergeometric null",
+      "mean_log_loss": 3.6242008471765024,
+      "baseline_log_loss": 3.6109179126442243,
+      "best_draw_matches": 4,
+      "hit_3plus_rate": 0.03333333333333333,
+      "strong_accuracy": 0.17333333333333334,
+      "baseline_strong_accuracy": 0.14285714285714285,
+      "significant_after_correction": false,
+      "seconds": 46.62
     }
   ],
   "monte_carlo_null": {
@@ -566,45 +545,49 @@
       "target_date": null,
       "numbers": [
         1,
+        2,
         7,
-        8,
         18,
         21,
         35
       ],
-      "strong": 5,
+      "strong": 2,
       "shortlist_kind": "normalized_marginal_probability",
       "shortlist": [
-        [
-          18,
-          0.04
-        ],
         [
           7,
           0.03833333333333333
         ],
         [
-          1,
+          35,
+          0.03833333333333333
+        ],
+        [
+          18,
           0.03666666666666667
         ],
         [
-          8,
-          0.035
-        ],
-        [
           21,
-          0.035
+          0.03666666666666667
         ],
         [
-          35,
+          1,
           0.035
         ],
         [
           2,
-          0.03166666666666667
+          0.03333333333333333
+        ],
+        [
+          8,
+          0.03333333333333333
         ],
         [
           32,
+          0.03333333333333333
+        ],
+        [
+          37,
           0.03166666666666667
         ],
         [
@@ -612,16 +595,12 @@
           0.03
         ],
         [
-          6,
-          0.03
-        ],
-        [
           9,
           0.03
         ],
         [
-          25,
-          0.03
+          6,
+          0.028333333333333332
         ]
       ]
     },
@@ -629,191 +608,127 @@
       "strategy": "Neural (gru, set prediction)",
       "target_date": null,
       "numbers": [
-        1,
-        5,
-        16,
-        27,
-        33,
-        36
-      ],
-      "strong": 6,
-      "shortlist_kind": "normalized_marginal_probability",
-      "shortlist": [
-        [
-          33,
-          0.035092974353308354
-        ],
-        [
-          16,
-          0.034963048346644696
-        ],
-        [
-          5,
-          0.03217874478635137
-        ],
-        [
-          27,
-          0.031888647620557806
-        ],
-        [
-          36,
-          0.031108388263144326
-        ],
-        [
-          1,
-          0.0306843304013644
-        ],
-        [
-          32,
-          0.030269813628727254
-        ],
-        [
-          3,
-          0.030153065437996642
-        ],
-        [
-          8,
-          0.029592388790862668
-        ],
-        [
-          6,
-          0.029392506477393984
-        ],
-        [
-          30,
-          0.02938872207897219
-        ],
-        [
-          37,
-          0.0291673598003872
-        ]
-      ]
-    },
-    {
-      "strategy": "Unpopular numbers (EV-aware)",
-      "target_date": null,
-      "numbers": [
-        32,
-        33,
-        34,
-        35,
+        3,
+        20,
+        22,
+        26,
         36,
         37
       ],
-      "strong": 1,
-      "shortlist_kind": "ranking_score",
+      "strong": 2,
+      "shortlist_kind": "normalized_marginal_probability",
       "shortlist": [
         [
-          32,
-          1.0
+          37,
+          0.03232205252684266
         ],
         [
-          33,
-          1.0
+          3,
+          0.031947222209002826
         ],
         [
-          34,
-          1.0
+          22,
+          0.03102473652209844
         ],
         [
-          35,
-          1.0
+          20,
+          0.03026690361507981
+        ],
+        [
+          26,
+          0.029664766437088808
         ],
         [
           36,
-          1.0
+          0.029556849191928126
         ],
         [
-          37,
-          1.0
+          12,
+          0.029474764272606528
         ],
         [
-          13,
-          0.5
+          25,
+          0.0292581978244644
         ],
         [
-          14,
-          0.5
-        ],
-        [
-          15,
-          0.5
+          5,
+          0.02911497053157936
         ],
         [
           16,
-          0.5
+          0.02904583195900497
         ],
         [
-          17,
-          0.5
+          27,
+          0.02887734080236844
         ],
         [
-          18,
-          0.5
+          8,
+          0.028853130857266082
         ]
       ]
     },
     {
       "strategy": "Date-conditioned generative (CB-6/37)",
-      "target_date": "2026-11-07",
+      "target_date": "2026-11-17",
       "numbers": [
-        9,
-        19,
-        20,
+        7,
+        10,
+        23,
+        25,
         27,
-        33,
-        37
+        29
       ],
-      "strong": 3,
+      "strong": 5,
       "shortlist_kind": "normalized_marginal_probability",
       "shortlist": [
         [
-          19,
-          0.03741439724148993
-        ],
-        [
-          9,
-          0.03717110309179407
-        ],
-        [
-          27,
-          0.03376321644387527
-        ],
-        [
-          37,
-          0.03359598543715466
-        ],
-        [
-          33,
-          0.031352277736349084
-        ],
-        [
-          20,
-          0.03129506689498119
-        ],
-        [
-          23,
-          0.03095990757459366
-        ],
-        [
           29,
-          0.03064690682603475
-        ],
-        [
-          7,
-          0.030582902510762486
-        ],
-        [
-          22,
-          0.02979460863796065
-        ],
-        [
-          24,
-          0.02979347103641905
+          0.036601787905999585
         ],
         [
           25,
-          0.029609460254630245
+          0.033369815310825605
+        ],
+        [
+          27,
+          0.033093905275489846
+        ],
+        [
+          10,
+          0.03251008093081882
+        ],
+        [
+          23,
+          0.03171520436222349
+        ],
+        [
+          7,
+          0.03089469481311022
+        ],
+        [
+          9,
+          0.030617367260141897
+        ],
+        [
+          6,
+          0.03031027317074439
+        ],
+        [
+          2,
+          0.030106606019545318
+        ],
+        [
+          5,
+          0.029626243879975842
+        ],
+        [
+          24,
+          0.028817356408684613
+        ],
+        [
+          34,
+          0.028592731921843847
         ]
       ]
     }

@@ -4,11 +4,11 @@ import json
 
 import pytest
 
-from bench.seed_allocations import get_remote, reserve_remote
-from bench import seed_campaign
-from bench.seed_campaign import campaign_lock, continue_search
-from bench.seed_search import Observation, _prefix_hash, world_outcome, write_json
-from scripts.search_remote_seeds import run_allocation, ssh_command
+from lotto.experiments.seed_search_remote import run_allocation, ssh_command
+from lotto.seedsearch import campaign as seed_campaign
+from lotto.seedsearch.allocations import get_remote, reserve_remote
+from lotto.seedsearch.campaign import campaign_lock, continue_search
+from lotto.seedsearch.generator import Observation, prefix_hash, world_outcome, write_json
 
 
 def history():
@@ -23,7 +23,7 @@ def reserve(tmp_path, count=10):
 def test_reservation_excludes_whole_mac_and_prior_gpu_ranges(tmp_path):
     root = tmp_path / "campaigns"
     continue_search(history(), root=root, candidates=50, max_seconds=10)
-    ledger_path = root / _prefix_hash(history()) / "ledger.json"
+    ledger_path = root / prefix_hash(history()) / "ledger.json"
     ledger = json.loads(ledger_path.read_text())
     ledger["ranges"].append({"start": 50, "stop": 500, "checkpoint": "reserved-not-completed"})
     write_json(ledger_path, ledger)

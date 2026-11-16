@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "synthetic_draws_reproduced_from_seeds": 1200000,
+  "real_ticket_outcomes_independently_scored": 73084,
+  "portfolios_with_verified_main_and_strong_incidence_structure": 6644,
+  "source_input_protocol_and_artifact_hashes_match": true,
+  "all_win_aggregates_and_blocks_match": true,
+  "probability_marginals_normalized": true,
+  "frozen_training_sha256": "89bbe4dafa20db9acaeafafdc22ca92888cb0a57bb6b2078ae8af0b34ea0ee58",
+  "real_result_sha256": "3caee7d3f2a8acf62550a40e268ca54e16333361a50201b4960cd61e1e8138dd"
+}

@@ -1,0 +1,797 @@
+{
+  "schema": 1,
+  "status": "complete",
+  "frozen_training_sha256": "89bbe4dafa20db9acaeafafdc22ca92888cb0a57bb6b2078ae8af0b34ea0ee58",
+  "protocol_sha256": "3575c50c65f0335c0bbf931470cf4beb1e25a338ea4c19ea561aaec7d803d643",
+  "source_sha256": {
+    "bench/synthetic_learning.py": "9ed0a171ee9ef1c3a2fb5b6eb84f070f77b1dcc10227e7d7f2a98235f81b56d3",
+    "bench/calibration.py": "8e36522592ecfe1d89084c5700f4b7f4c1786babc007e326639c0fcc4a11cb0f",
+    "bench/generative.py": "164f93724bc20bace65f5479f9c77836ec67269022b9dbe854b935b5d20158b4",
+    "bench/joint_mixture.py": "4dff64ba159d9564f14b9e5e41b03031f7ddbad2d22abcfa132a7e4c6d39b79d",
+    "bench/data.py": "5d2f9be6c5dcba049a45aad2df72706cdb7fd874c5dd78526ea95d3772dd9d60",
+    "bench/metrics.py": "6469c11a25dd83e7439b0df430a27935a7de368b4944597e2275a1af4230a06e",
+    "bench/historical_strikes.py": "7d3b0f531c25234e0346aa6355666b137f5131f52d1304adf086cd3472a5f719",
+    "scripts/research_historical_strikes.py": "cff900c9a6c928fe8af9df3ca7b9e5abc8802164400d3e2ee74cacbd3deb94f9",
+    "scripts/research_synthetic_learning.py": "d0b1573cd106a4fa9e65b1de96a630ff7cfc2cc0821849b4f273b1d8b5a52df4"
+  },
+  "draws": 1661,
+  "start": "2012-01-03",
+  "end": "2026-11-03",
+  "template": [
+    [
+      11,
+      12,
+      15,
+      22,
+      31,
+      35,
+      1
+    ],
+    [
+      4,
+      6,
+      7,
+      8,
+      23,
+      30,
+      2
+    ],
+    [
+      1,
+      18,
+      26,
+      29,
+      34,
+      35,
+      3
+    ],
+    [
+      1,
+      2,
+      3,
+      11,
+      19,
+      25,
+      4
+    ],
+    [
+      9,
+      12,
+      18,
+      25,
+      27,
+      28,
+      5
+    ],
+    [
+      2,
+      14,
+      15,
+      26,
+      27,
+      36,
+      6
+    ],
+    [
+      5,
+      7,
+      13,
+      16,
+      17,
+      20,
+      3
+    ],
+    [
+      3,
+      9,
+      14,
+      22,
+      29,
+      33,
+      7
+    ],
+    [
+      10,
+      17,
+      21,
+      24,
+      32,
+      37,
+      1
+    ],
+    [
+      19,
+      28,
+      31,
+      33,
+      34,
+      36,
+      2
+    ]
+  ],
+  "models": [
+    {
+      "name": "uniform",
+      "one_ticket": {
+        "draws": 1661,
+        "winning_draws_3plus": 85,
+        "win_rate": 0.051173991571342566,
+        "expected_winning_draws_under_fair_null": 69.34837042925278,
+        "nominal_p_greater": 0.03458249897423936,
+        "winning_draws_3plus_and_strong": 7,
+        "winning_draws_4plus": 12,
+        "winning_draws_5plus": 0,
+        "winning_draws_six_main": 0,
+        "jackpot_draws": 0,
+        "mean_best_main_matches": 0.9993979530403372,
+        "longest_winning_run": 3,
+        "significant_after_holm_8": false
+      },
+      "ten_tickets": {
+        "draws": 1661,
+        "winning_draws_3plus": 663,
+        "win_rate": 0.399157134256472,
+        "expected_winning_draws_under_fair_null": 641.1162606934665,
+        "nominal_p_greater": 0.14063441541945662,
+        "winning_draws_3plus_and_strong": 99,
+        "winning_draws_4plus": 67,
+        "winning_draws_5plus": 0,
+        "winning_draws_six_main": 0,
+        "jackpot_draws": 0,
+        "mean_best_main_matches": 2.4346779048765805,
+        "longest_winning_run": 8,
+        "significant_after_holm_8": false
+      },
+      "joint_log_loss": 16.605047838517326,
+      "joint_loss_difference_vs_uniform": -3.552713678800501e-15,
+      "blocks": [
+        {
+          "start": "2012-01-03",
+          "end": "2015-11-07",
+          "one_ticket": {
+            "draws": 416,
+            "winning_draws_3plus": 23,
+            "win_rate": 0.055288461538461536,
+            "expected_winning_draws_under_fair_null": 17.368405838994075,
+            "nominal_p_greater": 0.10733783249253434,
+            "winning_draws_3plus_and_strong": 2,
+            "winning_draws_4plus": 2,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0048076923076923,
+            "longest_winning_run": 2
+          },
+          "ten_tickets": {
+            "draws": 416,
+            "winning_draws_3plus": 174,
+            "win_rate": 0.4182692307692308,
+            "expected_winning_draws_under_fair_null": 160.56855174502232,
+            "nominal_p_greater": 0.09681446123452479,
+            "winning_draws_3plus_and_strong": 31,
+            "winning_draws_4plus": 21,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.4639423076923075,
+            "longest_winning_run": 6
+          }
+        },
+        {
+          "start": "2015-11-10",
+          "end": "2019-07-04",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 23,
+            "win_rate": 0.05542168674698795,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.10535811332543145,
+            "winning_draws_3plus_and_strong": 1,
+            "winning_draws_4plus": 4,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0409638554216867,
+            "longest_winning_run": 2
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 168,
+            "win_rate": 0.40481927710843374,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.22979472515118554,
+            "winning_draws_3plus_and_strong": 25,
+            "winning_draws_4plus": 15,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.4313253012048195,
+            "longest_winning_run": 7
+          }
+        },
+        {
+          "start": "2019-07-06",
+          "end": "2023-03-23",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 18,
+            "win_rate": 0.043373493975903614,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.4680577891431663,
+            "winning_draws_3plus_and_strong": 2,
+            "winning_draws_4plus": 1,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 0.9349397590361446,
+            "longest_winning_run": 1
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 151,
+            "win_rate": 0.363855421686747,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.835504708064656,
+            "winning_draws_3plus_and_strong": 20,
+            "winning_draws_4plus": 17,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.404819277108434,
+            "longest_winning_run": 5
+          }
+        },
+        {
+          "start": "2023-03-25",
+          "end": "2026-11-03",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 21,
+            "win_rate": 0.05060240963855422,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.21354346119731418,
+            "winning_draws_3plus_and_strong": 2,
+            "winning_draws_4plus": 5,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0168674698795181,
+            "longest_winning_run": 3
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 170,
+            "win_rate": 0.40963855421686746,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.17362193082496166,
+            "winning_draws_3plus_and_strong": 23,
+            "winning_draws_4plus": 14,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.43855421686747,
+            "longest_winning_run": 8
+          }
+        }
+      ]
+    },
+    {
+      "name": "equal_weight_mixture",
+      "one_ticket": {
+        "draws": 1661,
+        "winning_draws_3plus": 82,
+        "win_rate": 0.049367850692354005,
+        "expected_winning_draws_under_fair_null": 69.34837042925278,
+        "nominal_p_greater": 0.07077665567046826,
+        "winning_draws_3plus_and_strong": 11,
+        "winning_draws_4plus": 6,
+        "winning_draws_5plus": 0,
+        "winning_draws_six_main": 0,
+        "jackpot_draws": 0,
+        "mean_best_main_matches": 1.0276941601444913,
+        "longest_winning_run": 2,
+        "significant_after_holm_8": false
+      },
+      "ten_tickets": {
+        "draws": 1661,
+        "winning_draws_3plus": 671,
+        "win_rate": 0.40397350993377484,
+        "expected_winning_draws_under_fair_null": 641.1162606934665,
+        "nominal_p_greater": 0.069596648960552,
+        "winning_draws_3plus_and_strong": 97,
+        "winning_draws_4plus": 51,
+        "winning_draws_5plus": 2,
+        "winning_draws_six_main": 0,
+        "jackpot_draws": 0,
+        "mean_best_main_matches": 2.431065623118603,
+        "longest_winning_run": 8,
+        "significant_after_holm_8": false
+      },
+      "joint_log_loss": 16.60941937493381,
+      "joint_loss_difference_vs_uniform": 0.004371536416481803,
+      "blocks": [
+        {
+          "start": "2012-01-03",
+          "end": "2015-11-07",
+          "one_ticket": {
+            "draws": 416,
+            "winning_draws_3plus": 23,
+            "win_rate": 0.055288461538461536,
+            "expected_winning_draws_under_fair_null": 17.368405838994075,
+            "nominal_p_greater": 0.10733783249253434,
+            "winning_draws_3plus_and_strong": 5,
+            "winning_draws_4plus": 2,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0264423076923077,
+            "longest_winning_run": 1
+          },
+          "ten_tickets": {
+            "draws": 416,
+            "winning_draws_3plus": 160,
+            "win_rate": 0.38461538461538464,
+            "expected_winning_draws_under_fair_null": 160.56855174502232,
+            "nominal_p_greater": 0.5413378899888515,
+            "winning_draws_3plus_and_strong": 22,
+            "winning_draws_4plus": 13,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.4158653846153846,
+            "longest_winning_run": 8
+          }
+        },
+        {
+          "start": "2015-11-10",
+          "end": "2019-07-04",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 24,
+            "win_rate": 0.05783132530120482,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.07005687693354168,
+            "winning_draws_3plus_and_strong": 3,
+            "winning_draws_4plus": 1,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0409638554216867,
+            "longest_winning_run": 1
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 162,
+            "win_rate": 0.39036144578313253,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.44568096936271545,
+            "winning_draws_3plus_and_strong": 21,
+            "winning_draws_4plus": 8,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.402409638554217,
+            "longest_winning_run": 7
+          }
+        },
+        {
+          "start": "2019-07-06",
+          "end": "2023-03-23",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 17,
+            "win_rate": 0.04096385542168675,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.5660590683329904,
+            "winning_draws_3plus_and_strong": 3,
+            "winning_draws_4plus": 3,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0,
+            "longest_winning_run": 2
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 163,
+            "win_rate": 0.3927710843373494,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.4062302637811129,
+            "winning_draws_3plus_and_strong": 24,
+            "winning_draws_4plus": 18,
+            "winning_draws_5plus": 1,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.4289156626506023,
+            "longest_winning_run": 5
+          }
+        },
+        {
+          "start": "2023-03-25",
+          "end": "2026-11-03",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 18,
+            "win_rate": 0.043373493975903614,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.4680577891431663,
+            "winning_draws_3plus_and_strong": 0,
+            "winning_draws_4plus": 0,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0433734939759036,
+            "longest_winning_run": 2
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 186,
+            "win_rate": 0.44819277108433736,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.005623822057329335,
+            "winning_draws_3plus_and_strong": 30,
+            "winning_draws_4plus": 12,
+            "winning_draws_5plus": 1,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.47710843373494,
+            "longest_winning_run": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic_fair_trained",
+      "one_ticket": {
+        "draws": 1661,
+        "winning_draws_3plus": 83,
+        "win_rate": 0.049969897652016856,
+        "expected_winning_draws_under_fair_null": 69.34837042925278,
+        "nominal_p_greater": 0.056341237755476205,
+        "winning_draws_3plus_and_strong": 13,
+        "winning_draws_4plus": 4,
+        "winning_draws_5plus": 0,
+        "winning_draws_six_main": 0,
+        "jackpot_draws": 0,
+        "mean_best_main_matches": 1.0024081878386515,
+        "longest_winning_run": 2,
+        "significant_after_holm_8": false
+      },
+      "ten_tickets": {
+        "draws": 1661,
+        "winning_draws_3plus": 631,
+        "win_rate": 0.3798916315472607,
+        "expected_winning_draws_under_fair_null": 641.1162606934665,
+        "nominal_p_greater": 0.70322028336931,
+        "winning_draws_3plus_and_strong": 116,
+        "winning_draws_4plus": 48,
+        "winning_draws_5plus": 0,
+        "winning_draws_six_main": 0,
+        "jackpot_draws": 0,
+        "mean_best_main_matches": 2.4051776038531005,
+        "longest_winning_run": 7,
+        "significant_after_holm_8": false
+      },
+      "joint_log_loss": 16.60502847214825,
+      "joint_loss_difference_vs_uniform": -1.9366369080842105e-05,
+      "blocks": [
+        {
+          "start": "2012-01-03",
+          "end": "2015-11-07",
+          "one_ticket": {
+            "draws": 416,
+            "winning_draws_3plus": 22,
+            "win_rate": 0.052884615384615384,
+            "expected_winning_draws_under_fair_null": 17.368405838994075,
+            "nominal_p_greater": 0.15531255313602502,
+            "winning_draws_3plus_and_strong": 7,
+            "winning_draws_4plus": 2,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0360576923076923,
+            "longest_winning_run": 2
+          },
+          "ten_tickets": {
+            "draws": 416,
+            "winning_draws_3plus": 158,
+            "win_rate": 0.3798076923076923,
+            "expected_winning_draws_under_fair_null": 160.56855174502232,
+            "nominal_p_greater": 0.6200119617626556,
+            "winning_draws_3plus_and_strong": 26,
+            "winning_draws_4plus": 8,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.3966346153846154,
+            "longest_winning_run": 6
+          }
+        },
+        {
+          "start": "2015-11-10",
+          "end": "2019-07-04",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 22,
+            "win_rate": 0.05301204819277108,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.15277542848660938,
+            "winning_draws_3plus_and_strong": 3,
+            "winning_draws_4plus": 0,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 0.963855421686747,
+            "longest_winning_run": 1
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 158,
+            "win_rate": 0.38072289156626504,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.6052195255545085,
+            "winning_draws_3plus_and_strong": 31,
+            "winning_draws_4plus": 10,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.402409638554217,
+            "longest_winning_run": 7
+          }
+        },
+        {
+          "start": "2019-07-06",
+          "end": "2023-03-23",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 17,
+            "win_rate": 0.04096385542168675,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.5660590683329904,
+            "winning_draws_3plus_and_strong": 2,
+            "winning_draws_4plus": 1,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 0.9228915662650602,
+            "longest_winning_run": 1
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 164,
+            "win_rate": 0.39518072289156625,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.3677379678255626,
+            "winning_draws_3plus_and_strong": 28,
+            "winning_draws_4plus": 15,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.4265060240963856,
+            "longest_winning_run": 5
+          }
+        },
+        {
+          "start": "2023-03-25",
+          "end": "2026-11-03",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 22,
+            "win_rate": 0.05301204819277108,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.15277542848660938,
+            "winning_draws_3plus_and_strong": 1,
+            "winning_draws_4plus": 1,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0867469879518072,
+            "longest_winning_run": 2
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 151,
+            "win_rate": 0.363855421686747,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.835504708064656,
+            "winning_draws_3plus_and_strong": 31,
+            "winning_draws_4plus": 15,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.3951807228915665,
+            "longest_winning_run": 5
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic_mixed_trained",
+      "one_ticket": {
+        "draws": 1661,
+        "winning_draws_3plus": 72,
+        "win_rate": 0.04334738109572547,
+        "expected_winning_draws_under_fair_null": 69.34837042925278,
+        "nominal_p_greater": 0.3892326157627421,
+        "winning_draws_3plus_and_strong": 13,
+        "winning_draws_4plus": 6,
+        "winning_draws_5plus": 1,
+        "winning_draws_six_main": 0,
+        "jackpot_draws": 0,
+        "mean_best_main_matches": 1.009030704394943,
+        "longest_winning_run": 3,
+        "significant_after_holm_8": false
+      },
+      "ten_tickets": {
+        "draws": 1661,
+        "winning_draws_3plus": 657,
+        "win_rate": 0.39554485249849486,
+        "expected_winning_draws_under_fair_null": 641.1162606934665,
+        "nominal_p_greater": 0.21884212756805366,
+        "winning_draws_3plus_and_strong": 98,
+        "winning_draws_4plus": 52,
+        "winning_draws_5plus": 1,
+        "winning_draws_six_main": 0,
+        "jackpot_draws": 0,
+        "mean_best_main_matches": 2.4226369656833233,
+        "longest_winning_run": 6,
+        "significant_after_holm_8": false
+      },
+      "joint_log_loss": 16.609553324021306,
+      "joint_loss_difference_vs_uniform": 0.0045054855039765584,
+      "blocks": [
+        {
+          "start": "2012-01-03",
+          "end": "2015-11-07",
+          "one_ticket": {
+            "draws": 416,
+            "winning_draws_3plus": 20,
+            "win_rate": 0.04807692307692308,
+            "expected_winning_draws_under_fair_null": 17.368405838994075,
+            "nominal_p_greater": 0.29128169354522226,
+            "winning_draws_3plus_and_strong": 4,
+            "winning_draws_4plus": 0,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0408653846153846,
+            "longest_winning_run": 2
+          },
+          "ten_tickets": {
+            "draws": 416,
+            "winning_draws_3plus": 149,
+            "win_rate": 0.3581730769230769,
+            "expected_winning_draws_under_fair_null": 160.56855174502232,
+            "nominal_p_greater": 0.888280832799046,
+            "winning_draws_3plus_and_strong": 23,
+            "winning_draws_4plus": 15,
+            "winning_draws_5plus": 1,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.394230769230769,
+            "longest_winning_run": 6
+          }
+        },
+        {
+          "start": "2015-11-10",
+          "end": "2019-07-04",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 16,
+            "win_rate": 0.03855421686746988,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.6618930490459344,
+            "winning_draws_3plus_and_strong": 3,
+            "winning_draws_4plus": 2,
+            "winning_draws_5plus": 1,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0144578313253012,
+            "longest_winning_run": 1
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 172,
+            "win_rate": 0.41445783132530123,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.12711914625185253,
+            "winning_draws_3plus_and_strong": 27,
+            "winning_draws_4plus": 13,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.440963855421687,
+            "longest_winning_run": 5
+          }
+        },
+        {
+          "start": "2019-07-06",
+          "end": "2023-03-23",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 17,
+            "win_rate": 0.04096385542168675,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.5660590683329904,
+            "winning_draws_3plus_and_strong": 3,
+            "winning_draws_4plus": 2,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 0.9301204819277108,
+            "longest_winning_run": 2
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 176,
+            "win_rate": 0.42409638554216866,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.061815086474705315,
+            "winning_draws_3plus_and_strong": 22,
+            "winning_draws_4plus": 12,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.4457831325301207,
+            "longest_winning_run": 6
+          }
+        },
+        {
+          "start": "2023-03-25",
+          "end": "2026-11-03",
+          "one_ticket": {
+            "draws": 415,
+            "winning_draws_3plus": 19,
+            "win_rate": 0.04578313253012048,
+            "expected_winning_draws_under_fair_null": 17.32665486341957,
+            "nominal_p_greater": 0.37364505960831085,
+            "winning_draws_3plus_and_strong": 3,
+            "winning_draws_4plus": 2,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 1.0506024096385542,
+            "longest_winning_run": 3
+          },
+          "ten_tickets": {
+            "draws": 415,
+            "winning_draws_3plus": 160,
+            "win_rate": 0.3855421686746988,
+            "expected_winning_draws_under_fair_null": 160.18256964948142,
+            "nominal_p_greater": 0.5259098565294966,
+            "winning_draws_3plus_and_strong": 26,
+            "winning_draws_4plus": 12,
+            "winning_draws_5plus": 0,
+            "winning_draws_six_main": 0,
+            "jackpot_draws": 0,
+            "mean_best_main_matches": 2.4096385542168677,
+            "longest_winning_run": 6
+          }
+        }
+      ]
+    }
+  ],
+  "significant_comparisons": [],
+  "fair_null": {
+    "one_ticket": {
+      "p_any_prize": 0.04175097557450499,
+      "expected_winning_draws": 69.34837042925278,
+      "central_95_percent_count_range": [
+        54,
+        86
+      ]
+    },
+    "ten_tickets": {
+      "p_any_prize": 0.38598209554091906,
+      "expected_winning_draws": 641.1162606934665,
+      "central_95_percent_count_range": [
+        602,
+        680
+      ]
+    }
+  },
+  "per_draw_artifact": {
+    "path": "synthetic_learning_real_2026_11_07.npz",
+    "sha256": "fc0f8dd9f350a3dfcec188a384602c3c771cb230e1771d2643956332986a85f2"
+  }
+}

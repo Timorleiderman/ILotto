@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from bench.data import load
-from scripts import research_joint_mixture as research
+from lotto.core.data import load
+from lotto.experiments import joint_mixture as research
+from tests import SNAPSHOT
 
 
 def protocol():
@@ -54,7 +55,7 @@ def test_output_cannot_overwrite_array_artifact_or_protocol(tmp_path, monkeypatc
 
 
 def test_failed_controls_preserve_completed_report_and_arrays(tmp_path, monkeypatch):
-    draws = load(clean_csv=None)
+    draws = load(raw_csv=SNAPSHOT, clean_csv=None)
     config = protocol()
     archive = tmp_path/'input/Orig_IL_lotto.csv'
     archive.parent.mkdir()
@@ -66,6 +67,7 @@ def test_failed_controls_preserve_completed_report_and_arrays(tmp_path, monkeypa
     report.write_bytes(b'previous complete report')
     arrays.write_bytes(b'previous complete arrays')
     monkeypatch.setattr(research, 'ROOT', tmp_path)
+    monkeypatch.setattr(research, 'ARCHIVE', archive)
     monkeypatch.setattr(research.data, 'load', lambda **kwargs: draws)
 
     def fake_comparison(draws, config, staged_arrays):

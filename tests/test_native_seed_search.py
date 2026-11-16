@@ -4,9 +4,9 @@ import json
 
 import pytest
 
-from bench.native_seed_search import DEFAULT_BINARY, RustSearch, native_batch
-from bench.seed_campaign import continue_search
-from bench.seed_search import Observation, search, world_outcome
+from lotto.seedsearch.campaign import continue_search
+from lotto.seedsearch.generator import Observation, search, world_outcome
+from lotto.seedsearch.rust_engine import DEFAULT_BINARY, RustSearch, native_batch
 
 pytestmark = pytest.mark.skipif(not DEFAULT_BINARY.is_file(), reason="Build Rust release binary first")
 

@@ -2,7 +2,7 @@
 
 !!! info "Generated output"
 
-    Rebuilt 2026-11-06 18:00 UTC from 1,661 draws through 2026-11-03. Do not edit by hand — `scripts/build_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
+    Rebuilt 2026-11-14 23:56 UTC from 1,664 draws through 2026-11-14. Do not edit by hand — `lotto/experiments/benchmark_report.py` overwrites this page after every draw, so the numbers below shuffle from build to build. That shuffling is not a bug in the strategies; it is what a table of noise looks like when you keep re-rolling it.
 
 ## Strategy scoreboard
 
@@ -12,35 +12,34 @@ Every strategy was asked to pick 6 numbers for each of the last **300 draws**, s
 |---|---|---|
 | **Mean matches** | Of the 6 numbers picked, how many were actually drawn, averaged over the 300 test draws | A random ticket averages 6×6/37 = **0.9730**. For this window, anything in **0.876 – 1.070** is within ±2 standard errors of chance |
 | **Lift** | Mean matches relative to chance, as a percentage | ±10% is the ±2-standard-error band — single-digit lifts are noise at this sample size |
-| **z** | How many standard errors the mean sits from chance | \|z\| < 2 is unremarkable, and with 20 strategies the *largest* \|z\| is expected to exceed 2 by chance alone |
-| **p** | Doubled smaller inclusive tail of the convolved hypergeometric null for total matches | **Not** the probability the strategy works. One row near p ≈ 0.05 is expected among 20 rows |
+| **z** | How many standard errors the mean sits from chance | \|z\| < 2 is unremarkable, and with 19 strategies the *largest* \|z\| is expected to exceed 2 by chance alone |
+| **p** | Doubled smaller inclusive tail of the convolved hypergeometric null for total matches | **Not** the probability the strategy works. One row near p ≈ 0.05 is expected among 19 rows |
 | **Log loss** | Grades normalized marginal ball probabilities, not just its top 6. A uniform guess scores exactly ln 37 = **3.6109**. Genuine information would show up as a value below that in a predeclared evaluation with appropriate uncertainty. No significance test is applied to this column | “—” means the strategy outputs ranks, not probabilities, so this score would be meaningless for it |
-| **Verdict** | Significance after Holm–Bonferroni correction across all 20 rows | A flagged result needs independent validation; repeated overlapping rebuilds are not independent replications |
+| **Verdict** | Significance after Holm–Bonferroni correction across all 19 rows | A flagged result needs independent validation; repeated overlapping rebuilds are not independent replications |
 
 | Strategy | Mean matches | Lift | z | p | Log loss | Verdict |
 |---|---:|---:|---:|---:|---:|---|
-| Hot numbers (last 100 draws) | 1.0733 | +10.3% | +2.07 | 0.043 | 3.6349 | <span class="pill ok">no signal</span> |
-| Lag-1 persistence | 1.0700 | +10.0% | +2.01 | 0.050 | 3.6124 | <span class="pill ok">no signal</span> |
-| EWMA frequency (half-life 50) | 1.0367 | +6.5% | +1.32 | 0.201 | 3.6290 | <span class="pill ok">no signal</span> |
+| Hot numbers (last 100 draws) | 1.0800 | +11.0% | +2.21 | 0.031 | 3.6352 | <span class="pill ok">no signal</span> |
+| Lag-1 persistence | 1.0667 | +9.6% | +1.94 | 0.059 | 3.6126 | <span class="pill ok">no signal</span> |
 | Perfect-fit function (DFT) | 1.0367 | +6.5% | +1.32 | 0.201 | — | <span class="pill ok">no signal</span> |
-| Hot numbers (all-time) | 1.0267 | +5.5% | +1.11 | 0.282 | 3.6123 | <span class="pill ok">no signal</span> |
-| Golden ratio (Kronecker schedule) | 1.0267 | +5.5% | +1.11 | 0.282 | — | <span class="pill ok">no signal</span> |
-| Perfect-fit function (polynomial) | 1.0167 | +4.5% | +0.90 | 0.384 | — | <span class="pill ok">no signal</span> |
+| EWMA frequency (half-life 50) | 1.0333 | +6.2% | +1.25 | 0.226 | 3.6293 | <span class="pill ok">no signal</span> |
+| Hot numbers (all-time) | 1.0300 | +5.9% | +1.18 | 0.253 | 3.6124 | <span class="pill ok">no signal</span> |
+| Golden ratio (Kronecker schedule) | 1.0233 | +5.2% | +1.04 | 0.314 | — | <span class="pill ok">no signal</span> |
 | Perfect-fit function (spline) | 1.0133 | +4.1% | +0.83 | 0.423 | — | <span class="pill ok">no signal</span> |
-| Random ticket | 0.9933 | +2.1% | +0.42 | 0.696 | — | <span class="pill ok">no signal</span> |
+| Perfect-fit function (polynomial) | 1.0067 | +3.5% | +0.70 | 0.506 | — | <span class="pill ok">no signal</span> |
+| Random ticket | 0.9967 | +2.4% | +0.49 | 0.646 | — | <span class="pill ok">no signal</span> |
+| Method of analogues (chaos) | 0.9967 | +2.4% | +0.49 | 0.646 | 3.7024 | <span class="pill ok">no signal</span> |
+| Overdue (longest absence) | 0.9933 | +2.1% | +0.42 | 0.696 | — | <span class="pill ok">no signal</span> |
+| Cold numbers (all-time) | 0.9833 | +1.1% | +0.21 | 0.853 | — | <span class="pill ok">no signal</span> |
 | Rank ensemble | 0.9833 | +1.1% | +0.21 | 0.853 | — | <span class="pill ok">no signal</span> |
-| Overdue (longest absence) | 0.9800 | +0.7% | +0.15 | 0.907 | — | <span class="pill ok">no signal</span> |
 | Fibonacci ticket (control) | 0.9767 | +0.4% | +0.08 | 0.962 | — | <span class="pill ok">no signal</span> |
-| Unpopular numbers (EV-aware) | 0.9700 | -0.3% | -0.06 | 0.983 | — | <span class="pill ok">no signal</span> |
-| Neural (gru, set prediction) | 0.9700 | -0.3% | -0.06 | 0.983 | 3.6242 | <span class="pill ok">no signal</span> |
-| Date-conditioned generative (CB-6/37) | 0.9667 | -0.6% | -0.13 | 0.928 | 3.6345 | <span class="pill ok">no signal</span> |
-| Cold numbers (all-time) | 0.9567 | -1.7% | -0.34 | 0.766 | — | <span class="pill ok">no signal</span> |
-| Pairwise co-occurrence (Markov) | 0.9567 | -1.7% | -0.34 | 0.766 | — | <span class="pill ok">no signal</span> |
-| Sum-targeted combination | 0.9433 | -3.0% | -0.61 | 0.566 | — | <span class="pill ok">no signal</span> |
-| Method of analogues (chaos) | 0.9433 | -3.0% | -0.61 | 0.566 | 3.7123 | <span class="pill ok">no signal</span> |
-| Neural (transformer, set prediction) | 0.8600 | -11.6% | -2.34 | 0.020 | 3.6180 | <span class="pill ok">no signal</span> |
+| Date-conditioned generative (CB-6/37) | 0.9767 | +0.4% | +0.08 | 0.962 | 3.6351 | <span class="pill ok">no signal</span> |
+| Sum-targeted combination | 0.9667 | -0.6% | -0.13 | 0.928 | — | <span class="pill ok">no signal</span> |
+| Pairwise co-occurrence (Markov) | 0.9533 | -2.0% | -0.41 | 0.714 | — | <span class="pill ok">no signal</span> |
+| Neural (transformer, set prediction) | 0.9400 | -3.4% | -0.68 | 0.520 | 3.6178 | <span class="pill ok">no signal</span> |
+| Neural (gru, set prediction) | 0.8733 | -10.2% | -2.06 | 0.041 | 3.6242 | <span class="pill ok">no signal</span> |
 
-Two rulers for the table above. First, the luckiest of 5,000 **purely random** strategies scored **1.140** over these same draws — against this build's top row at **1.073**. This illustrates selection effects; the simulated maximum is not a significance threshold. Second, the two-sided tests can detect performance below as well as above chance. Family correction in a single build does not control repeated decisions across rebuilds.
+Two rulers for the table above. First, the luckiest of 5,000 **purely random** strategies scored **1.140** over these same draws — against this build's top row at **1.080**. This illustrates selection effects; the simulated maximum is not a significance threshold. Second, the two-sided tests can detect performance below as well as above chance. Family correction in a single build does not control repeated decisions across rebuilds.
 
 ## Randomness tests
 
@@ -48,15 +47,15 @@ Each row asks a different way the machine could be unfair: biased ball frequenci
 
 | Test | Statistic | p | After correction |
 |---|---:|---:|---|
-| Ball frequency uniformity (without-replacement chi-square) | 42.52 | 0.2107 | <span class="pill ok">no signal</span> |
-| Strong-number uniformity (chi-square) | 3.60 | 0.7311 | <span class="pill ok">no signal</span> |
-| Lag-1 serial independence (hot/due folklore) | 1.44 | 0.2306 | <span class="pill ok">no signal</span> |
-| Appearance-gap distribution vs geometric | 12.47 | 0.3295 | <span class="pill ok">no signal</span> |
-| Pairwise co-occurrence (666 pairs, exact-binomial Bonferroni) | 3.74 | 0.4620 | <span class="pill ok">no signal</span> |
-| Draw-sum distribution (two-sample KS vs simulated fair draws) | 0.02 | 0.7919 | <span class="pill ok">no signal</span> |
-| First half vs second half frequency drift (without-replacement Wald) | 30.01 | 0.7483 | <span class="pill ok">no signal</span> |
+| Ball frequency uniformity (without-replacement chi-square) | 42.33 | 0.2167 | <span class="pill ok">no signal</span> |
+| Strong-number uniformity (chi-square) | 3.62 | 0.7274 | <span class="pill ok">no signal</span> |
+| Lag-1 serial independence (hot/due folklore) | 1.51 | 0.2188 | <span class="pill ok">no signal</span> |
+| Appearance-gap distribution vs geometric | 12.62 | 0.3191 | <span class="pill ok">no signal</span> |
+| Pairwise co-occurrence (666 pairs, exact-binomial Bonferroni) | 3.72 | 0.4830 | <span class="pill ok">no signal</span> |
+| Draw-sum distribution (chi-square vs exact null) | 20.07 | 0.3903 | <span class="pill ok">no signal</span> |
+| First half vs second half frequency drift (without-replacement Wald) | 30.62 | 0.7219 | <span class="pill ok">no signal</span> |
 | Incompressibility (no generating function within compressor reach) | 24.05 | 1.0000 | <span class="pill ok">no signal</span> |
-| Surrogate-data determinism (method of analogues vs shuffles) | 0.95 | 0.6829 | <span class="pill ok">no signal</span> |
+| Surrogate-data determinism (method of analogues vs shuffles) | 1.03 | 0.2175 | <span class="pill ok">no signal</span> |
 
 ## Memorisation vs prediction
 
@@ -66,8 +65,8 @@ Column guide: **DKRR** — matched numbers when asked about dates it was trained
 
 | Model | DKRR (in-sample) | In-sample log loss | Walk-forward matches | p |
 |---|---:|---:|---:|---:|
-| Date-conditioned generative (CB-6/37) | 1.258 / 6 | 3.5934 | 0.9667 | 0.928 |
-| Date lookup table (memorisation control) | 6.000 / 6 | 1.8001 | 0.9333 | 0.434 |
+| Date-conditioned generative (CB-6/37) | 1.267 / 6 | 3.5934 | 0.9767 | 0.962 |
+| Date lookup table (memorisation control) | 6.000 / 6 | 1.8001 | 0.9500 | 0.663 |
 
 Chance is **0.9730** matched numbers and **3.6109** log loss. The lookup control reconstructs every training draw perfectly and is worth nothing on a date it has not seen. That gap is the entire point of the exercise.
 
@@ -78,10 +77,9 @@ Under independent fair draws, every full ticket has the same jackpot probability
 | Strategy | For draw of | Numbers | Strong |
 |---|---|---|---:|
 | Random ticket | next draw | 1 · 4 · 5 · 9 · 24 · 26 | 3 |
-| Hot numbers (last 100 draws) | next draw | 1 · 7 · 8 · 18 · 21 · 35 | 5 |
-| Neural (gru, set prediction) | next draw | 1 · 5 · 16 · 27 · 33 · 36 | 6 |
-| Unpopular numbers (EV-aware) | next draw | 32 · 33 · 34 · 35 · 36 · 37 | 1 |
-| Date-conditioned generative (CB-6/37) | 2026-11-07 | 9 · 19 · 20 · 27 · 33 · 37 | 3 |
+| Hot numbers (last 100 draws) | next draw | 1 · 2 · 7 · 18 · 21 · 35 | 2 |
+| Neural (gru, set prediction) | next draw | 3 · 20 · 22 · 26 · 36 · 37 | 2 |
+| Date-conditioned generative (CB-6/37) | 2026-11-17 | 7 · 10 · 23 · 25 · 27 · 29 | 5 |
 
 ---
 

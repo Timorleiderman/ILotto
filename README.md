@@ -1,416 +1,119 @@
-# ILotto - Israeli Lottery Analysis
+# ILotto
 
-A machine learning project for analyzing Israeli Lotto patterns. Built as a learning exercise to explore different neural network architectures, with proper statistical analysis and evaluation metrics.
+A reproducible study of the Israeli Lotto (6 of 37, plus a strong number 1–7): what can be
+measured, what can be predicted, and what a ticket buyer can actually control. It is built to be
+taught, from basic probability to neural networks and exact algorithms.
 
-> Under independent fair draws, past results do not improve next-draw odds. This project has not established a predictive advantage; it measures forecasts and ticket coverage separately.
+**[Read the documentation site →](https://timorleiderman.github.io/ILotto/)**
 
-**📊 [Read the documentation site →](https://timorleiderman.github.io/ILotto/)** — rebuilt
-automatically after every draw. Diagrams and explanations for every approach in this repo,
-the randomness tests, every strategy benchmarked walk-forward against exact nulls, and
-next-draw picks.
+## What was found
 
-| | |
-|---|---|
-| [How it is measured](https://timorleiderman.github.io/ILotto/evaluation/) | the walk-forward harness and the data bugs it exposed |
-| [The approaches](https://timorleiderman.github.io/ILotto/approaches/) | diagrammed: statistical rules, neural set prediction, a date-conditioned generative model, the four legacy models, ticket generators |
-| [Results](https://timorleiderman.github.io/ILotto/results/) | the current scoreboard, regenerated each run |
-| [Benchmark report](https://timorleiderman.github.io/ILotto/benchmark/) | the full standalone report with charts |
+| Finding | Number | Read more |
+|---|---|---|
+| The draw cannot be picked | 19 strategies, from hot numbers to a Transformer, each replayed over the latest 300 of more than 1,660 draws using only earlier draws: none beats a random ticket after correction | [Scoreboard](https://timorleiderman.github.io/ILotto/results/) |
+| Looking impressive is cheap | A lookup table reconstructs every past draw (6.000 of 6) and scores chance on the next one | [Memorisation](https://timorleiderman.github.io/ILotto/approaches/date-conditioned/) |
+| The ticket can be designed | One row wins a prize in 4.18% of draws; ten designed rows win in 38.60%, fourteen in 51.01%, counted exactly | [Coverage](https://timorleiderman.github.io/ILotto/approaches/ticket-generators/) |
+| Three bugs once looked like skill | An earlier version reported 30% accuracy, all of it from data handling | [Measurement](https://timorleiderman.github.io/ILotto/evaluation/) |
 
-**[Consolidated progress report (2026-11-06)](docs/progress.md)** — completed work,
-all model and calibration tables, exact coverage results, performance measurements,
-seed-search totals, validation, and remaining research questions.
-[Download the research data bundle](docs/data/progress-data-2026-11-06.zip) for
-the full saved JSON results, draw archives, original reports, and a checksum manifest.
+## Run it
 
-**[Algorithm research: learning structure and improving coverage](docs/algorithm-research.md)**
-evaluates a new 57-expert probability mixture and discrete basin hopping. The
-mixture detects planted biases but has no demonstrated real-data predictive edge.
-Basin hopping improved exact coverage on all five tested ten-row portfolios;
-enable it with `--search-steps 20` in the coverage CLI.
-
-**[Prediction and probability research (2026-11-06)](experiments/prediction_probability_research.md)**
-compares 20 forecasting models, probability calibration, and exact ten-ticket
-coverage. No predictive advantage was established. The new coverage generator
-improves the chance of at least one prize for the tested portfolios; jackpot odds
-remain the same for an equal number of distinct full combinations.
-
-The [second review iteration](experiments/coverage_review_iteration2.md) adds
-exact improving swaps, faster exhaustive evaluation, and corrections to the
-statistical tests and report wording.
-
-## Features
-
-- **4 Neural Network Architectures** - Seq2Seq, Multi-Output, Transformer, Set Prediction
-- **Hybrid Ticket Generator** - Combines model predictions with smart scoring
-- **Statistical Analysis** - Chi-square tests, runs test, serial correlation
-- **Smart Ticket Generator** - Experimental player-popularity scoring; payout gains are unverified
-- **Interactive Visualization** - Netron integration for model architecture exploration
-- **Comprehensive Metrics** - Proper evaluation against random baseline
-- **Leak-Free Benchmark** - Walk-forward harness with Holm–Bonferroni correction, published to GitHub Pages
-
----
-
-## How to Run Everything
-
-### 1. Setup
+You need [uv](https://docs.astral.sh/uv/). It installs Python for you.
 
 ```bash
-# Clone the repository
 git clone https://github.com/Timorleiderman/ILotto.git
 cd ILotto
-
-# Install dependencies (requires uv - https://github.com/astral-sh/uv)
-uv sync                  # CPU TensorFlow, works on every supported platform
-
-# Optional: CUDA, on an x86_64 Linux box with an NVIDIA GPU.
-# Left out of the default install because CI has no GPU and the models here are
-# small enough that a GPU is no faster than CPU.
-uv sync --extra gpu
+uv sync
 ```
-
-> Apple Silicon and Linux resolve TensorFlow 2.19; Intel macOS resolves 2.16.2, the last
-> release upstream published a wheel for on that platform.
-
-### 2. Generate Tickets and Predictions
-
-#### Option A: Exact Portfolio Coverage
-
-Optimize for at least one prize at a fixed row count, then refine the portfolio
-with swaps that strictly improve coverage across every possible main draw.
-This does not improve jackpot odds
-over the same number of distinct full combinations or establish a profit advantage.
 
 ```bash
-uv run python scripts/optimize_ticket_coverage.py --count 10 --seed 0 --out /tmp/lotto-coverage.json
+uv run lotto list
 ```
-
-Two exact refinement passes run by default. Use `--refine-passes 0` to reproduce
-the initial simulated search. The JSON records every accepted swap and its exact gain.
-
-#### Option B: Experimental Hybrid Generator
-Combines neural network outputs with heuristic ticket scoring. Its prediction and
-payout advantages have not been established:
 
 ```bash
-# Using the multi-output model
-uv run python smart_generator.py --model multi_output --count 5
-
-# Using transformer model
-uv run python smart_generator.py --model transformer --count 5
-
-# Adjust model weight (0 = pure smart, 1 = pure model)
-uv run python smart_generator.py --model multi_output --model-weight 0.7
-
-# Higher temperature = more diverse sampling
-uv run python smart_generator.py --model multi_output --temperature 2.0
+uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json
 ```
-
-#### Option C: Smart Generator (No Model)
-Pure heuristic-based ticket generation:
 
 ```bash
-# Generate unpopular ticket combinations
-uv run python smart_generator.py --count 10
+uv run lotto report --quick --n-test 100 --null-trials 500
 ```
-
-#### Option D: All-Model Predictions
-Generate predictions from ALL trained models into a single report:
 
 ```bash
-# Generate predictions from all models
-uv run python predict.py
-
-# Select specific models
-uv run python predict.py --models multi_output transformer
-
-# Generate more tickets per model
-uv run python predict.py --count 10
+uv run lotto predict --quick
 ```
-
-This creates `PREDICTION.md` with:
-- Greedy predictions + top probabilities per model
-- Hybrid tickets (model + smart scoring)
-- Pure smart tickets for comparison
-
-#### Option E: Full Evaluation
-Run complete evaluation with model predictions, metrics, and smart tickets:
 
 ```bash
-uv run python evaluate.py
+uv run lotto ui
 ```
 
-### 3. Train Models
+`lotto ui` opens the [dashboard](docs/start/dashboard.md) in your browser: pick a model, change its
+settings, get a form and its exact odds, test settings on past draws, and keep a prediction log.
+`lotto predict` prints every model's best ticket and a 10-row form for the next draw.
+`lotto list` shows every experiment with the question it answers. The light install above runs
+everything except the two neural predictors; add them with `uv sync --extra neural`, then
+`uv run lotto report` builds the full benchmark in about two minutes.
+
+## The story, from basics to advanced
+
+| | Chapter | The question | Code |
+|---|---|---|---|
+| 1 | [The game](docs/start/the-game.md) | What are the odds? | `lotto/tickets/coverage.py` |
+| 2 | [Measuring honestly](docs/evaluation.md) | How do you know a result is real? | `lotto/core/` |
+| 3 | [Simple strategies](docs/approaches/index.md) | Do hot numbers, due numbers or patterns work? | `lotto/approaches/statistical.py` and neighbours |
+| 4 | [Neural networks](docs/approaches/set-prediction.md) | Can a network find what counting misses? | `lotto/approaches/neural.py`, `date_conditioned.py` |
+| 5 | [Probability forecasts](docs/algorithm-research.md) | Can we forecast the whole draw? | `lotto/forecasting/` |
+| 6 | [Algorithms for the ticket](docs/levers/index.md) | Given a budget, which rows? | `lotto/tickets/` |
+| 7 | [Side quest](docs/side-quests/seed-search.md) | What if the lottery had a seed? | `lotto/seedsearch/`, `native/` |
+
+## Map of the repository
+
+```text
+lotto/            the package
+  core/           the measuring apparatus: data, metrics, backtest, randomness tests
+  approaches/     every prediction strategy, simplest first
+  forecasting/    probability forecasts of the whole draw
+  tickets/        coverage, strong numbers, the draw planner
+  seedsearch/     the seed-search side quest
+  report/         rendering of the published report
+  ui/             the local dashboard (`lotto ui`)
+  experiments/    one runnable module per experiment, and the catalog
+experiments/      frozen protocols and results of the dated research runs
+input/            the draw archive
+legacy/           the 2023–2025 first attempt, kept as an exhibit
+native/           Rust and CUDA engines for the seed search
+docs/             the documentation site
+tests/            the test suite, with a pinned copy of the archive
+```
+
+## How it is checked
 
 ```bash
-# Train a specific model
-uv run python train.py --model multi_output --epochs 50
-
-# Train with diversity loss (prevents mode collapse)
-uv run python train.py --model transformer --epochs 100 --diversity-loss
-
-# Compare all architectures
-uv run python train.py --compare-all --epochs 100
-
-# Available models: original, multi_output, transformer, set_prediction
+uv sync --extra neural --group docs
+uv run pytest -q
+uv run ruff check .
+uv run mkdocs build --strict
 ```
 
-### 4. Generate Visualizations
+The dashboard's JavaScript checks use Node's built-in test runner (Node 18 or newer), with no
+package installation:
 
 ```bash
-# Architecture diagrams (saved to model/diagrams/)
-uv run python model_viz.py
-
-# Analysis charts (saved to visualizations/)
-uv run python visualizations.py
-
-# Interactive model viewer (opens in browser)
-uv run netron model/multi_output_functional.keras --host 0.0.0.0 --port 8080
+node --check lotto/ui/static/app.js
+node --test tests/test_ui_frontend.cjs
 ```
 
----
-
-## Quick Reference
-
-| Task | Command |
-|------|---------|
-| **Exact portfolio coverage** | `uv run python scripts/optimize_ticket_coverage.py --count 10 --seed 0` |
-| **All-model predictions** | `uv run python predict.py` |
-| **Get predictions** | `uv run python smart_generator.py --model multi_output --count 5` |
-| **Full evaluation** | `uv run python evaluate.py` |
-| **Train model** | `uv run python train.py --model multi_output --epochs 50` |
-| **Compare models** | `uv run python train.py --compare-all` |
-| **Visualize architecture** | `uv run netron model/transformer_functional.keras` |
-| **Generate charts** | `uv run python visualizations.py` |
-
----
-
-## Hybrid Generator
-
-The hybrid generator combines:
-1. **Model Predictions** - Neural network probability distributions
-2. **Smart Scoring** - Avoids popular combinations
-
-```
-Ticket #1:
-  Numbers:  [ 3 13 18 25 35 37]  Bonus: 2
-  Combined Score: 0.517
-  ├─ Model confidence: 0.114
-  └─ Smart score:      0.920
-```
-
-### Parameters
-
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--model` | Model to use: `multi_output`, `transformer`, `original` | None (smart only) |
-| `--count` | Number of tickets to generate | 5 |
-| `--model-weight` | Weight for model vs smart (0-1) | 0.5 |
-| `--temperature` | Sampling diversity (higher = more random) | 1.5 |
-
----
-
-## Model Architectures
-
-| Model | Description | Parameters | Best For |
-|-------|-------------|------------|----------|
-| **Original** | Seq2Seq with Bahdanau Attention | ~343K | Learning attention mechanisms |
-| **Multi-Output** | LSTM + 7 Independent Dense Heads | ~123K | **Recommended** - No mode collapse |
-| **Transformer** | Multi-Head Self-Attention | ~244K | Learning transformer architecture |
-| **Set Prediction** | Multi-Label Sigmoid Output | ~193K | Treating lottery as unordered set |
-
-### Training Commands
+CI runs these checks on pull requests and pushes to `main`. A scheduled workflow rebuilds the report and the site on the
+mornings after draw days. Every `lotto report` first checks pais.co.il for new draws and adds
+them to `input/` (`--offline` skips the check). GitHub's runners cannot reach the site, so new
+draws reach the published site when someone runs this on their own machine:
 
 ```bash
-# Train specific model
-uv run python train.py --model multi_output --epochs 100
-
-# With diversity loss (prevents mode collapse)
-uv run python train.py --model multi_output --epochs 100 --diversity-loss
-
-# Compare all architectures
-uv run python train.py --compare-all --epochs 100
-
-# All options
-uv run python train.py --help
+uv run lotto report --out-dir docs
 ```
 
-## Visualization
-
-### Model Architecture Diagrams
-
-```bash
-# Generate matplotlib-based architecture diagrams
-uv run python model_viz.py
-
-# Interactive model viewer (Netron)
-uv run netron model/transformer_functional.keras --host 0.0.0.0 --port 8080
-```
-
-Generated diagrams are saved to `model/diagrams/`:
-- `original_architecture_detailed.png`
-- `multi_output_architecture_detailed.png`
-- `transformer_architecture_detailed.png`
-- `set_prediction_architecture_detailed.png`
-- `all_models_comparison.png`
-- `attention_comparison.png`
-
-### Analysis Charts
-
-```bash
-uv run python visualizations.py
-```
-
-Generates charts in `visualizations/`:
-- Number frequency analysis
-- Co-occurrence heatmaps
-- Model comparison
-- Randomness test results
-
-## Evaluation Results
-
-### The data pipeline had to be fixed first
-
-The numbers below changed once `helpers.py`'s data handling was corrected. Three issues,
-each now guarded by a test in `tests/`:
-
-| Issue | Effect |
-|---|---|
-| Rows filtered by **ball value ≤ 37** | A selection on the *outcome*, not a format filter — it deletes every historic draw containing a high number and keeps the low ones, biasing the surviving frequency table downward. It discarded ~2,000 of ~2,100 pre-2004 draws |
-| Draws consumed **newest-first** | Sequence windows trained models to predict the past from the future |
-| **Mixed game formats** | The archive spans 6/49-ish (to 2004), 6/34 with strong 1–10 (to 2008) and 6/37 (2009+). The benchmark uses the compatible modern draws from 2012 onward |
-
-The era is now selected by **date**, which is unbiased. This matters for the conclusions:
-the previously reported chi-square on the main balls (p = 0.015, "minor bias") was an
-artifact of that filter. The main-ball and drift tests now account for drawing
-without replacement. Pair tests use exact binomial tails and a Bonferroni bound
-that does not require pairs to be independent.
-
-### Randomness tests
-
-Current values are generated in [the results page](docs/results.md). Failure to
-detect a deviation is not proof of uniformity, independence, or stationarity.
-The [research report](experiments/prediction_probability_research.md) measures
-the uniformity test's power against explicit alternatives.
-
-### Strategy benchmark
-
-Every strategy is evaluated walk-forward — for each draw it sees only the draws
-before it. A randomly filled ticket scores 6×6/37 = **0.973** matches per draw; that is the
-bar. The November 6 research run found **no significant predictive advantage after
-correction across 20 strategies**. Its probability-emitting models all had worse
-marginal log loss than uniform (ln 37 = 3.611). This is a result for that evaluation
-window, not a proof that every possible model lacks information.
-
-The instability is the finding: refreshing the archive by 93 draws completely reshuffled
-the leaderboard ("Hot last 100" fell from p = 0.007 to p = 0.084). For scale, the luckiest
-of 5,000 *purely random* strategies outscored the best real one.
-
-Full detail, charts and next-draw picks: **[the published report](https://timorleiderman.github.io/ILotto/)**.
-
-### Benchmark commands
-
-```bash
-uv run pytest -q                                   # full suite, well under a minute
-uv run python scripts/build_report.py --quick      # skip the neural models
-uv run python scripts/build_report.py --refresh    # full run against fresh data (~80s)
-open docs/benchmark/index.html                 # the standalone report
-uv run mkdocs serve                            # or the full site
-```
-
-## Project Structure
-
-```
-ILotto/
-├── predict.py            # All-model prediction generator
-├── train.py              # Training script with CLI
-├── evaluate.py           # Evaluation and metrics
-├── models.py             # Neural network architectures
-├── ilotto.py             # Original Seq2Seq model
-├── metrics.py            # Statistical evaluation
-├── smart_generator.py    # Hybrid + smart ticket generator
-├── visualizations.py     # Chart generation
-├── model_viz.py          # Architecture diagrams
-├── helpers.py            # Data loading utilities
-├── bench/                # Leak-free benchmark package
-│   ├── data.py           # Era-aware loading; chronological; no outcome filtering
-│   ├── randomness.py     # tests for exploitable structure (uniformity, gaps, pairs, drift, compressibility, …)
-│   ├── predictors.py     # Frequency/Markov/ensemble strategies
-│   ├── nn.py             # GRU + Transformer set prediction
-│   ├── generative.py     # date-conditioned generative model
-│   ├── spacetime.py      # perfect-fit interpolator controls (DFT, spline, polynomial)
-│   ├── chaos.py          # Takens embedding, correlation dimension, method of analogues
-│   ├── golden.py         # golden-ratio schedules, Fibonacci controls, φ-as-unpopularity
-│   ├── metrics.py        # Order-invariant scoring, exact nulls, Holm–Bonferroni
-│   ├── backtest.py       # Walk-forward harness + Monte-Carlo null
-│   ├── charts.py         # Dependency-free inline SVG
-│   └── report.py         # Builds docs/benchmark/index.html + docs/results.md
-├── scripts/build_report.py
-├── tests/                # Regression guards for the bugs above
-├── docs/                 # MkDocs source; built to site/ and published to Pages
-├── mkdocs.yml
-├── ARCHITECTURES.md      # Detailed architecture docs
-├── GUIDE.md              # User guide
-├── model/                # Saved models and diagrams
-│   ├── *.keras           # Trained models
-│   ├── *_functional.keras # Functional API models (for Netron)
-│   └── diagrams/         # Architecture visualizations
-├── visualizations/       # Generated charts
-└── input/                # Lottery data
-```
-
-## Documentation
-
-- **[GUIDE.md](GUIDE.md)** - Comprehensive user guide
-- **[ARCHITECTURES.md](ARCHITECTURES.md)** - Detailed architecture explanations with diagrams
-
-## Key Concepts Demonstrated
-
-1. **Seq2Seq with Attention** - Encoder-decoder architecture with Bahdanau attention
-2. **Multi-Head Self-Attention** - Transformer architecture
-3. **Multi-Output Learning** - Independent prediction heads
-4. **Multi-Label Classification** - Set prediction with sigmoid
-5. **Mode Collapse Prevention** - Diversity loss and architecture design
-6. **Statistical Hypothesis Testing** - Chi-square, runs test, correlation
-
-## Smart Tickets
-
-Instead of trying to predict numbers (impossible), the smart generator creates tickets that maximize expected payout IF you win:
-
-- **Favor high numbers (32-37)** - Less popular with players who pick birthdays
-- **Avoid birthday numbers (1-31)** - Most commonly picked
-- **Skip sequential patterns** - 1,2,3,4,5,6 is very popular
-- **Ensure good spread** - Avoid clustering
-
-```bash
-# Pure smart mode (no model)
-uv run python smart_generator.py --count 10
-
-# Hybrid mode (model + smart)
-uv run python smart_generator.py --model multi_output --count 10
-```
-
-## Requirements
-
-- Python 3.12+
-- TensorFlow 2.x
-- See `pyproject.toml` for full dependencies
-
-## Publishing
-
-`.github/workflows/report.yml` rebuilds everything on Sunday, Wednesday and Friday mornings
-UTC — the mornings after the Saturday, Tuesday and occasional Thursday draws — commits the
-refreshed draw archive, and deploys to GitHub Pages. `ci.yml` runs ruff, the test suite, a
-quick report build and a strict docs build on every push and PR.
-
-The site is MkDocs Material. `scripts/build_report.py` writes the generated pages into the
-`docs/` tree (`docs/benchmark/index.html` and `docs/results.md`), then `mkdocs build`
-renders the whole tree into `site/`, which is the published artifact.
-
-```bash
-uv sync --group docs
-uv run mkdocs serve      # live preview on http://localhost:8000
-```
+Then commit `input/` and `docs/`.
 
 ## Disclaimer
 
-**This is an educational project.** Lottery numbers are designed to be random - no prediction method can reliably predict future draws. The models demonstrate ML concepts, not a winning strategy. Please gamble responsibly.
+This is an educational project. Lottery draws are designed to be random; nothing here predicts
+them, and nothing here is gambling advice. Designing a ticket changes how often a small prize is
+won, not whether playing is profitable: the expected return of a row stays below its price.

@@ -1,11 +1,11 @@
 """Install pinned NVIDIA compiler components under a project-local directory."""
 
 import hashlib
-from pathlib import Path
 import shutil
 import sys
 import tarfile
 import urllib.request
+from pathlib import Path
 
 BASE = "https://developer.download.nvidia.com/compute/cuda/redist/"
 PACKAGES = (

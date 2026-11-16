@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "scope": "Retrospective walk-forward test on an already-examined archive; not a fresh holdout. No retuning on this run.",
+  "n_test": 1000,
+  "block_draws": 250,
+  "selection_draws": 500,
+  "candidate_set": "All 59 probability models in the frozen joint-mixture forecast artifact; no exclusions based on results.",
+  "forecasts": "Reproduce every stored forecast with the original settings, then evaluate the last 1000. Each forecast uses only earlier outcomes; mixture updates begin after the original 200-draw warmup.",
+  "one_ticket": "Existing top-six selection via metrics.top_k and argmax strong; retain the existing tie rule.",
+  "ten_tickets": "Relabel the selected fixed coverage design independently per forecast: higher forecast scores go to more-used template labels; ties use descending occurrence count then numeric template label. Preserve all fair-draw coverage probabilities.",
+  "primary_metric": "Draws with at least three main matches on at least one ticket.",
+  "null_tests": "Exact upper binomial tails at the appropriate one-ticket or ten-ticket fair probability; Holm correction across all 59 x 2 budget comparisons.",
+  "descriptive_metrics": [
+    "3+ and strong",
+    "4+ main",
+    "5+ main",
+    "six main",
+    "jackpot",
+    "longest run of winning draws",
+    "mean best main matches",
+    "full-draw log loss"
+  ],
+  "temporal_check": "Report four nonoverlapping 250-draw blocks. Choose the ten-ticket model with most wins in the first 500 (ties use original model order); keep that model choice fixed for the remaining 500, with its usual past-only updates.",
+  "limits": "Nominal corrections describe this fixed comparison, not all previous research decisions. Frequent wins alone do not establish prediction: compare with the matched fair-draw baseline. No archive refresh or ticket purchases.",
+  "input_sha256": {
+    "input/Orig_IL_lotto.csv": "0034509bdfa510c3978abcff14baee705f6bebf85701c7e6978ac07ecc171560",
+    "experiments/joint_mixture_research_2026_11_06.json": "cc1897939a75b0de666d89de761b4d5ae6cde7e6ab6c26ff86cc0d2d24f91c42",
+    "experiments/joint_mixture_research_2026_11_06.npz": "2ce8a1679055cbf45d79c72e504c0afe6ba15752640cd34e00fb25dd4b2471c3",
+    "experiments/ticket_chances_2026_11_07.json": "c8f6e7c5286ea327373a95303b7c880ec00af31db969d74566820f71495e535f"
+  }
+}

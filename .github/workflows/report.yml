@@ -10,14 +10,12 @@ on:
   push:
     branches: [main]
     paths:
-      - "bench/**"
-      - "scripts/**"
+      - "lotto/**"
       - "docs/**"
       - "mkdocs.yml"
       # Pulled into the site via pymdownx.snippets, so edits to them change the
       # published pages even though they live at the repo root.
-      - "ARCHITECTURES.md"
-      - "GUIDE.md"
+      - "legacy/ARCHITECTURES.md"
       - ".github/workflows/report.yml"
   workflow_dispatch:
     inputs:
@@ -53,10 +51,10 @@ jobs:
       - name: Install dependencies
         # No `|| uv sync` fallback: silently resolving fresh from PyPI on a
         # lockfile mismatch would defeat the pinning it exists to provide.
-        run: uv sync --frozen --group docs
+        run: uv sync --frozen --extra neural --group docs
 
       - name: Lint
-        run: uv run ruff check bench scripts tests
+        run: uv run ruff check .
 
       - name: Tests
         run: uv run pytest -q
@@ -75,13 +73,13 @@ jobs:
           case "$N_TEST" in
             ''|*[!0-9]*) echo "n_test must be a positive integer, got: $N_TEST" >&2; exit 1 ;;
           esac
-          uv run python scripts/build_report.py \
-            --refresh \
+          # The report checks pais.co.il for new draws on its own.
+          uv run lotto report \
             --n-test "$N_TEST" \
             --out-dir docs
 
       # pais.co.il is not reachable from GitHub's runners (connect timeout —
-      # likely geo/cloud-IP blocking), so --refresh above silently falls back to
+      # likely geo/cloud-IP blocking), so the check for new draws falls back to
       # the committed archive. Surface that instead of letting green runs hide
       # a stale site: the end date goes in the job summary, with a warning
       # annotation once it is more than a week old.
@@ -90,7 +88,7 @@ jobs:
           uv run python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
           import numpy as np
           from datetime import date
-          from bench import data
+          from lotto.core import data
           d = data.load(clean_csv=None)
           last = d.dates[-1].astype("datetime64[D]")
           age = (np.datetime64(date.today()) - last).astype(int)
@@ -100,7 +98,7 @@ jobs:
                     "pais.co.il is unreachable from CI — refresh locally and push")
           EOF
 
-      # build_report.py writes docs/benchmark/index.html and docs/results.md;
+      # `lotto report` writes docs/benchmark/index.html and docs/results.md;
       # MkDocs then renders the whole docs/ tree (copying the standalone report
       # through verbatim) into site/, which is what gets published.
       - name: Build docs site

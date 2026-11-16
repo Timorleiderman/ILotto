@@ -4,8 +4,13 @@ from dataclasses import replace
 
 import pytest
 
-from bench.seed_search import (
-    OUTCOMES, Observation, index_ticket, search, ticket_index, world_outcome,
+from lotto.seedsearch.generator import (
+    OUTCOMES,
+    Observation,
+    index_ticket,
+    search,
+    ticket_index,
+    world_outcome,
 )
 
 
@@ -43,7 +48,7 @@ def test_absent_seed_is_not_reported_as_recovered(tmp_path):
 
 
 def test_resume_matches_uninterrupted_search(tmp_path, monkeypatch):
-    import bench.seed_search as module
+    import lotto.seedsearch.generator as module
 
     clock = iter(range(100))
     real_clock = module.time.perf_counter
@@ -84,7 +89,7 @@ def test_completed_resume_does_not_repeat_seeds(tmp_path):
 
 
 def test_interrupted_batch_replays_without_lost_or_duplicate_candidates(tmp_path, monkeypatch):
-    import bench.seed_search as module
+    import lotto.seedsearch.generator as module
 
     history = prefix()
     original = module._outcome

@@ -26,10 +26,15 @@ jobs:
       - name: Install dependencies
         # No `|| uv sync` fallback: silently resolving fresh from PyPI on a
         # lockfile mismatch would defeat the pinning it exists to provide.
-        run: uv sync --frozen --group docs
+        run: uv sync --frozen --extra neural --group docs
 
       - name: Ruff
-        run: uv run ruff check bench scripts tests
+        run: uv run ruff check .
+
+      - name: Dashboard JavaScript
+        run: |
+          node --check lotto/ui/static/app.js
+          node --test tests/test_ui_frontend.cjs
 
       # The runner image ships cargo. Building first lets the Python tests drive
       # the real release binary, and the host-C++ test compiles the CUDA hash
@@ -49,7 +54,7 @@ jobs:
       - name: Build report (quick)
         env:
           TF_CPP_MIN_LOG_LEVEL: "3"
-        run: uv run python scripts/build_report.py --quick --n-test 100 --null-trials 500
+        run: uv run lotto report --offline --quick --n-test 100 --null-trials 500
 
       # --strict turns broken internal links and nav references into failures.
       - name: Build docs site

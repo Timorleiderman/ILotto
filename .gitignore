@@ -3,8 +3,6 @@
 8.pyc
 training_*
 *.log
-model/logs/*
-PREDICTION.md
 
 # Python bytecode (the original __pycache__/* rule only matched the top level)
 __pycache__/
@@ -20,3 +18,11 @@ experiments/seed_search_runs/
 native/seed-search/target/
 native/cuda-search/ilotto-cuda-search
 .cuda-*/
+*.download
+
+# The legacy exhibit regenerates these on every run.
+legacy/model/
+input/lotto_IL_filtered.csv
+
+# Output of `lotto run ...`; frozen evidence lives in experiments/.
+results/

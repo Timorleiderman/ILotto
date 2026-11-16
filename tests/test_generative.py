@@ -13,8 +13,11 @@ import numpy as np
 import pytest
 from scipy.optimize import check_grad
 
-from bench import backtest, data, generative, metrics, predictors
-from bench.generative import DateConditionedCB, LeakageError
+from lotto.approaches import date_conditioned as generative
+from lotto.approaches import statistical as predictors
+from lotto.approaches.date_conditioned import DateConditionedCB, LeakageError
+from lotto.core import backtest, data, metrics
+from tests import SNAPSHOT
 
 from .test_pipeline import fake_draws
 
@@ -191,7 +194,7 @@ def test_harness_can_detect_a_real_date_effect():
 # --- G6 / G7 --------------------------------------------------------------
 def test_trend_makes_the_basis_injective_and_that_is_declared():
     """phi is a unique key. Safe only because the head is linear — see G7."""
-    d = data.load(clean_csv=None)
+    d = data.load(raw_csv=SNAPSHOT, clean_csv=None)
     ref = generative.FeatureRef.fit(d.dates)
     phi = generative.date_features(d.dates, ref)
     assert len({tuple(np.round(r, 9)) for r in phi}) == len(d), "trend should make phi injective"
@@ -227,7 +230,7 @@ def test_head_is_linear():
 # --- end to end -----------------------------------------------------------
 def test_walk_forward_on_real_data_is_indistinguishable_from_chance():
     """The committed expectation. If this ever fails, suspect a leak first."""
-    d = data.load(clean_csv=None)
+    d = data.load(raw_csv=SNAPSHOT, clean_csv=None)
     r = backtest.walk_forward(DateConditionedCB(), d, n_test=60, min_history=800)
     se = np.sqrt(metrics.BASELINE_MATCH_VAR / 60)
     assert abs(r.summary["mean_matches"] - metrics.BASELINE_MATCHES) < 4 * se
@@ -236,7 +239,7 @@ def test_walk_forward_on_real_data_is_indistinguishable_from_chance():
 
 
 def test_generates_a_valid_ticket_for_a_future_date():
-    d = data.load(clean_csv=None)
+    d = data.load(raw_csv=SNAPSHOT, clean_csv=None)
     p = DateConditionedCB()
     p.fit(d)
     out = p.sample(np.datetime64("2027-03-16", "D"), np.random.default_rng(0))
@@ -301,7 +304,7 @@ def test_sample_labels_in_sample_reconstructions():
 
 
 def test_next_draw_date_lands_on_a_scheduled_day():
-    d = data.load(clean_csv=None)
+    d = data.load(raw_csv=SNAPSHOT, clean_csv=None)
     nxt = data.next_draw_date(d)
     assert nxt > d.dates[-1].astype("datetime64[D]")
     assert int((nxt.astype(int) + 3) % 7) in {1, 3, 5}  # Tue / Thu / Sat
@@ -309,9 +312,9 @@ def test_next_draw_date_lands_on_a_scheduled_day():
 
 def test_report_can_predict_next_with_a_date_conditioned_model():
     """Regression: this path used to raise because no target date was supplied."""
-    from bench import report
+    from lotto.report import html as report
 
-    d = data.load(clean_csv=None)
+    d = data.load(raw_csv=SNAPSHOT, clean_csv=None)
     out = report.predict_next(DateConditionedCB(), d)
     assert len(out["numbers"]) == 6 and out["target_date"] is not None
     assert np.datetime64(out["target_date"]) > d.dates[-1].astype("datetime64[D]")

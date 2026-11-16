@@ -1,0 +1,66 @@
+{
+  "Fibonacci ticket (control)": {
+    "total_matches": 111,
+    "p_value": 0.11809371893359139
+  },
+  "Perfect-fit function (DFT)": {
+    "total_matches": 110,
+    "p_value": 0.14799324642721506
+  },
+  "Method of analogues (chaos)": {
+    "total_matches": 109,
+    "p_value": 0.18343323158014574
+  },
+  "Lag-1 persistence": {
+    "total_matches": 106,
+    "p_value": 0.327255178207769
+  },
+  "Perfect-fit function (polynomial)": {
+    "total_matches": 106,
+    "p_value": 0.327255178207769
+  },
+  "Hot numbers (all-time)": {
+    "total_matches": 105,
+    "p_value": 0.38851656461424605
+  },
+  "Hot numbers (last 100 draws)": {
+    "total_matches": 104,
+    "p_value": 0.4564421675616246
+  },
+  "Sum-targeted combination": {
+    "total_matches": 102,
+    "p_value": 0.610905583331658
+  },
+  "Perfect-fit function (spline)": {
+    "total_matches": 102,
+    "p_value": 0.610905583331658
+  },
+  "Golden ratio (Kronecker schedule)": {
+    "total_matches": 98,
+    "p_value": 0.9730395444973512
+  },
+  "EWMA frequency (half-life 50)": {
+    "total_matches": 96,
+    "p_value": 0.9317678559397464
+  },
+  "Overdue (longest absence)": {
+    "total_matches": 96,
+    "p_value": 0.9317678559397464
+  },
+  "Cold numbers (all-time)": {
+    "total_matches": 94,
+    "p_value": 0.7449623484872413
+  },
+  "Random ticket": {
+    "total_matches": 92,
+    "p_value": 0.5713272642670619
+  },
+  "Pairwise co-occurrence (Markov)": {
+    "total_matches": 87,
+    "p_value": 0.24065512115300883
+  },
+  "Rank ensemble": {
+    "total_matches": 78,
+    "p_value": 0.02219816646822146
+  }
+}

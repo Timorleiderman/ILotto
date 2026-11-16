@@ -1,5 +1,5 @@
 site_name: ILotto
-site_description: How every lottery-prediction approach in this repo works, and how each one scores.
+site_description: A reproducible study of the Israeli Lotto, from basic probability to neural networks and exact algorithms.
 site_url: https://timorleiderman.github.io/ILotto/
 repo_url: https://github.com/Timorleiderman/ILotto
 repo_name: Timorleiderman/ILotto
@@ -59,8 +59,8 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
-  # Lets the docs pull in ARCHITECTURES.md and GUIDE.md from the repo root, so
-  # those files stay where the README already points at them.
+  # Lets the docs pull in legacy/ARCHITECTURES.md, so the exhibit keeps its
+  # documentation next to its code.
   - pymdownx.snippets:
       base_path: ["."]
       check_paths: true
@@ -74,21 +74,47 @@ extra_css:
 
 nav:
   - Home: index.md
-  - Progress and evidence: progress.md
-  - Algorithm research: algorithm-research.md
-  - How it is measured: evaluation.md
-  - Approaches:
+  - Start here:
+      - The game in five minutes: start/the-game.md
+      - Run it yourself: start/run.md
+      - The dashboard: start/dashboard.md
+      - Glossary: start/glossary.md
+  - 1 · Measuring:
+      - How results are measured: evaluation.md
+      - Live scoreboard: results.md
+      - Benchmark report: benchmark/index.html
+  - 2 · Simple strategies:
       - approaches/index.md
       - Statistical strategies: approaches/statistical.md
-      - Neural set prediction: approaches/set-prediction.md
-      - Date-conditioned generative: approaches/date-conditioned.md
       - The perfect-fit function: approaches/perfect-fit.md
       - Chaos theory: approaches/chaos.md
       - The golden ratio: approaches/golden-ratio.md
-      - The four legacy models: approaches/legacy-models.md
-      - Ticket generators: approaches/ticket-generators.md
-  - Results: results.md
-  - Benchmark report: benchmark/index.html
+  - 3 · Neural networks:
+      - The first attempt: approaches/legacy-models.md
+      - Neural set prediction: approaches/set-prediction.md
+      - Date-conditioned generative model: approaches/date-conditioned.md
+  - 4 · Probability forecasts:
+      - A mixture of 57 experts: algorithm-research.md
+      - The 1,000-draw test: historical-strikes.md
+      - Training on a million simulated draws: synthetic-learning.md
+  - 5 · Algorithms for the ticket:
+      - levers/index.md
+      - Coverage at a fixed budget: approaches/ticket-generators.md
+      - Strong-number assignment: ticket-chances.md
+      - Which draw to play: levers/draw-planner.md
+      - Every model's form for the next draw: levers/predict.md
+  - 6 · Side quest:
+      - Searching for a seed: side-quests/seed-search.md
   - Reference:
-      - Architecture deep dive: reference/architectures.md
-      - User guide: reference/guide.md
+      - Experiment catalog: reference/experiments.md
+      - Legacy architecture deep dive: reference/architectures.md
+      - Research log:
+          - reference/research-log/index.md
+          - Progress and evidence: reference/research-log/progress.md
+          - Prediction and probability: reference/research-log/prediction-probability.md
+          - Coverage review: reference/research-log/coverage-review.md
+          - Model design plan: reference/research-log/model-design-plan.md
+          - Seed search pilot: reference/research-log/seed-search-pilot.md
+          - Seed search campaign: reference/research-log/seed-search-campaign.md
+          - Seed search capacity: reference/research-log/seed-search-capacity.md
+          - Seed search engines: reference/research-log/seed-search-parallel.md

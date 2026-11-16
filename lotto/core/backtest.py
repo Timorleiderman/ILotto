@@ -1,0 +1,178 @@
+"""Leak-free walk-forward evaluation.
+
+For each of the last `n_test` draws we hand a predictor *only* the draws that
+preceded it, ask for a ticket, and score it. This is the part the original
+pipeline got wrong in three separate ways:
+
+1. Draws were fed newest-first, so the model was trained to predict the past
+   from the future.
+2. The training split was the oldest block and the test split the newest, but
+   with the reversed ordering the sequence windows straddled the boundary.
+3. Nothing was ever compared against a random ticket, so there was no way to
+   tell whether any number meant anything.
+"""
+
+from __future__ import annotations
+
+import logging
+import time
+from dataclasses import dataclass, field
+
+import numpy as np
+
+from lotto.approaches.statistical import Predictor
+from lotto.core import metrics
+from lotto.core.data import Draws
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Result:
+    name: str
+    description: str
+    summary: dict
+    match_counts: np.ndarray = field(repr=False)
+    seconds: float = 0.0
+
+
+def evaluation_window(n_draws: int, n_test: int, min_history: int = 200) -> range:
+    """Indices of the draws a walk-forward run will score.
+
+    Resolved once and shared by the backtest, the Monte-Carlo null and the
+    report, so they cannot describe windows of different lengths.
+    """
+    if n_test < 1:
+        raise ValueError("n_test must be at least 1")
+    start = max(n_draws - n_test, min_history)
+    if start >= n_draws:
+        raise ValueError(f"Not enough draws ({n_draws}) for min_history={min_history}")
+    return range(start, n_draws)
+
+
+def walk_forward(
+    predictor: Predictor,
+    draws: Draws,
+    n_test: int = 300,
+    min_history: int = 200,
+    on_step=None,
+) -> Result:
+    """Score `predictor` over the final `n_test` draws, one draw at a time.
+
+    `on_step(done, total)`, if given, is called before each draw is scored. It
+    is for progress display; raising from it stops the run, which is how a
+    caller cancels. It never changes a result.
+    """
+    window = evaluation_window(len(draws), n_test, min_history)
+
+    match_counts, losses, strong_hits = [], [], []
+    t0 = time.perf_counter()
+
+    for i in window:
+        if on_step is not None:
+            on_step(i - window.start, len(window))
+        history = draws.slice(0, i)
+        if predictor.refit_every and (i - window.start) % predictor.refit_every == 0:
+            predictor.fit(history)
+
+        if predictor.wants_target_date:
+            ball_scores, strong_scores = predictor.scores(history, draws.dates[i])
+        else:
+            ball_scores, strong_scores = predictor.scores(history)
+        actual = draws.balls[i]
+
+        match_counts.append(metrics.matches(ball_scores, actual))
+        if predictor.emits_probabilities:
+            losses.append(metrics.log_loss(ball_scores, actual))
+        strong_hits.append(int(np.argmax(strong_scores) + 1 == draws.strong[i]))
+
+    match_counts = np.asarray(match_counts)
+    summary = metrics.summarise(
+        match_counts,
+        np.asarray(losses) if predictor.emits_probabilities else None,
+        np.asarray(strong_hits),
+    )
+
+    return Result(
+        name=predictor.name,
+        description=predictor.description,
+        summary=summary,
+        match_counts=match_counts,
+        seconds=time.perf_counter() - t0,
+    )
+
+
+def next_draw_scores(
+    predictor: Predictor, draws: Draws, target_date: np.datetime64 | None = None,
+) -> tuple[np.datetime64 | None, np.ndarray, np.ndarray]:
+    """What a predictor says about the next, undrawn result, using every draw on record.
+
+    Models with a fit step are refitted on the whole history first. Models that
+    read the calendar get `target_date`, or the next scheduled draw date when it
+    is not given; both are public in advance, and such models still refuse a
+    date their history has already reached. Returns (the date used or None, 37
+    ball scores, 7 strong scores).
+    """
+    from lotto.core.data import N_NUMBERS, N_STRONG, next_draw_date
+
+    if predictor.refit_every:
+        predictor.fit(draws)
+    if not predictor.wants_target_date:
+        target_date = None
+    if predictor.wants_target_date:
+        target_date = next_draw_date(draws) if target_date is None else np.datetime64(target_date, "D")
+        ball_scores, strong_scores = predictor.scores(draws, target_date)
+    else:
+        ball_scores, strong_scores = predictor.scores(draws)
+    ball_scores = np.asarray(ball_scores, dtype=float)
+    strong_scores = np.asarray(strong_scores, dtype=float)
+    if (ball_scores.shape != (N_NUMBERS,) or strong_scores.shape != (N_STRONG,)
+            or np.isnan(ball_scores).any() or not np.isfinite(strong_scores).all()):
+        raise ValueError(f"{predictor.name}: expected 37 ball and 7 strong scores without NaN")
+    return target_date, ball_scores, strong_scores
+
+
+def random_ticket_null(draws: Draws, n_test: int, n_trials: int = 5000, seed: int = 7) -> dict:
+    """Empirical distribution of mean-matches for random tickets.
+
+    This Monte-Carlo null complements the finite-sample test in
+    `metrics.summarise` and gives the report a concrete "how good would
+    the luckiest of 5000 random strategies have looked?" number, which is the
+    right yardstick when a dozen strategies are being compared.
+    """
+    if (any(not isinstance(x, (int, np.integer)) or isinstance(x, (bool, np.bool_))
+            for x in (n_test, n_trials)) or not 1 <= n_test <= len(draws) or n_trials < 1):
+        raise ValueError("Require 1 <= n_test <= number of draws and positive n_trials")
+    rng = np.random.default_rng(seed)
+    # Conditional on any actual six-number draw, a random ticket's overlap is
+    # hypergeometric. Sampling this law avoids generating and sorting 37 scores
+    # per ticket; chunking keeps memory bounded for large experiments.
+    means = np.empty(n_trials)
+    for start in range(0, n_trials, 1024):
+        stop = min(start + 1024, n_trials)
+        counts = rng.hypergeometric(metrics.N_DRAWN, metrics.N_NUMBERS - metrics.N_DRAWN,
+                                    metrics.N_DRAWN, size=(stop - start, n_test))
+        means[start:stop] = counts.mean(axis=1)
+
+    return {
+        "n_trials": n_trials,
+        "mean": float(means.mean()),
+        "std": float(means.std()),
+        "p95": float(np.percentile(means, 95)),
+        "max": float(means.max()),
+        "samples": means,
+    }
+
+
+def run_suite(predictors: list[Predictor], draws: Draws, n_test: int = 300) -> list[Result]:
+    """Backtest every predictor, sort by mean matches, and mark which survive Holm-Bonferroni."""
+    results = []
+    for p in predictors:
+        logger.info("Backtesting %s", p.name)
+        results.append(walk_forward(p, draws, n_test=n_test))
+    results.sort(key=lambda r: r.summary["mean_matches"], reverse=True)
+
+    verdicts = metrics.holm_bonferroni({r.name: r.summary["p_value"] for r in results})
+    for r in results:
+        r.summary["significant_after_correction"] = verdicts[r.name]
+    return results

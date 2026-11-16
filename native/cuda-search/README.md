@@ -29,7 +29,7 @@ The component license files are retained with the installation.
 ```bash
 python3 native/cuda-search/bootstrap.py .cuda-12.8
 bash native/cuda-search/build.sh
-python3 scripts/benchmark_cuda_search.py \
+uv run lotto run seed-search-cuda-benchmark \
   --binary native/cuda-search/ilotto-cuda-search \
   --validate-only --out-dir results/validation
 ```
@@ -49,7 +49,7 @@ known hashes and the rejection-mapping boundary at startup. Every full
 survivor is independently rechecked in Python before committing coverage.
 
 ```bash
-python3 scripts/benchmark_cuda_search.py \
+uv run lotto run seed-search-cuda-benchmark \
   --binary native/cuda-search/ilotto-cuda-search \
   --manifest results/allocation.json --out-dir results/benchmark \
   --seconds-per-config 5 --warm-seconds 15
@@ -82,7 +82,7 @@ work, use the coordinator below.
 Run this **on the Mac, from the original checkout with its existing history**:
 
 ```bash
-.venv/bin/python scripts/search_remote_seeds.py \
+.venv/bin/uv run lotto run seed-search-remote \
   --host timor@192.168.50.225 \
   --remote-dir /home/timor/Developer/ILotto \
   --count 30000000000 --seconds 10
@@ -100,7 +100,7 @@ The command prints an allocation ID. If the time limit or a connection failure
 interrupts it, resume the same allocation:
 
 ```bash
-.venv/bin/python scripts/search_remote_seeds.py --resume ALLOCATION_ID --seconds 10
+.venv/bin/uv run lotto run seed-search-remote --resume ALLOCATION_ID --seconds 10
 ```
 
 Resuming starts at the next committed seed. A completed allocation returns

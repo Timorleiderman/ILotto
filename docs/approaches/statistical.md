@@ -24,7 +24,7 @@
     that claim to know something — the leaderboard reshuffles with every rebuild. The spread that makes numbers look hot is exactly the
     spread fairness produces.
 
-Eleven counting rules, in `bench/predictors.py`. None of them trains anything — each is a
+Ten counting rules, in `lotto/approaches/statistical.py`. None of them trains anything — each is a
 deterministic function from history to a 37-vector of scores. That makes them the cleanest
 possible test of lottery folklore: if "hot numbers" meant anything, this is where it would
 show up.

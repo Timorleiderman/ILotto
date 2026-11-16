@@ -1,6 +1,6 @@
 ---
-title: Architecture deep dive
+title: Legacy architecture deep dive
 ---
 
-<!-- Included from the repository root so the file stays where the README links to it. -->
---8<-- "ARCHITECTURES.md"
+<!-- Included from legacy/ so the exhibit keeps its own documentation next to its code. -->
+--8<-- "legacy/ARCHITECTURES.md"
