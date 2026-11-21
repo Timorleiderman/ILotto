@@ -52,6 +52,11 @@ def best_match_counts(tickets, *, n_numbers=N_NUMBERS, n_drawn=N_DRAWN, chunk_si
         raise ValueError("chunk_size must be positive")
     if engine not in ("auto", "reference"):
         raise ValueError("engine must be 'auto' or 'reference'")
+    if engine == "auto" and len(rows) == 1:
+        return np.array(
+            [comb(n_drawn, k) * comb(n_numbers - n_drawn, n_drawn - k) for k in range(n_drawn + 1)],
+            dtype=np.int64,
+        )
     if engine == "auto" and (n_numbers, n_drawn) == (N_NUMBERS, N_DRAWN):
         from lotto.tickets._kernels import match_histogram, outcomes
 
@@ -147,19 +152,24 @@ def greedy_coverage_tickets(count=10, *, candidates=512, simulations=30_000, min
             seen.add(row)
             pool.append(row)
     draws = np.argpartition(rng.random((simulations, N_NUMBERS)), N_DRAWN - 1, axis=1)[:, :N_DRAWN] + 1
-    covered_by = np.zeros((candidates, simulations), dtype=bool)
-    for i, row in enumerate(pool):
-        lookup = np.zeros(N_NUMBERS + 1, dtype=np.int8)
-        lookup[list(row)] = 1
-        covered_by[i] = lookup[draws].sum(axis=1) >= min_matches
+    pool_hot = np.zeros((candidates, N_NUMBERS), dtype=np.float32)
+    pool_arr = np.asarray(pool, dtype=np.int64) - 1
+    pool_hot[np.arange(candidates)[:, None], pool_arr] = 1.0
+    draws_hot = np.zeros((simulations, N_NUMBERS), dtype=np.float32)
+    draws_hot[np.arange(simulations)[:, None], draws - 1] = 1.0
+    covered_by = (pool_hot @ draws_hot.T) >= (min_matches - 0.5)
     uncovered = np.ones(simulations, dtype=bool)
+    gains = covered_by.sum(axis=1).astype(np.int64)
     selected = []
     for _ in range(count):
-        gains = covered_by[:, uncovered].sum(axis=1).astype(np.int64)
-        gains[selected] = -1
         best = int(np.argmax(gains))
         selected.append(best)
-        uncovered &= ~covered_by[best]
+        gains[best] = -1
+        newly = uncovered & covered_by[best]
+        if newly.any():
+            uncovered &= ~newly
+            gains -= covered_by[:, newly].sum(axis=1, dtype=np.int64)
+            gains[selected] = -1
     strong_order = rng.permutation(np.arange(1, N_STRONG + 1))
     return [[*(int(x) for x in pool[index]), int(strong_order[i % N_STRONG])]
             for i, index in enumerate(selected)]
@@ -184,19 +194,27 @@ def search_coverage_tickets(tickets, *, steps=20, seed=0, start_temperature=1000
             or start_temperature < end_temperature):
         raise ValueError("Require steps in 1..500, perturbations in 1..100, local_passes in 0..20, "
                          "nonnegative seed, and finite decreasing positive temperatures")
+    from lotto.tickets._kernels import coverage_counts, outcomes, update_coverage
+
+    _, masks = outcomes()
     current = [list(row) for row in rows]
     best = [row.copy() for row in current]
+    current_masks = tickets_to_masks([row[:N_DRAWN] for row in current])
+    current_counts = coverage_counts(masks, current_masks)
 
     def count(portfolio):
         histogram = best_match_counts([row[:N_DRAWN] for row in portfolio])
         return int(histogram[3:].sum())
 
-    current_count = best_count = initial_count = count(current)
+    current_count = best_count = initial_count = int(np.count_nonzero(current_counts))
     rng = np.random.default_rng(seed)
     proposals = []
     for step, temperature in enumerate(np.geomspace(start_temperature, end_temperature, steps)):
         candidate = [row.copy() for row in current]
+        cand_masks = current_masks.copy()
+        cand_counts = current_counts.copy()
         changes = []
+        touched = set()
         for _ in range(perturbations):
             row_index = int(rng.integers(len(candidate)))
             position = int(rng.integers(N_DRAWN))
@@ -206,12 +224,20 @@ def search_coverage_tickets(tickets, *, steps=20, seed=0, start_temperature=1000
             candidate[row_index][position] = new
             candidate[row_index][:N_DRAWN] = sorted(candidate[row_index][:N_DRAWN])
             changes.append({"row": row_index, "removed": old, "added": new})
-        candidate, local_audit = refine_coverage_tickets(candidate, max_passes=local_passes)
+            touched.add(row_index)
+        for row_index in touched:
+            new_mask = tickets_to_masks([candidate[row_index][:N_DRAWN]])[0]
+            update_coverage(masks, cand_counts, cand_masks[row_index], new_mask)
+            cand_masks[row_index] = new_mask
+        candidate, local_audit = _refine_with_counts(
+            candidate, cand_masks, cand_counts, max_passes=local_passes
+        )
         candidate_count = local_audit["covered_outcomes_after"]
         delta = candidate_count - current_count
         accepted = delta >= 0 or rng.random() < np.exp(delta / temperature)
         if accepted:
             current, current_count = candidate, candidate_count
+            current_masks, current_counts = cand_masks, cand_counts
         if candidate_count > best_count:
             best, best_count = [row.copy() for row in candidate], candidate_count
         proposals.append({"step": step, "temperature": float(temperature), "perturbations": changes,
@@ -227,22 +253,10 @@ def search_coverage_tickets(tickets, *, steps=20, seed=0, start_temperature=1000
                   "proposals": proposals}
 
 
-def refine_coverage_tickets(tickets, *, max_passes=2):
-    """Improve >=3-main coverage using exact one-ball coordinate exchanges.
-
-    Every accepted swap strictly increases the number of covered fair outcomes.
-    Strong numbers and row count are preserved. This is bounded local search,
-    not a global optimum, and need not improve the probability of a larger prize.
-    Returns (copied tickets, audit metadata), including each exact integer gain.
-    """
-    rows = full_tickets(tickets)
-    if not is_integer(max_passes) or max_passes < 0:
-        raise ValueError("max_passes must be a nonnegative integer")
-    from lotto.tickets._kernels import best_exchange, coverage_counts, outcomes, update_coverage
+def _refine_with_counts(rows, ticket_masks, counts, *, max_passes=2):
+    from lotto.tickets._kernels import best_exchange, outcomes, update_coverage
 
     draws, masks = outcomes()
-    ticket_masks = tickets_to_masks([row[:N_DRAWN] for row in rows])
-    counts = coverage_counts(masks, ticket_masks)
     before = int(np.count_nonzero(counts))
     audit = {"objective": "At least three main matches", "max_passes": int(max_passes),
              "passes": 0, "covered_outcomes_before": before, "swaps": []}
@@ -270,3 +284,22 @@ def refine_coverage_tickets(tickets, *, max_passes=2):
     if audit["covered_outcomes_after"] != before + sum(s["newly_covered_outcomes"] for s in audit["swaps"]):
         raise RuntimeError("Exact coverage audit failed")
     return rows, audit
+
+
+def refine_coverage_tickets(tickets, *, max_passes=2):
+    """Improve >=3-main coverage using exact one-ball coordinate exchanges.
+
+    Every accepted swap strictly increases the number of covered fair outcomes.
+    Strong numbers and row count are preserved. This is bounded local search,
+    not a global optimum, and need not improve the probability of a larger prize.
+    Returns (copied tickets, audit metadata), including each exact integer gain.
+    """
+    rows = full_tickets(tickets)
+    if not is_integer(max_passes) or max_passes < 0:
+        raise ValueError("max_passes must be a nonnegative integer")
+    from lotto.tickets._kernels import coverage_counts, outcomes
+
+    _, masks = outcomes()
+    ticket_masks = tickets_to_masks([row[:N_DRAWN] for row in rows])
+    counts = coverage_counts(masks, ticket_masks)
+    return _refine_with_counts(rows, ticket_masks, counts, max_passes=max_passes)

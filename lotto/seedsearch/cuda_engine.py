@@ -96,16 +96,32 @@ class CudaWorker:
 
     def close(self):
         """Stop the worker process and release its pipes."""
-        self.selector.close()
-        if self.process.poll() is None:
-            self.process.stdin.close()
+        try:
+            self.selector.close()
+        finally:
+            if self.process.poll() is None:
+                try:
+                    self.process.stdin.close()
+                except OSError:
+                    pass
+                try:
+                    self.process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    self.process.kill()
+                    self.process.wait()
+            else:
+                try:
+                    self.process.stdin.close()
+                except OSError:
+                    pass
             try:
-                self.process.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                self.process.kill()
-                self.process.wait()
-        self.process.stdout.close()
-        self.errors.close()
+                self.process.stdout.close()
+            except OSError:
+                pass
+            try:
+                self.errors.close()
+            except OSError:
+                pass
 
     def __enter__(self):
         return self

@@ -51,27 +51,35 @@ def strong_uniformity(draws: Draws) -> dict:
 def serial_independence(draws: Draws) -> dict:
     """Does a number appearing make it more or less likely to appear next time?
 
-    Builds a 2x2 table of (in draw t) x (in draw t+1) pooled over all numbers
-    and applies a chi-square test of independence. This is the cleanest test of
-    the "hot number" and "due number" folklore at the same time: hot predicts
-    positive association, due predicts negative.
+    Under independent fair draws, the overlap O_t = |D_t & D_{t+1}| between
+    consecutive draws is mutually independent across t with exact distribution
+    Hypergeometric(37, 6, 6). Using the exact convolved hypergeometric null
+    accounts for without-replacement covariance within each draw (which a naive
+    pooled 2x2 chi-square ignores by a factor of 37/36).
     """
-    m = draws.multi_hot.astype(bool)
-    prev, nxt = m[:-1].ravel(), m[1:].ravel()
-    table = np.array(
-        [
-            [np.sum(~prev & ~nxt), np.sum(~prev & nxt)],
-            [np.sum(prev & ~nxt), np.sum(prev & nxt)],
-        ]
-    )
-    chi2, p, _, _ = stats.chi2_contingency(table)
-    p_repeat = table[1, 1] / table[1].sum()
+    from lotto.core import metrics
+
+    m = draws.multi_hot.astype(np.int64)
+    n_pairs = len(draws) - 1
+    overlaps = (m[:-1] * m[1:]).sum(axis=1)
+    total = int(overlaps.sum())
+    expected = n_pairs * metrics.BASELINE_MATCHES
+    variance = n_pairs * metrics.BASELINE_MATCH_VAR
+    chi2 = float((total - expected) ** 2 / variance) if variance > 0 else 0.0
+    distribution = metrics.match_sum_distribution(n_pairs)
+    p_greater = min(1.0, float(distribution[total:].sum()))
+    p_less = min(1.0, float(distribution[: total + 1].sum()))
+    p = min(1.0, 2.0 * min(p_less, p_greater))
+    p_repeat = total / (n_pairs * N_DRAWN)
     return {
         "test": "Lag-1 serial independence (hot/due folklore)",
-        "statistic": float(chi2),
+        "statistic": chi2,
         "dof": 1,
-        "p_value": float(p),
-        "detail": f"P(drawn again | drawn) = {p_repeat:.4f} vs {N_DRAWN / N_NUMBERS:.4f} expected",
+        "p_value": p,
+        "detail": (
+            f"P(drawn again | drawn) = {p_repeat:.4f} vs {N_DRAWN / N_NUMBERS:.4f} expected "
+            f"(exact convolved hypergeometric null over {n_pairs} adjacent pairs)"
+        ),
     }
 
 
@@ -229,8 +237,8 @@ def incompressibility(draws: Draws, n_sim: int = 399, seed: int = 0) -> dict:
     means "more compressible than fair", i.e. structure.
 
     zlib rather than lzma, deliberately: encoder setup dominates on a ~5 KB
-    payload, and the 201 lzma preset-9 encoders this null needs cost minutes on
-    a CI runner against ~10 ms for zlib. The teeth are unchanged — the
+    payload, and the 400 lzma preset-9 encoders this null needs cost minutes on
+    a CI runner against ~30 ms for zlib. The teeth are unchanged — the
     function-generated control still collapses to 15.5% of the entropy floor
     under zlib (10.4% under lzma) while the real archive sits at 100.4% either
     way — and observed and null always use the same compressor, so the
@@ -256,12 +264,17 @@ def incompressibility(draws: Draws, n_sim: int = 399, seed: int = 0) -> dict:
     compress = lambda b: len(zlib.compress(b, 9))  # noqa: E731
     observed = compress(pack(draws.balls, draws.strong))
 
+    # The combinadic packing is an exact bijection between fair draws and
+    # uniform integers in [0, C(37, 6) * 7), so fair null histories can be
+    # sampled directly as 24-bit big-endian integers without re-encoding.
     rng = np.random.default_rng(seed)
     n = len(draws)
+    total_outcomes = comb(N_NUMBERS, N_DRAWN) * N_STRONG
     sims = np.empty(n_sim)
     for k in range(n_sim):
-        picks = rng.random((n, N_NUMBERS)).argsort(axis=1)[:, :N_DRAWN] + 1
-        sims[k] = compress(pack(np.sort(picks, axis=1), rng.integers(1, N_STRONG + 1, n)))
+        vals = rng.integers(0, total_outcomes, size=n, dtype=np.uint32)
+        packed = vals.astype(">u4").view(np.uint8).reshape(-1, 4)[:, 1:].tobytes()
+        sims[k] = compress(packed)
     p = (1 + np.sum(sims <= observed)) / (1 + n_sim)
 
     floor_bits = log2(comb(N_NUMBERS, N_DRAWN)) + log2(N_STRONG)
@@ -292,13 +305,14 @@ def surrogate_determinism(draws: Draws, n_sim: int = 399, n_eval: int = 120, see
     below alpha divided by the number of tests in `ALL_TESTS`, or Holm's
     correction could never flag this test whatever the data did.
     """
-    from lotto.approaches.chaos import analogue_skill
+    from lotto.approaches.chaos import analogue_skill_from_balls
 
-    observed = analogue_skill(draws.multi_hot, n_eval=n_eval)
+    observed = analogue_skill_from_balls(draws.balls, n_eval=n_eval)
     rng = np.random.default_rng(seed)
+    n = len(draws)
     sims = np.empty(n_sim)
     for i in range(n_sim):
-        sims[i] = analogue_skill(draws.multi_hot[rng.permutation(len(draws))], n_eval=n_eval)
+        sims[i] = analogue_skill_from_balls(draws.balls[rng.permutation(n)], n_eval=n_eval)
     p = (1 + np.sum(sims >= observed)) / (1 + n_sim)
     return {
         "test": "Surrogate-data determinism (method of analogues vs shuffles)",

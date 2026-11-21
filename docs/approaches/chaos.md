@@ -1,5 +1,10 @@
 # Chaos theory
 
+!!! info "Historical examples"
+
+    The numerical examples on this page describe the July 2026 analysis (1,629 draws). They
+    are not the current scoreboard. See [Results](../results.md) for the latest generated values.
+
 !!! abstract "The concept, in a minute"
 
     **The idea.** The machine is not random at all — it is Newtonian physics. Chaos theory
@@ -143,7 +148,7 @@ out-predicts its own shuffles.
 | | Analogue skill |
 |---|--:|
 | Real ordering | 0.883 |
-| Mean of 40 shuffled surrogates | 0.970 |
+| Mean of shuffled surrogates (40 in this snapshot; suite default `n_sim = 399`) | 0.970 |
 | p (real ≥ surrogates) | **0.85** |
 
 The real ordering predicts no better than its shuffles — on this run, slightly worse, which
@@ -170,7 +175,7 @@ see the thing the mathematics needs.
 | Instrument | Chaos would show | Measured |
 |---|---|---|
 | Correlation dimension | saturation at low D₂ | climbs like noise, no attractor |
-| Method of analogues | skill above chance | 0.923 vs 0.973 on the current build — chance |
+| Method of analogues | skill above chance | 0.923 vs 0.973 in this snapshot — chance |
 | Surrogate data | real ordering beats shuffles | p = 0.85 — indistinguishable |
 
 Three instruments, each validated on a control where chaos (or determinism) is genuinely

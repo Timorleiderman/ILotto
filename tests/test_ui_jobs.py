@@ -65,3 +65,38 @@ def test_reload_can_find_a_job_before_the_worker_starts(monkeypatch):
         assert runner.active() is None
     finally:
         runner.close()
+
+
+def test_cancelled_queued_jobs_do_not_exhaust_capacity(monkeypatch):
+    monkeypatch.setattr(threading.Thread, "start", lambda thread: None)
+    runner = JobRunner()
+    try:
+        for i in range(12):
+            job = runner.submit("test", f"key-{i}", lambda j: {})
+            runner.cancel(job.id)
+        final = runner.submit("test", "fresh", lambda j: {})
+        assert final.current_state() == "queued"
+    finally:
+        runner.close()
+
+
+def test_resubmit_does_not_deduplicate_onto_cancel_requested():
+    runner = JobRunner()
+    entered, release = threading.Event(), threading.Event()
+
+    def slow(job):
+        entered.set()
+        assert release.wait(5)
+        job.step("done")
+        return {}
+
+    try:
+        first = runner.submit("test", "same-key", slow)
+        assert entered.wait(5)
+        runner.cancel(first.id)
+        assert first.current_state() == "cancel_requested"
+        second = runner.submit("test", "same-key", lambda j: {"ok": True})
+        assert second is not first
+    finally:
+        release.set()
+        runner.close(wait=True)

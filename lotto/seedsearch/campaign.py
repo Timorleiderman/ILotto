@@ -90,8 +90,12 @@ def inherit_rejections(
         raise ValueError("Rejection inheritance requires an unchanged, strictly extended prefix")
     root = Path(root).resolve()
     source, destination = root / old_hash, root / new_hash
-    # Lock order follows increasing history length; extension cannot form a cycle.
-    with campaign_lock(source / "search.lock"), campaign_lock(destination / "search.lock"):
+    # Lock order: allocation.lock -> source -> destination (follows increasing history length).
+    with (
+        campaign_lock(root / "allocation.lock", wait=ALLOCATION_WAIT_SECONDS),
+        campaign_lock(source / "search.lock"),
+        campaign_lock(destination / "search.lock"),
+    ):
         source_ledger_path = source / "ledger.json"
         old = json.loads(source_ledger_path.read_text())
         if old["identity"] != {"schema": 1, "generator": GENERATOR, "prefix_sha256": old_hash}:
@@ -303,13 +307,14 @@ def continue_search(
     or time budget runs out. The time budget covers the whole call, lock waits
     included.
     """
-    if not isinstance(candidates, int) or candidates <= 0:
+    if isinstance(candidates, bool) or not isinstance(candidates, int) or candidates <= 0:
         raise ValueError("candidates must be a positive integer")
-    if not math.isfinite(max_seconds) or max_seconds <= 0:
+    if isinstance(max_seconds, bool) or not math.isfinite(max_seconds) or max_seconds <= 0:
         raise ValueError("max_seconds must be finite and positive")
     out_of_time = _Deadline(max_seconds)
+    root = Path(root).resolve()
     identity = {"schema": 1, "generator": GENERATOR, "prefix_sha256": prefix_hash(prefix)}
-    directory = Path(root).resolve() / identity["prefix_sha256"]
+    directory = root / identity["prefix_sha256"]
     ledger_path = directory / "ledger.json"
     runner = search if search_impl is None else search_impl
 

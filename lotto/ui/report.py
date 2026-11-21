@@ -82,7 +82,7 @@ def _provenance(result: dict) -> str:
             f"· algorithm SHA-256 {result.get('algorithm', 'not recorded')}")
     if result.get("design_sha256"):
         text += f" · design SHA-256 {result['design_sha256']}"
-    if "trained_through" in result:
+    if result.get("trained_through"):
         text += f" · training cutoff {result['trained_through']}"
     return text
 
@@ -120,7 +120,8 @@ def prediction_markdown(result: dict) -> str:
     """One prediction as Markdown, with the same content as the page."""
     odds = result["odds"]
     lines = [f"# {result['model_label']}", "",
-             f"Draw of {result['target_date']} · {result['rows']} rows · generated {result['generated_utc']} UTC", "",
+             f"Draw of {result['target_date']} · {result['rows']} row{'s' if result['rows'] != 1 else ''} · "
+             f"generated {result['generated_utc']} UTC", "",
              _mode_note(result), "",
              f"**{'Sampled ticket' if result['ticket_kind'] == 'sampled' else 'Best single ticket'}:** "
              f"`{_numbers(result['ticket'])}` strong {result['ticket'][6]}", ""]
@@ -161,7 +162,10 @@ These are preset references with unverified configuration matches.</p>
 
 
 def _comparison_settings(row: dict) -> str:
-    parts = [f"{key}: {value}" for key, value in row.get("params", {}).items()]
+    parts = [
+        f"{key.replace('_', ' ')}: {'all' if value is None else ', '.join(value) if isinstance(value, list) else value}"
+        for key, value in row.get("params", {}).items()
+    ]
     if row.get("seed") is not None:
         parts.append(f"seed: {row['seed']}")
     if row.get("reference"):

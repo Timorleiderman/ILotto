@@ -166,8 +166,11 @@ asymptotic. Each pair's count across independent draws has an exact binomial
 null; its doubled inclusive tail is Bonferroni-adjusted across all 666 pairs,
 which remain dependent when they share balls.
 
-The gap, pooled serial, and sum tests retain approximate reference distributions.
-Treat their limitations and the sample's detection power as part of the result.
+Lag-1 serial independence uses the exact convolved hypergeometric null of consecutive-draw
+overlaps, and the draw-sum test compares against exact equal-probability quantile bins from
+the dynamic-program sum PMF (asymptotic chi-square). The appearance-gap test retains a pooled
+geometric approximation. Treat each test's assumptions and the sample's detection power as
+part of the result.
 
 ---
 

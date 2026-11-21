@@ -25,7 +25,7 @@ node --test tests/test_ui_frontend.cjs  # built-in Node test runner; no npm depe
 
 # Everything runs through one command.
 uv run lotto list                                   # the experiment catalog
-uv run lotto report --quick                         # checks for new draws, report into results/report/, no neural models
+uv run lotto report --quick                         # checks for new draws, report into results/report/, skips date-conditioned + neural models
 uv run lotto report --out-dir docs                  # checks for new draws, full run (~2 min), rebuilds the site pages
 uv run lotto report --offline --quick               # same, without contacting pais.co.il
 uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json
@@ -233,8 +233,8 @@ Generated — never hand-edit, `lotto report --out-dir docs` overwrites them (wi
   and `mkdocs build --strict`, on pushes to main and PRs.
 - `report.yml` — full rebuild on a cron, commits the refreshed archive, deploys `site/` to Pages.
 
-The cron is `0 6 * * 0,3,5`. Draw days since 2012 are Tuesday (707) and Saturday (703) with an
-intermittent Thursday (161), and draws are in the evening Asia/Jerusalem — so the rebuild runs
+The cron is `0 6 * * 0,3,5`. Draw days since 2012 (through Nov 2026) are Tuesday (722) and Saturday (718) with an
+intermittent Thursday (164), and draws are in the evening Asia/Jerusalem — so the rebuild runs
 the *following* morning UTC. Changing this schedule means re-deriving it from the archive.
 
 ## Chart rendering

@@ -103,11 +103,12 @@ class ExponentialRecency(Predictor):
 
     def scores(self, history: Draws) -> tuple[np.ndarray, np.ndarray]:
         n = len(history)
-        age = np.arange(n - 1, -1, -1)
+        age = np.arange(n - 1, -1, -1, dtype=np.float64)
         w = 0.5 ** (age / self.half_life)
-        ball_scores = (history.multi_hot * w[:, None]).sum(axis=0)
-        strong_scores = np.zeros(N_STRONG)
-        np.add.at(strong_scores, history.strong - 1, w)
+        ball_scores = np.bincount(
+            history.balls.ravel(), weights=np.repeat(w, N_DRAWN), minlength=N_NUMBERS + 1
+        )[1:]
+        strong_scores = np.bincount(history.strong, weights=w, minlength=N_STRONG + 1)[1:]
         return ball_scores, strong_scores
 
 
@@ -121,18 +122,15 @@ class Overdue(Predictor):
     )
 
     def scores(self, history: Draws) -> tuple[np.ndarray, np.ndarray]:
-        m = history.multi_hot
         n = len(history)
-        ball_scores = np.full(N_NUMBERS, float(n))
-        for num in range(N_NUMBERS):
-            idx = np.flatnonzero(m[:, num])
-            if len(idx):
-                ball_scores[num] = n - idx[-1]
-        strong_scores = np.full(N_STRONG, float(n))
-        for s in range(N_STRONG):
-            idx = np.flatnonzero(history.strong == s + 1)
-            if len(idx):
-                strong_scores[s] = n - idx[-1]
+        last_ball = np.full(N_NUMBERS, -1, dtype=np.int64)
+        rows = np.repeat(np.arange(n, dtype=np.int64), N_DRAWN)
+        last_ball[history.balls.ravel() - 1] = rows
+        ball_scores = np.where(last_ball >= 0, n - last_ball, n).astype(float)
+
+        last_strong = np.full(N_STRONG, -1, dtype=np.int64)
+        last_strong[history.strong - 1] = np.arange(n, dtype=np.int64)
+        strong_scores = np.where(last_strong >= 0, n - last_strong, n).astype(float)
         return ball_scores, strong_scores
 
 

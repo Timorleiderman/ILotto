@@ -73,7 +73,7 @@ worker is still advancing. Do not run two machines against copies of one local
 ledger: its lock is not a distributed allocator.
 
 The Python benchmark entry point runs without third-party Python packages. The
-normal `search_seeds.py --engine rust` path remains CPU-only. The benchmark
+normal `lotto run seed-search --engine rust` path remains CPU-only. The benchmark
 driver remains useful for explicitly allocated offline pilots. For new shared
 work, use the coordinator below.
 
@@ -82,7 +82,7 @@ work, use the coordinator below.
 Run this **on the Mac, from the original checkout with its existing history**:
 
 ```bash
-.venv/bin/uv run lotto run seed-search-remote \
+uv run lotto run seed-search-remote \
   --host timor@192.168.50.225 \
   --remote-dir /home/timor/Developer/ILotto \
   --count 30000000000 --seconds 10
@@ -100,7 +100,7 @@ The command prints an allocation ID. If the time limit or a connection failure
 interrupts it, resume the same allocation:
 
 ```bash
-.venv/bin/uv run lotto run seed-search-remote --resume ALLOCATION_ID --seconds 10
+uv run lotto run seed-search-remote --resume ALLOCATION_ID --seconds 10
 ```
 
 Resuming starts at the next committed seed. A completed allocation returns

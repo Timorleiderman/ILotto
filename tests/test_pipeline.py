@@ -673,3 +673,23 @@ def test_next_draw_is_today_when_today_is_an_undrawn_draw_day():
     assert data.next_draw_date(d, today=np.datetime64("2026-11-04")) > np.datetime64("2026-11-04")
     # The day of the last recorded draw is never returned again.
     assert data.next_draw_date(d, today=np.datetime64("2026-11-03")) > np.datetime64("2026-11-03")
+
+
+def test_predict_next_handles_pairwise_markov_excluded_balls(draws):
+    from lotto.report import html as report
+
+    pred = report.predict_next(predictors.PairwiseMarkov(), draws)
+    assert len(pred["numbers"]) == 6
+    assert 1 <= pred["strong"] <= 7
+    assert pred["shortlist_kind"] == "ranking_score"
+    assert all(score is None or np.isfinite(score) for _, score in pred["shortlist"])
+
+
+def test_serial_independence_matches_exact_convolved_hypergeometric(draws):
+    result = randomness.serial_independence(draws)
+    m = draws.multi_hot.astype(np.int64)
+    overlaps = (m[:-1] * m[1:]).sum(axis=1)
+    total = int(overlaps.sum())
+    dist = metrics.match_sum_distribution(len(overlaps))
+    expected_p = min(1.0, 2.0 * min(float(dist[: total + 1].sum()), float(dist[total:].sum())))
+    assert result["p_value"] == pytest.approx(expected_p, rel=1e-12)

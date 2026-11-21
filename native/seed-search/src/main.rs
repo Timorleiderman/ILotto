@@ -9,8 +9,32 @@ use std::thread;
 const GENERATOR: &str = "calendar-sha256-v1";
 const DOMAIN: &[u8] = b"calendar-sha256-v1:";
 const OUTCOMES: u64 = 16_273_488;
+const ODD_MOD: u64 = OUTCOMES >> 4; // 1_017_093 (16 | OUTCOMES)
+const ODD_INV: u64 = {
+    let mut x = 1_u64;
+    let mut i = 0;
+    while i < 6 {
+        x = x.wrapping_mul(2_u64.wrapping_sub(ODD_MOD.wrapping_mul(x)));
+        i += 1;
+    }
+    x
+};
+const ODD_MAX_Q: u64 = u64::MAX / ODD_MOD;
+const _: () = assert!(OUTCOMES & 15 == 0 && ODD_MOD & 1 == 1 && ODD_MOD.wrapping_mul(ODD_INV) == 1);
+
 const INITIAL: [u32; 8] = [
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+];
+#[cfg(target_arch = "aarch64")]
+const SHA256_K: [u32; 64] = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 ];
 const SURVIVOR_CAP: usize = 10_000;
 
@@ -102,11 +126,28 @@ const POWERS: [u64; 9] = {
     powers
 };
 const TAIL: u64 = POWERS[8];
+const POWERS_DIV16: [u64; 8] = {
+    let mut p = [0_u64; 8];
+    let mut k = 1;
+    while k < 8 {
+        p[k] = POWERS[k] >> 4;
+        k += 1;
+    }
+    p
+};
+
+#[inline(always)]
+fn in_rejected_tail(words: &[u32; 8]) -> bool {
+    // The rejected tail is smaller than 2^32, so its upper seven words are all ones.
+    if words[0] != u32::MAX {
+        return false;
+    }
+    words[1..7].iter().all(|&x| x == u32::MAX) && u64::from(words[7]) >= (1_u64 << 32) - TAIL
+}
 
 #[inline]
 fn reduce_hash(words: &[u32; 8]) -> Option<u64> {
-    // The rejected tail is smaller than 2^32, so its upper seven words are all ones.
-    if words[..7].iter().all(|&x| x == u32::MAX) && u64::from(words[7]) >= (1_u64 << 32) - TAIL {
+    if in_rejected_tail(words) {
         return None;
     }
     // sum(word_i * 2^(32*(7-i)) mod N) is congruent to the 256-bit value mod N.
@@ -117,6 +158,28 @@ fn reduce_hash(words: &[u32; 8]) -> Option<u64> {
         sum += u64::from(word) * POWERS[7 - i];
     }
     Some(sum % OUTCOMES)
+}
+
+/// Fast exact match check against `expected`: returns `Some(true)` on match,
+/// `Some(false)` on mismatch, or `None` if `words` falls in the rejected tail.
+#[inline(always)]
+fn matches_expected_words(words: &[u32; 8], expected: u64) -> Option<bool> {
+    if in_rejected_tail(words) {
+        return None;
+    }
+    // 16 | OUTCOMES and 16 | 2^32, so H mod 16 == words[7] & 15; rejects 15/16 immediately.
+    if (words[7] & 15) != (expected as u32 & 15) {
+        return Some(false);
+    }
+    let mut y = (u64::from(words[7]) + (OUTCOMES - expected)) >> 4;
+    y += u64::from(words[0]) * POWERS_DIV16[7];
+    y += u64::from(words[1]) * POWERS_DIV16[6];
+    y += u64::from(words[2]) * POWERS_DIV16[5];
+    y += u64::from(words[3]) * POWERS_DIV16[4];
+    y += u64::from(words[4]) * POWERS_DIV16[3];
+    y += u64::from(words[5]) * POWERS_DIV16[2];
+    y += u64::from(words[6]) * POWERS_DIV16[1];
+    Some(y.wrapping_mul(ODD_INV) <= ODD_MAX_Q)
 }
 
 #[inline]
@@ -138,14 +201,174 @@ fn outcome(seed: u64, prepared: &Prepared) -> u64 {
     }
 }
 
+#[cfg(target_arch = "aarch64")]
+#[target_feature(enable = "sha2")]
+unsafe fn filter_first_aarch64_x4(
+    base_words: &[u32; 16],
+    expected: u64,
+    start: u128,
+    stop: u128,
+    first: &Prepared,
+    hits: &mut Vec<u64>,
+) {
+    use std::arch::aarch64::*;
+
+    let init0 = vld1q_u32(INITIAL.as_ptr());
+    let init1 = vld1q_u32(INITIAL.as_ptr().add(4));
+    let k_vecs: [uint32x4_t; 16] = std::array::from_fn(|i| vld1q_u32(SHA256_K.as_ptr().add(i * 4)));
+    let w0_const = vld1q_u32(base_words.as_ptr());
+    let w2_base = vld1q_u32(base_words.as_ptr().add(8));
+    let w3_const = vld1q_u32(base_words.as_ptr().add(12));
+
+    // Rounds 0..3 depend only on words 0..3 (fixed domain prefix), identical for every seed.
+    let wk0 = vaddq_u32(w0_const, k_vecs[0]);
+    let mid0 = vsha256hq_u32(init0, init1, wk0);
+    let mid1 = vsha256h2q_u32(init1, init0, wk0);
+
+    let w4_base = base_words[4];
+    let w6_base = base_words[6];
+    let w7_const = base_words[7];
+    let exp_nibble = expected as u32 & 15;
+
+    let mut seed = start;
+    while seed + 4 <= stop {
+        let s = [seed as u64, (seed + 1) as u64, (seed + 2) as u64, (seed + 3) as u64];
+        let mut a = [mid0; 4];
+        let mut e = [mid1; 4];
+        let mut w0 = [w0_const; 4];
+        let mut w1: [uint32x4_t; 4] = std::array::from_fn(|j| {
+            let arr = [
+                w4_base | ((s[j] >> 56) as u32),
+                (s[j] >> 24) as u32,
+                w6_base | ((s[j] as u32) << 8),
+                w7_const,
+            ];
+            vld1q_u32(arr.as_ptr())
+        });
+        let mut w2 = [w2_base; 4];
+        let mut w3 = [w3_const; 4];
+
+        macro_rules! round4 {
+            ($w:expr, $k:expr) => {{
+                let wk0 = vaddq_u32($w[0], $k);
+                let wk1 = vaddq_u32($w[1], $k);
+                let wk2 = vaddq_u32($w[2], $k);
+                let wk3 = vaddq_u32($w[3], $k);
+                let t0 = a[0]; a[0] = vsha256hq_u32(a[0], e[0], wk0); e[0] = vsha256h2q_u32(e[0], t0, wk0);
+                let t1 = a[1]; a[1] = vsha256hq_u32(a[1], e[1], wk1); e[1] = vsha256h2q_u32(e[1], t1, wk1);
+                let t2 = a[2]; a[2] = vsha256hq_u32(a[2], e[2], wk2); e[2] = vsha256h2q_u32(e[2], t2, wk2);
+                let t3 = a[3]; a[3] = vsha256hq_u32(a[3], e[3], wk3); e[3] = vsha256h2q_u32(e[3], t3, wk3);
+            }};
+        }
+        macro_rules! sched4 {
+            ($wa:expr, $wb:expr, $wc:expr, $wd:expr) => {{
+                $wa[0] = vsha256su1q_u32(vsha256su0q_u32($wa[0], $wb[0]), $wc[0], $wd[0]);
+                $wa[1] = vsha256su1q_u32(vsha256su0q_u32($wa[1], $wb[1]), $wc[1], $wd[1]);
+                $wa[2] = vsha256su1q_u32(vsha256su0q_u32($wa[2], $wb[2]), $wc[2], $wd[2]);
+                $wa[3] = vsha256su1q_u32(vsha256su0q_u32($wa[3], $wb[3]), $wc[3], $wd[3]);
+            }};
+        }
+
+        // Rounds 4..15
+        round4!(w1, k_vecs[1]);
+        round4!(w2, k_vecs[2]);
+        round4!(w3, k_vecs[3]);
+
+        // Rounds 16..63 (12 groups of 4 rounds)
+        for g in 0..3 {
+            let base = 4 + g * 4;
+            sched4!(w0, w1, w2, w3);
+            round4!(w0, k_vecs[base]);
+            sched4!(w1, w2, w3, w0);
+            round4!(w1, k_vecs[base + 1]);
+            sched4!(w2, w3, w0, w1);
+            round4!(w2, k_vecs[base + 2]);
+            sched4!(w3, w0, w1, w2);
+            round4!(w3, k_vecs[base + 3]);
+        }
+
+        for j in 0..4 {
+            let h0 = vaddq_u32(a[j], init0);
+            let h1 = vaddq_u32(e[j], init1);
+            let w7 = vgetq_lane_u32::<3>(h1);
+            let w0_lane = vgetq_lane_u32::<0>(h0);
+            if (w7 & 15) == exp_nibble || w0_lane == u32::MAX {
+                let mut words = [0_u32; 8];
+                vst1q_u32(words.as_mut_ptr(), h0);
+                vst1q_u32(words.as_mut_ptr().add(4), h1);
+                match matches_expected_words(&words, expected) {
+                    Some(true) => hits.push(s[j]),
+                    Some(false) => {}
+                    None => {
+                        if outcome(s[j], first) == expected {
+                            hits.push(s[j]);
+                        }
+                    }
+                }
+            }
+        }
+        seed += 4;
+    }
+
+    while seed < stop {
+        if outcome(seed as u64, first) == expected {
+            hits.push(seed as u64);
+        }
+        seed += 1;
+    }
+}
+
+fn filter_first_fallback(start: u128, stop: u128, first: &Prepared, hits: &mut Vec<u64>) {
+    let mut block = GenericArray::clone_from_slice(&first.block);
+    let expected = first.expected;
+    for seed in start..stop {
+        let s = seed as u64;
+        block[DOMAIN.len()..DOMAIN.len() + 8].copy_from_slice(&s.to_be_bytes());
+        let mut state = INITIAL;
+        compress256(&mut state, std::slice::from_ref(&block));
+        match matches_expected_words(&state, expected) {
+            Some(true) => hits.push(s),
+            Some(false) => {}
+            None => {
+                if outcome(s, first) == expected {
+                    hits.push(s);
+                }
+            }
+        }
+    }
+}
+
 fn batch(start: u128, stop: u128, prefix: &[Prepared]) -> ResultBatch {
     let mut counts = vec![0; prefix.len() + 1];
     let mut survivors = Vec::new();
     let mut overflow = false;
-    for seed in start..stop {
-        let mut matched = 0;
-        for observation in prefix {
-            if outcome(seed as u64, observation) != observation.expected {
+    let first = &prefix[0];
+    let mut first_hits = Vec::new();
+
+    #[cfg(target_arch = "aarch64")]
+    {
+        if std::arch::is_aarch64_feature_detected!("sha2") {
+            let words: [u32; 16] = std::array::from_fn(|i| {
+                u32::from_be_bytes(first.block[i * 4..i * 4 + 4].try_into().unwrap())
+            });
+            unsafe {
+                filter_first_aarch64_x4(&words, first.expected, start, stop, first, &mut first_hits);
+            }
+        } else {
+            filter_first_fallback(start, stop, first, &mut first_hits);
+        }
+    }
+    #[cfg(not(target_arch = "aarch64"))]
+    {
+        filter_first_fallback(start, stop, first, &mut first_hits);
+    }
+
+    let tested = (stop - start) as u64;
+    counts[0] = tested - first_hits.len() as u64;
+    for seed in first_hits {
+        let mut matched = 1;
+        for observation in &prefix[1..] {
+            if outcome(seed, observation) != observation.expected {
                 break;
             }
             matched += 1;
@@ -153,7 +376,7 @@ fn batch(start: u128, stop: u128, prefix: &[Prepared]) -> ResultBatch {
         counts[matched] += 1;
         if matched == prefix.len() {
             if survivors.len() < SURVIVOR_CAP {
-                survivors.push(seed as u64);
+                survivors.push(seed);
             } else {
                 overflow = true;
             }
@@ -163,7 +386,7 @@ fn batch(start: u128, stop: u128, prefix: &[Prepared]) -> ResultBatch {
         generator: GENERATOR,
         start: start.to_string(),
         stop: stop.to_string(),
-        tested: (stop - start) as u64,
+        tested,
         matched_prefix_counts: counts,
         survivors,
         survivor_overflow: overflow,
@@ -183,11 +406,15 @@ fn execute(request: Request) -> Result<ResultBatch, String> {
     {
         return Err("Invalid generator, range, worker count, or prefix".into());
     }
-    let prefix = request
-        .prefix
-        .iter()
-        .map(|x| prepare(&x.date, x.outcome))
-        .collect::<Result<Vec<_>, _>>()?;
+    let mut previous = "";
+    let mut prefix = Vec::with_capacity(request.prefix.len());
+    for item in &request.prefix {
+        if item.date.as_str() <= previous {
+            return Err("Invalid ordered prefix".into());
+        }
+        prefix.push(prepare(&item.date, item.outcome)?);
+        previous = &item.date;
+    }
     let workers = request.workers.min((stop - start) as usize);
     let pieces = thread::scope(|scope| {
         let mut handles = Vec::new();
@@ -372,5 +599,51 @@ mod tests {
             }],
         };
         assert_eq!(execute(request).unwrap().survivors, vec![u64::MAX]);
+    }
+
+    #[test]
+    fn fast_match_matches_reduce_hash() {
+        let mut x = 0x9e37_79b9_7f4a_7c15_u64;
+        for _ in 0..200_000 {
+            let words: [u32; 8] = std::array::from_fn(|_| {
+                x = x.wrapping_add(0x9e37_79b9_7f4a_7c15);
+                let mut z = x;
+                z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+                z = (z ^ (z >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+                (z ^ (z >> 31)) as u32
+            });
+            let exact = reduce_hash(&words).unwrap();
+            assert_eq!(matches_expected_words(&words, exact), Some(true));
+            assert_eq!(
+                matches_expected_words(&words, (exact + 1) % OUTCOMES),
+                Some(false)
+            );
+            assert_eq!(
+                matches_expected_words(&words, (exact + 16) % OUTCOMES),
+                Some(false)
+            );
+        }
+        assert_eq!(matches_expected_words(&[u32::MAX; 8], 0), None);
+    }
+
+    #[test]
+    fn unordered_or_duplicate_prefix_dates_are_rejected() {
+        let req = Request {
+            generator: GENERATOR.into(),
+            start: "0".into(),
+            stop: "10".into(),
+            workers: 1,
+            prefix: vec![
+                Observation {
+                    date: "2020-01-02".into(),
+                    outcome: 0,
+                },
+                Observation {
+                    date: "2020-01-02".into(),
+                    outcome: 0,
+                },
+            ],
+        };
+        assert!(execute(req).is_err());
     }
 }

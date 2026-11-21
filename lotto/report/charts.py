@@ -83,7 +83,7 @@ def barh(
     # but it does run off the viewBox, so this has to be generous.
     box = Box(w=780, left=max(190, int(7.0 * max(len(s) for s in labels)) + 16),
               h=max(200, 34 * len(labels) + 70))
-    hi = max(max(values), baseline or 0) * 1.12
+    hi = max(max(values), baseline or 0, 1e-12) * 1.12
     lo = 0.0
     out = _open(box, title or "strategy comparison")
 
@@ -147,7 +147,7 @@ def barv(
 ) -> str:
     """Vertical bars over an ordered numeric domain (the 37 ball numbers)."""
     box = Box(w=760, h=300, left=54, right=16, top=18, bottom=48)
-    hi = max(values) * 1.14
+    hi = max(max(values), 1e-12) * 1.14
     out = _open(box, title or "distribution")
 
     def y(v: float) -> float:
@@ -220,8 +220,8 @@ def grouped_bars(
 ) -> str:
     """Two-series grouped bars — observed against theoretical, side by side."""
     box = Box(w=720, h=346, left=62, right=16, top=18, bottom=82)
-    hi = max(max(v) for _, v in series) * 1.16
-    colors = ["var(--series-1)", "var(--series-2)"]
+    hi = max(max(max(v) for _, v in series), 1e-12) * 1.16
+    colors = ["var(--series-1)", "var(--series-2)", "var(--series-7)", "var(--series-8)"]
     out = _open(box, title or "grouped comparison")
 
     def y(v: float) -> float:
@@ -245,7 +245,7 @@ def grouped_bars(
             px = box.left + slot * i + 5 + gi * (bw + 2)
             out.append(
                 f'<rect x="{px:.1f}" y="{y(v):.1f}" width="{max(bw - 2, 1):.1f}" '
-                f'height="{box.top + box.ph - y(v):.1f}" rx="3" fill="{colors[gi]}">'
+                f'height="{box.top + box.ph - y(v):.1f}" rx="3" fill="{colors[gi % len(colors)]}">'
                 f"<title>{_esc(sname)} — {_esc(labels[i])}: {v:.4f}</title></rect>"
             )
     for i, lab in enumerate(labels):
@@ -256,7 +256,9 @@ def grouped_bars(
 
     lx = box.left
     for gi, (sname, _) in enumerate(series):
-        out.append(f'<rect x="{lx}" y="{box.h - 20}" width="11" height="11" rx="3" fill="{colors[gi]}"/>')
+        out.append(
+            f'<rect x="{lx}" y="{box.h - 20}" width="11" height="11" rx="3" fill="{colors[gi % len(colors)]}"/>'
+        )
         out.append(
             f'<text x="{lx + 16}" y="{box.h - 10}" fill="{INK2}" font-size="12">{_esc(sname)}</text>'
         )
@@ -286,13 +288,15 @@ def histogram_with_markers(
     """
     import numpy as np
 
-    box = Box(w=720, h=344, left=54, right=20, top=22, bottom=94)
+    extra_legend = max(0, len(markers) - 2) * 17
+    box = Box(w=720, h=344 + extra_legend, left=54, right=20, top=22, bottom=94 + extra_legend)
     counts, edges = np.histogram(samples, bins=36)
-    hi = counts.max() * 1.1
+    hi = max(float(counts.max()), 1.0) * 1.1
     lo_x, hi_x = float(edges[0]), float(edges[-1])
     for _, mv in markers:
         lo_x, hi_x = min(lo_x, mv), max(hi_x, mv)
-    pad = (hi_x - lo_x) * 0.04
+    span = hi_x - lo_x
+    pad = span * 0.04 if span > 0 else 0.5
     lo_x, hi_x = lo_x - pad, hi_x + pad
 
     out = _open(box, title or "null distribution")
@@ -323,7 +327,7 @@ def histogram_with_markers(
     )
 
     colors = ["var(--series-2)", "var(--series-7)", "var(--series-8)"]
-    ly = box.h - 26
+    ly = box.top + box.ph + 68
     for mi, (name, mv) in enumerate(markers):
         col = colors[mi % len(colors)]
         px = x(mv)

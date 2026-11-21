@@ -1,5 +1,10 @@
 # Date-conditioned generative model
 
+!!! info "Historical examples"
+
+    The numerical examples on this page describe the July 2026 analysis (1,629 draws). They
+    are not the current scoreboard. See [Results](../results.md) for the latest generated values.
+
 !!! abstract "The concept, in a minute"
 
     **The idea.** The draw is a function of *when* it happens. Type in any date — past or
@@ -82,7 +87,7 @@ What actually bounds capacity is **linearity**. Ball logits are linear in the da
 
 A linear head cannot spike on one date. Moving a coefficient to fit 11/10/2025 moves all
 1,628 other dates too. `test_head_is_linear` fails the build if anyone inserts a hidden
-layer, and `test_trend_makes_the_basis_injective` records that the trend *is* a unique key
+layer, and `test_trend_makes_the_basis_injective_and_that_is_declared` records that the trend *is* a unique key
 so the decision stays reviewed rather than forgotten.
 
 ## The model
@@ -187,22 +192,20 @@ against 264.2 expected** — less often than chance, the opposite of the folk hy
 
 The in-sample gain comes with an **analytic reference point**, which is the useful part.
 
-Counting parameters gives \(37 \times 11 + 7 \times 11 = 484\) date coefficients, but 22 of
-those directions do not exist. For each feature, adding the same constant to *every* ball
-logit leaves the size-6 conditional-Bernoulli distribution untouched — the normaliser absorbs
-it exactly — and the softmax has the identical invariance. So there are **462** identifiable
-date directions, not 484. (`test_constant_logit_shift_is_unidentifiable` verifies this to
-machine precision, and it is why the count is stated rather than assumed.)
+Counting parameters gives \(37 \times 11 + 7 \times 11 = 484\) date coefficients plus \(37 + 7 = 44\)
+intercepts (528 total), of which 24 directions do not exist. For each feature (and the intercept), adding
+the same constant to *every* ball logit leaves the size-6 conditional-Bernoulli distribution untouched —
+the normaliser absorbs it exactly — and the softmax has the identical invariance. That leaves **462**
+identifiable date directions (and **504** identifiable parameters total against the uniform null, including
+the 42 identifiable intercepts). (`test_constant_logit_shift_is_unidentifiable` verifies this to machine
+precision, and it is why the count is stated rather than assumed.)
 
-Under the null an unpenalised fit would then give \(2\Delta\ell \sim \chi^2_{462}\), so the
-expected in-sample overfit is 231 nats — **0.142 nats/draw**. Two caveats keep that honest:
-it applies to the *unpenalised* fit, and ridge shrinkage means the realised gain must come in
-strictly below it. So 0.142 is an upper reference, not a prediction of what we should see.
-
-The measured gain is **0.107 nats/draw** — below the bound, as shrinkage requires. A gain
-sitting at or above the unpenalised bound would mean the model is fitting more than 462
-directions' worth of noise, which a correctly specified ridge fit cannot do: that is the
-tripwire, and it is a live check rather than a footnote.
+Under the null an unpenalised fit against the uniform model has \(2\Delta\ell \sim \chi^2_{504}\)
+(expected overfit 252 nats, \(\text{SD} \approx 15.9\) nats; about **0.155 nats/draw** on 1,629 draws,
+or **0.142 nats/draw** for the 462 date directions relative to an intercept-only model). That expectation
+is a reference scale for how much in-sample log-likelihood gain pure noise buys, not a hard deterministic
+ceiling — and ridge shrinkage (\(\tau = 10\)) pulls the realised gain below the unpenalised mean.
+A gain far above that Wilks scale would warrant checking for a bug or genuine structure.
 
 ## How to read the walk-forward number
 

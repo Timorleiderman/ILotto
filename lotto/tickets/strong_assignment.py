@@ -32,7 +32,7 @@ def subset_union_counts(signatures):
         blocks = subset_sums.reshape(-1, 2 * stride)
         blocks[:, stride:] += blocks[:, :stride]
         stride *= 2
-    return int(counts.sum()) - subset_sums[(len(counts) - 1) ^ np.arange(len(counts))]
+    return int(subset_sums[-1]) - subset_sums[(len(counts) - 1) ^ np.arange(len(counts))]
 
 
 def strong_prize_odds(tickets, *, min_matches=3, engine='auto'):
@@ -44,10 +44,38 @@ def strong_prize_odds(tickets, *, min_matches=3, engine='auto'):
     """
     rows = full_tickets(tickets)
     _threshold(min_matches)
-    counts = []
-    for strong in range(1, N_STRONG + 1):
-        group = [row[:N_DRAWN] for row in rows if row[-1] == strong]
-        counts.append(int(best_match_counts(group, engine=engine)[min_matches:].sum()) if group else 0)
+    if engine not in ('auto', 'reference'):
+        raise ValueError("engine must be 'auto' or 'reference'")
+    if engine == 'auto':
+        # Single-row groups have closed-form hypergeometric coverage; otherwise
+        # count all seven strong groups in a single compiled pass over 2.32M draws.
+        by_strong = [[] for _ in range(N_STRONG)]
+        for row in rows:
+            by_strong[row[-1] - 1].append(tuple(row[:N_DRAWN]))
+        dedup_groups = [list(dict.fromkeys(g)) for g in by_strong]
+        if all(len(g) <= 1 for g in dedup_groups):
+            single = sum(comb(N_DRAWN, k) * comb(N_NUMBERS - N_DRAWN, N_DRAWN - k)
+                         for k in range(min_matches, N_DRAWN + 1))
+            counts = [single if g else 0 for g in dedup_groups]
+        else:
+            from lotto.tickets._kernels import outcomes, strong_group_coverage
+
+            flat_mains, flat_strongs = [], []
+            for s_idx, group in enumerate(dedup_groups):
+                for main in group:
+                    flat_mains.append(main)
+                    flat_strongs.append(s_idx)
+            counts = strong_group_coverage(
+                outcomes()[1],
+                tickets_to_masks(flat_mains),
+                np.asarray(flat_strongs, dtype=np.int64),
+                int(min_matches),
+            ).tolist()
+    else:
+        counts = []
+        for strong in range(1, N_STRONG + 1):
+            group = [row[:N_DRAWN] for row in rows if row[-1] == strong]
+            counts.append(int(best_match_counts(group, engine=engine)[min_matches:].sum()) if group else 0)
     total = comb(N_NUMBERS, N_DRAWN) * N_STRONG
     return {'min_matches': int(min_matches), 'covered_full_outcomes': sum(counts),
             'total_full_outcomes': total, 'p_at_least_matches_and_strong': sum(counts) / total,

@@ -13,7 +13,7 @@ from math import comb, log
 import numpy as np
 from scipy.special import logsumexp
 
-from lotto.approaches.date_conditioned import log_partition, marginals
+from lotto.approaches.date_conditioned import log_partition, log_partition_and_marginals
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 from lotto.forecasting.calibration import frequency_forecasts
 
@@ -54,6 +54,8 @@ def event_log_ratio(probability, observed, null_probability):
     This produces a proper full-set model despite dependence between balls.
     """
     q, hit = np.asarray(probability, dtype=float), np.asarray(observed)
+    if q.ndim > 0 and hit.ndim > 0 and q.shape != hit.shape:
+        raise ValueError("probability and observed must have identical shapes when both are arrays")
     if (not np.isfinite(q).all() or np.any((q <= 0) | (q >= 1))
             or not np.isfinite(null_probability) or not 0 < null_probability < 1
             or not np.isin(hit, [0, 1]).all()):
@@ -75,7 +77,8 @@ def build_experts(draws: Draws, *, min_history=200, sparse_prior=100,
     validate_draws(draws)
     if (isinstance(sparse_prior, (bool, np.bool_)) or not np.isscalar(sparse_prior)
             or not np.isfinite(sparse_prior) or sparse_prior <= 0
-            or any(isinstance(s, (bool, np.bool_)) or not np.isfinite(s) or s <= 0 for s in strengths)):
+            or any(isinstance(s, (bool, np.bool_)) or not np.isscalar(s) or not np.isfinite(s) or s <= 0
+                   for s in strengths)):
         raise ValueError("Require positive finite prior strengths")
     dense_names, targets, freq_b, freq_s = frequency_forecasts(
         draws, min_history=min_history, windows=windows, strengths=strengths)
@@ -108,22 +111,27 @@ def build_experts(draws: Draws, *, min_history=200, sparse_prior=100,
             p = np.repeat(((1 - q_s[:, i]) / (N_STRONG - 1))[:, None], N_STRONG, axis=1)
             p[:, i] = q_s[:, i]
             sp.append(p)
+    row_idx = np.arange(n)
+    target_hot = hot[targets]
+    target_strong = draws.strong[targets] - 1
     for name, p, strong in zip(dense_names[:-1], freq_b[:-1], freq_s[:-1]):
         names.append(f"dense {name}")
         families.append("dense")
         theta = np.log(p) - np.log1p(-p)
-        lp.append((theta * hot[targets]).sum(axis=1) - log_partition(theta)
-                  + np.log(strong[np.arange(n), draws.strong[targets] - 1]))
         if include_marginals:
-            bp.append(marginals(theta))
+            log_z, marg = log_partition_and_marginals(theta)
+            bp.append(marg)
             sp.append(strong)
+        else:
+            log_z = log_partition(theta)
+        lp.append((theta * target_hot).sum(axis=1) - log_z + np.log(strong[row_idx, target_strong]))
     prior = np.array([FAMILY_PRIOR[f] / families.count(f) for f in families])
     return JointExperts(names, families, targets, prior, np.asarray(lp),
                         np.asarray(bp) if include_marginals else None,
                         np.asarray(sp) if include_marginals else None)
 
 
-def mix_experts(log_prob, prior, *, share=0.0):
+def mix_experts(log_prob, prior, *, share=0.0, null_log_prob=-LOG_FULL_OUTCOMES):
     """Log-loss mixture: predict, observe, update, then optionally share weights.
 
     weights[t] contains no information from outcome t or later. With share=0,
@@ -138,21 +146,35 @@ def mix_experts(log_prob, prior, *, share=0.0):
             or p.shape != (lp.shape[0],) or not np.isfinite(p).all() or np.any(p <= 0)
             or not np.isclose(p.sum(), 1, atol=1e-12, rtol=0)
             or isinstance(share, (bool, np.bool_)) or not np.isscalar(share)
-            or not np.isfinite(share) or not 0 <= share <= 1):
+            or not np.isfinite(share) or not 0 <= share <= 1
+            or isinstance(null_log_prob, (bool, np.bool_)) or not np.isscalar(null_log_prob)
+            or not np.isfinite(null_log_prob)):
         raise ValueError("Require finite log probabilities, a positive unit-sum prior, and share in [0,1]")
-    log_w = np.log(p)
+    log_p = np.log(p)
+    if share == 0:
+        cum = np.concatenate([np.zeros((lp.shape[0], 1)), np.cumsum(lp, axis=1)], axis=1)
+        log_unnorm = log_p[:, None] + cum
+        log_z = logsumexp(log_unnorm, axis=0)
+        weights = np.exp(log_unnorm - log_z[None, :]).T
+        forecast = np.diff(log_z)
+        return {"log_prob": forecast, "weights_before_draw": weights[:-1], "next_weights": weights[-1],
+                "log_e_path": np.cumsum(forecast - null_log_prob)}
+    log_w = log_p.copy()
     weights = np.empty((lp.shape[1] + 1, len(p)))
     forecast = np.empty(lp.shape[1])
+    log_1m_share = np.log1p(-share) if share < 1 else -np.inf
+    log_share_p = np.log(share) + log_p if share > 0 else None
     for t in range(lp.shape[1]):
         weights[t] = np.exp(log_w)
-        forecast[t] = logsumexp(log_w + lp[:, t])
-        posterior = log_w + lp[:, t] - forecast[t]
+        v = log_w + lp[:, t]
+        m = float(v.max())
+        f_t = m + float(np.log(np.exp(v - m).sum()))
+        forecast[t] = f_t
         if share == 1:
-            log_w = np.log(p)
-        elif share > 0:
-            log_w = np.logaddexp(np.log1p(-share) + posterior, np.log(share) + np.log(p))
+            log_w = log_p
         else:
-            log_w = posterior
+            posterior = v - f_t
+            log_w = np.logaddexp(log_1m_share + posterior, log_share_p)
     weights[-1] = np.exp(log_w)
     return {"log_prob": forecast, "weights_before_draw": weights[:-1], "next_weights": weights[-1],
-            "log_e_path": np.cumsum(forecast + LOG_FULL_OUTCOMES)}
+            "log_e_path": np.cumsum(forecast - null_log_prob)}

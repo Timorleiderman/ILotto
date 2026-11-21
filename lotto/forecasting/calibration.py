@@ -23,9 +23,17 @@ def frequency_forecasts(draws: Draws, *, min_history=200,
     """
     if not is_integer(min_history) or not 1 <= min_history < len(draws):
         raise ValueError("Require 1 <= min_history < number of draws")
+    balls_arr, strong_arr = np.asarray(draws.balls), np.asarray(draws.strong)
+    if (balls_arr.shape != (len(draws), N_DRAWN) or strong_arr.shape != (len(draws),)
+            or not np.issubdtype(balls_arr.dtype, np.integer)
+            or not np.issubdtype(strong_arr.dtype, np.integer)
+            or np.any((balls_arr < 1) | (balls_arr > N_NUMBERS))
+            or np.any((strong_arr < 1) | (strong_arr > N_STRONG))):
+        raise ValueError("Require valid integer balls in 1..37 and strong numbers in 1..7")
     if (not len(windows) or not len(strengths)
             or any(w is not None and (not is_integer(w) or w < 1) for w in windows)
-            or any(isinstance(s, (bool, np.bool_)) or not np.isfinite(s) or s < 0 for s in strengths)):
+            or any(isinstance(s, (bool, np.bool_)) or not np.isscalar(s) or not np.isfinite(s) or s < 0
+                   for s in strengths)):
         raise ValueError("Require positive windows and finite nonnegative prior strengths")
     if len(set(windows)) != len(windows) or len(set(strengths)) != len(strengths):
         raise ValueError("Duplicate grid values would collapse model names in multiple-testing correction")
@@ -62,6 +70,8 @@ def past_loss_choices(losses, *, baseline, warmup=200, lookback=300, refit_every
     chosen = baseline
     for i in range(warmup, losses.shape[1]):
         if (i - warmup) % refit_every == 0:
-            chosen = int(np.argmin(losses[:, max(0, i - lookback):i].mean(axis=1)))
+            means = losses[:, max(0, i - lookback):i].mean(axis=1)
+            best_val = float(means.min())
+            chosen = baseline if means[baseline] == best_val else int(np.argmin(means))
         choices[i] = chosen
     return choices

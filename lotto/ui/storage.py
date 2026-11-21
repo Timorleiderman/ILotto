@@ -38,6 +38,7 @@ def dashboard_lock(root: Path):
             if os.name == "nt":
                 import msvcrt
 
+                handle.seek(0, os.SEEK_END)
                 if handle.tell() == 0:
                     handle.write(b"\0")
                     handle.flush()
@@ -75,7 +76,7 @@ class Storage:
             if not path.exists():
                 write_json(path, result)
                 self._prune()
-            return json.loads(path.read_text())
+            return json.loads(path.read_text(encoding="utf-8"))
 
     def _prune(self) -> None:
         """Drop the oldest result files beyond `KEEP_RESULTS`. Call with the lock held."""
@@ -89,16 +90,17 @@ class Storage:
             return None
         with self._lock:
             path = self.root / "results" / f"{result_id}.json"
-            return json.loads(path.read_text()) if path.is_file() else None
+            return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
 
     # -- prediction log ------------------------------------------------------
     def log_entries(self) -> list[dict]:
         """Every saved prediction, oldest first."""
-        folder = self.root / "log"
-        if not folder.is_dir():
-            return []
-        entries = [json.loads(p.read_text()) for p in folder.glob("*.json") if valid_id(p.stem)]
-        return sorted(entries, key=lambda e: (e["saved_utc"], e["id"]))
+        with self._lock:
+            folder = self.root / "log"
+            if not folder.is_dir():
+                return []
+            entries = [json.loads(p.read_text(encoding="utf-8")) for p in folder.glob("*.json") if valid_id(p.stem)]
+            return sorted(entries, key=lambda e: (e["saved_utc"], e["id"]))
 
     def add_log_entry(self, entry: dict) -> dict:
         """Save an entry once. Saving the same id again returns the original, unchanged."""
@@ -107,15 +109,16 @@ class Storage:
         path = self.root / "log" / f"{entry['id']}.json"
         with self._lock:
             if path.exists():
-                return json.loads(path.read_text())
+                return json.loads(path.read_text(encoding="utf-8"))
             write_json(path, entry)
             return entry
 
     # -- Lab notebook --------------------------------------------------------
     def notebook(self) -> list[dict]:
         """Every Lab attempt recorded so far, oldest first."""
-        path = self.root / "notebooks" / "notebook.json"
-        return json.loads(path.read_text())["attempts"] if path.is_file() else []
+        with self._lock:
+            path = self.root / "notebooks" / "notebook.json"
+            return json.loads(path.read_text(encoding="utf-8"))["attempts"] if path.is_file() else []
 
     def save_notebook(self, attempts: list[dict]) -> None:
         """Replace the notebook file with these attempts."""

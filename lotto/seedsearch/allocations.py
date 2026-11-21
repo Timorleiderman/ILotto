@@ -7,24 +7,26 @@ import uuid
 from dataclasses import asdict
 from pathlib import Path
 
+from lotto.core.validation import is_integer
 from lotto.seedsearch.generator import GENERATOR, MAX_SEED, prefix_hash, write_json
 
 
 def remote_ranges(root: Path) -> list[dict]:
     """Read while holding root/allocation.lock when making allocation decisions."""
-    path = Path(root) / "remote_allocations.json"
+    root = Path(root).resolve()
+    path = root / "remote_allocations.json"
     if not path.exists():
-        if any((Path(root).parent / "remote_workers").glob("*/manifest.json")):
+        if any((root.parent / "remote_workers").glob("*/manifest.json")):
             raise ValueError("Remote allocation registry is missing but worker history exists")
         return []
-    registry = json.loads(path.read_text())
+    registry = json.loads(path.read_text(encoding="utf-8"))
     if registry.get("schema") != 1 or registry.get("generator") != GENERATOR:
         raise ValueError("Remote allocation registry identity mismatch")
     records = registry["ranges"]
     previous = 0
     ids = set()
     for record in records:
-        if (not isinstance(record["start"], int) or not isinstance(record["stop"], int)
+        if (not is_integer(record["start"]) or not is_integer(record["stop"])
                 or not previous <= record["start"] < record["stop"] <= MAX_SEED
                 or record["id"] in ids
                 or any(record["manifest"][key] != record[key] for key in ("id", "start", "stop"))
@@ -44,7 +46,7 @@ def reserve_remote(prefix, *, root: Path, run_root: Path, candidates: int, worke
     """
     from lotto.seedsearch import campaign as seed_campaign
 
-    if not isinstance(candidates, int) or candidates < 1:
+    if not is_integer(candidates) or candidates < 1:
         raise ValueError("Candidate count must be positive")
     root, run_root = Path(root).resolve(), Path(run_root).resolve()
     history_hash = prefix_hash(prefix)

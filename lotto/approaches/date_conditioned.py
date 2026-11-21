@@ -159,7 +159,7 @@ def _forward_esp(theta: np.ndarray, k: int = N_DRAWN) -> np.ndarray:
     f[:, 0, 0] = 0.0
     for m in range(1, size + 1):
         f[:, m, 0] = 0.0
-        for j in range(1, k + 1):
+        for j in range(1, min(m, k) + 1):
             f[:, m, j] = np.logaddexp(f[:, m - 1, j], theta[:, m - 1] + f[:, m - 1, j - 1])
     return f
 
@@ -171,15 +171,73 @@ def _backward_esp(theta: np.ndarray, k: int = N_DRAWN) -> np.ndarray:
     b[:, size + 1, 0] = 0.0
     for m in range(size, 0, -1):
         b[:, m, 0] = 0.0
-        for j in range(1, k + 1):
+        for j in range(1, min(size - m + 1, k) + 1):
             b[:, m, j] = np.logaddexp(b[:, m + 1, j], theta[:, m - 1] + b[:, m + 1, j - 1])
     return b
 
 
+def log_partition_and_marginals(theta: np.ndarray, k: int = N_DRAWN) -> tuple[np.ndarray, np.ndarray]:
+    """Exact log e_k(exp(theta)) and marginal inclusion probabilities in one pass.
+
+    Adding a per-row constant shift to `theta` leaves P(S | theta) invariant and
+    shifts log e_k by k * shift. When the centred logits have moderate spread,
+    the DP runs in linear space (pure multiply-add); extreme logits fall back to
+    the log-space DP so overflow/underflow can never occur.
+    """
+    theta = np.atleast_2d(np.asarray(theta, dtype=np.float64))
+    n, size = theta.shape
+    shift = theta.mean(axis=1, keepdims=True)
+    ts = theta - shift
+    if np.isfinite(ts).all() and (ts.size == 0 or (float(ts.max()) <= 40.0 and float(ts.min()) >= -40.0)):
+        x = np.exp(ts)
+        f = np.zeros((n, size + 1, k + 1), dtype=np.float64)
+        f[:, 0, 0] = 1.0
+        for m in range(1, size + 1):
+            xm = x[:, m - 1 : m]
+            f[:, m, 0] = 1.0
+            top = min(m, k)
+            f[:, m, 1 : top + 1] = f[:, m - 1, 1 : top + 1] + xm * f[:, m - 1, :top]
+        b = np.zeros((n, size + 2, k + 1), dtype=np.float64)
+        b[:, size + 1, 0] = 1.0
+        for m in range(size, 0, -1):
+            xm = x[:, m - 1 : m]
+            b[:, m, 0] = 1.0
+            top = min(size - m + 1, k)
+            b[:, m, 1 : top + 1] = b[:, m + 1, 1 : top + 1] + xm * b[:, m + 1, :top]
+        z = f[:, size, k]
+        if np.all(z > 0.0) and np.isfinite(z).all():
+            log_z = np.log(z) + k * shift[:, 0]
+            marg = x * np.einsum("nij,nij->ni", f[:, :size, :k], b[:, 2 : size + 2, k - 1 :: -1]) / z[:, None]
+            if np.isfinite(marg).all():
+                return log_z, marg
+
+    f, b = _forward_esp(theta, k), _backward_esp(theta, k)
+    log_z = f[:, size, k]
+    out = np.empty((n, size), dtype=np.float64)
+    for i in range(1, size + 1):
+        parts = [f[:, i - 1, a] + b[:, i + 1, k - 1 - a] for a in range(k)]
+        out[:, i - 1] = theta[:, i - 1] + logsumexp(np.stack(parts, axis=1), axis=1) - log_z
+    return log_z, np.exp(out)
+
+
 def log_partition(theta: np.ndarray, k: int = N_DRAWN) -> np.ndarray:
     """log e_k(exp(theta)) — the exact normaliser, per row."""
-    theta = np.atleast_2d(theta)
-    return _forward_esp(theta, k)[:, theta.shape[1], k]
+    theta = np.atleast_2d(np.asarray(theta, dtype=np.float64))
+    n, size = theta.shape
+    shift = theta.mean(axis=1, keepdims=True)
+    ts = theta - shift
+    if np.isfinite(ts).all() and (ts.size == 0 or (float(ts.max()) <= 40.0 and float(ts.min()) >= -40.0)):
+        x = np.exp(ts)
+        f = np.zeros((n, k + 1), dtype=np.float64)
+        f[:, 0] = 1.0
+        for m in range(1, size + 1):
+            xm = x[:, m - 1 : m]
+            top = min(m, k)
+            f[:, 1 : top + 1] = f[:, 1 : top + 1] + xm * f[:, :top]
+        z = f[:, k]
+        if np.all(z > 0.0) and np.isfinite(z).all():
+            return np.log(z) + k * shift[:, 0]
+    return _forward_esp(theta, k)[:, size, k]
 
 
 def marginals(theta: np.ndarray, k: int = N_DRAWN) -> np.ndarray:
@@ -190,17 +248,7 @@ def marginals(theta: np.ndarray, k: int = N_DRAWN) -> np.ndarray:
     genuine categorical distribution over the numbers rather than an arbitrary
     rescaling of some score.
     """
-    theta = np.atleast_2d(theta)
-    n, size = theta.shape
-    f, b = _forward_esp(theta, k), _backward_esp(theta, k)
-    log_z = f[:, size, k]
-
-    out = np.empty((n, size))
-    for i in range(1, size + 1):
-        # e_{k-1} over every ball except i, split either side of i.
-        parts = [f[:, i - 1, a] + b[:, i + 1, k - 1 - a] for a in range(k)]
-        out[:, i - 1] = theta[:, i - 1] + logsumexp(np.stack(parts, axis=1), axis=1) - log_z
-    return np.exp(out)
+    return log_partition_and_marginals(theta, k)[1]
 
 
 def sample_set(theta: np.ndarray, rng: np.random.Generator, k: int = N_DRAWN) -> np.ndarray:
@@ -253,13 +301,13 @@ def _objective(w, phi, y_balls, y_strong, tau):
     theta = alpha[None, :] + phi @ W.T
     eta = beta[None, :] + phi @ V.T
 
-    log_z = log_partition(theta)
+    log_z, pi = log_partition_and_marginals(theta)
     nll = float(-(theta * y_balls).sum() + log_z.sum())
 
     log_soft = eta - logsumexp(eta, axis=1, keepdims=True)
     nll += float(-log_soft[np.arange(len(eta)), y_strong].sum())
 
-    resid_b = marginals(theta) - y_balls
+    resid_b = pi - y_balls
     resid_s = np.exp(log_soft)
     resid_s[np.arange(len(eta)), y_strong] -= 1.0
 
@@ -443,6 +491,8 @@ class MemorisingDateLookup(Predictor):
         }
 
     def scores(self, history: Draws, target_date=None):
+        if target_date is None:
+            raise ValueError(f"{self.name} requires the target draw's date")
         key = str(np.datetime64(target_date, "D"))
         if key in self.table:  # a date it was trained on: perfect recall
             return self.table[key] * 100.0 + UNIFORM_MARGINAL, np.full(N_STRONG, 1 / N_STRONG)
@@ -461,16 +511,19 @@ def reconstruction_rate(predictor: Predictor, draws: Draws) -> dict:
 
     predictor.fit(draws)
     matched, losses = [], []
-    for i in range(len(draws)):
-        # Deliberately passing the *full* history: that is what reconstruction
-        # means, and it is why this number is not a forecast.
-        if isinstance(predictor, DateConditionedCB):
-            theta, _ = predictor.fit_.logits(draws.dates[i : i + 1])
-            ball_scores = marginals(theta)[0]
-        else:
+    if isinstance(predictor, DateConditionedCB):
+        theta, _ = predictor.fit_.logits(draws.dates)
+        all_scores = marginals(theta)
+        for i in range(len(draws)):
+            matched.append(metrics.matches(all_scores[i], draws.balls[i]))
+            losses.append(metrics.log_loss(all_scores[i], draws.balls[i]))
+    else:
+        for i in range(len(draws)):
+            # Deliberately passing the *full* history: that is what reconstruction
+            # means, and it is why this number is not a forecast.
             ball_scores, _ = predictor.scores(draws, draws.dates[i])
-        matched.append(metrics.matches(ball_scores, draws.balls[i]))
-        losses.append(metrics.log_loss(ball_scores, draws.balls[i]))
+            matched.append(metrics.matches(ball_scores, draws.balls[i]))
+            losses.append(metrics.log_loss(ball_scores, draws.balls[i]))
     return {
         "dkrr_matches": float(np.mean(matched)),
         "dkrr_log_loss": float(np.mean(losses)),

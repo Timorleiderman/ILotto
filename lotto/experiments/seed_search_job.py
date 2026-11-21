@@ -14,6 +14,7 @@ import json
 import math
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -79,7 +80,10 @@ def main() -> int:
             try:
                 code = process.wait(timeout=10)
             except subprocess.TimeoutExpired:
-                process.terminate()
+                if os.name != "nt":
+                    process.send_signal(signal.SIGINT)
+                else:
+                    process.terminate()
                 try:
                     code = process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
@@ -101,7 +105,10 @@ def main() -> int:
             })
     except BaseException as exc:
         if process and process.poll() is None:
-            process.terminate()
+            if os.name != "nt":
+                process.send_signal(signal.SIGINT)
+            else:
+                process.terminate()
             try:
                 process.wait(timeout=5)
             except subprocess.TimeoutExpired:

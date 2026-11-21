@@ -16,6 +16,7 @@
 // First-draw matches per batch: ~count/16.3M expected (about 1,230 at the
 // 2e10 batch cap). The buffer is sized for that with a wide margin.
 constexpr unsigned CAP = 1u << 16;
+constexpr size_t SURVIVOR_CAP = 10000;
 constexpr U64 MAX_BATCH = 20000000000ULL;
 
 void check(cudaError_t status) {
@@ -26,9 +27,9 @@ __constant__ Prepared first;
 __global__ void filter(U64 start, U64 count, U64* hits, unsigned* found, unsigned* error) {
     U64 stride=U64(blockDim.x)*gridDim.x;
     for (U64 offset=U64(blockIdx.x)*blockDim.x+threadIdx.x; offset<count; offset+=stride) {
-        U32 value=outcome(start+offset,first);
-        if (value==0xffffffffU) atomicExch(error,1);
-        if (value==first.expected) {
+        int m=filter_match(start+offset,first);
+        if (m<0) atomicExch(error,1);
+        else if (m>0) {
             unsigned slot=atomicAdd(found,1);
             if (slot<CAP) hits[slot]=start+offset;
         }
@@ -79,12 +80,15 @@ int main() {
                 continue;
             }
             if(command=="V") {
-                unsigned n;
-                if(!(std::cin>>n)||!n||n>10000) throw std::runtime_error("Invalid vector count");
+                std::string n_tok;
+                if(!(std::cin>>n_tok)) throw std::runtime_error("Invalid vector count");
+                unsigned n=parse_u32_strict(n_tok);
+                if(!n||n>10000) throw std::runtime_error("Invalid vector count");
                 std::vector<U64> seeds(n); std::vector<Prepared> dates(n); std::vector<U32> result(n);
                 for(unsigned i=0;i<n;++i) {
-                    std::string date;
-                    if(!(std::cin>>seeds[i]>>date)) throw std::runtime_error("Truncated vectors");
+                    std::string seed_tok, date;
+                    if(!(std::cin>>seed_tok>>date)) throw std::runtime_error("Truncated vectors");
+                    seeds[i]=parse_u64_strict(seed_tok);
                     dates[i]=prepare(date,0);
                 }
                 Device<U64> ds(n); Device<Prepared> dp(n); Device<U32> dr(n);
@@ -99,15 +103,20 @@ int main() {
                 continue;
             }
             if(command!="B") throw std::runtime_error("Unknown command");
-            U64 start,count; unsigned threads,blocks,n;
-            if(!(std::cin>>start>>count>>threads>>blocks>>n) || !count || count>MAX_BATCH ||
+            std::string start_tok,count_tok,threads_tok,blocks_tok,n_tok;
+            if(!(std::cin>>start_tok>>count_tok>>threads_tok>>blocks_tok>>n_tok))
+                throw std::runtime_error("Invalid batch bounds or launch configuration");
+            U64 start=parse_u64_strict(start_tok), count=parse_u64_strict(count_tok);
+            unsigned threads=parse_u32_strict(threads_tok), blocks=parse_u32_strict(blocks_tok), n=parse_u32_strict(n_tok);
+            if(!count || count>MAX_BATCH ||
                count-1>std::numeric_limits<U64>::max()-start ||
                (threads!=64&&threads!=128&&threads!=256&&threads!=512) || !blocks || blocks>65535 || !n || n>10000)
                 throw std::runtime_error("Invalid batch bounds or launch configuration");
             std::vector<Prepared> prefix; std::string previous;
             for(unsigned i=0;i<n;++i) {
-                std::string date; U64 expected;
-                if(!(std::cin>>date>>expected)||date<=previous) throw std::runtime_error("Invalid ordered prefix");
+                std::string date, expected_tok;
+                if(!(std::cin>>date>>expected_tok)||date<=previous) throw std::runtime_error("Invalid ordered prefix");
+                U64 expected=parse_u64_strict(expected_tok);
                 prefix.push_back(prepare(date,expected)); previous=date;
             }
             auto began=std::chrono::steady_clock::now();
@@ -120,8 +129,9 @@ int main() {
             check(cudaMemcpy(&failed,error.p,sizeof(unsigned),cudaMemcpyDeviceToHost));
             if(total>CAP||failed) throw std::runtime_error("Filter overflow or hash counter exhaustion; batch not counted");
             std::vector<U64> candidates(total),survivors,counts(n+1,0);
-            check(cudaMemcpy(candidates.data(),hits.p,total*sizeof(U64),cudaMemcpyDeviceToHost));
+            if(total>0) check(cudaMemcpy(candidates.data(),hits.p,total*sizeof(U64),cudaMemcpyDeviceToHost));
             std::sort(candidates.begin(),candidates.end()); counts[0]=count-total;
+            bool survivor_overflow=false;
             for(U64 seed:candidates) {
                 unsigned matched=1;
                 for(;matched<n;++matched) {
@@ -129,7 +139,11 @@ int main() {
                     if(value==0xffffffffU) throw std::runtime_error("Host hash counter exhaustion");
                     if(value!=prefix[matched].expected) break;
                 }
-                ++counts[matched]; if(matched==n) survivors.push_back(seed);
+                ++counts[matched];
+                if(matched==n) {
+                    if(survivors.size()<SURVIVOR_CAP) survivors.push_back(seed);
+                    else survivor_overflow=true;
+                }
             }
             double elapsed=std::chrono::duration<double>(std::chrono::steady_clock::now()-began).count();
             std::cout<<"{\"generator\":\"calendar-sha256-v1\",\"start\":\""<<start
@@ -138,7 +152,8 @@ int main() {
             for(unsigned i=0;i<=n;++i) std::cout<<(i?",":"")<<counts[i];
             std::cout<<"],\"survivors\":[";
             for(size_t i=0;i<survivors.size();++i) std::cout<<(i?",":"")<<survivors[i];
-            std::cout<<"],\"survivor_overflow\":false,\"batch_seconds\":"<<elapsed<<"}"<<std::endl;
+            std::cout<<"],\"survivor_overflow\":"<<(survivor_overflow?"true":"false")
+                     <<",\"batch_seconds\":"<<elapsed<<"}"<<std::endl;
         }
     } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 2; }
 }

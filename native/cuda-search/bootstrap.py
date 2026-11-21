@@ -19,15 +19,23 @@ PACKAGES = (
 
 
 def main():
+    if len(sys.argv) != 2:
+        raise SystemExit(f"Usage: {sys.argv[0]} TARGET_DIR")
     root = Path(sys.argv[1]).resolve()
     root.mkdir(parents=True, exist_ok=True)
     for relative, digest in PACKAGES:
         archive = root / Path(relative).name
         if not archive.exists():
             print(f"Downloading {archive.name}", flush=True)
-            with urllib.request.urlopen(BASE + relative, timeout=120) as source:
-                with archive.open("wb") as target:
-                    shutil.copyfileobj(source, target)
+            staging = archive.with_suffix(archive.suffix + ".part")
+            try:
+                with urllib.request.urlopen(BASE + relative, timeout=120) as source:
+                    with staging.open("wb") as target:
+                        shutil.copyfileobj(source, target)
+                staging.replace(archive)
+            except BaseException:
+                staging.unlink(missing_ok=True)
+                raise
         if hashlib.sha256(archive.read_bytes()).hexdigest() != digest:
             raise RuntimeError(f"Checksum mismatch: {archive}")
         with tarfile.open(archive) as source:

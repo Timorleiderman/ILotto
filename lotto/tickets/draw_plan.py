@@ -8,7 +8,7 @@ first 40M draw itself never was (7 of 7). Promotional bonus series at lower
 jackpots are announced by the operator and cannot be inferred from results,
 so they enter through ``announced_bonus``.
 
-The two forms are fixed coverage designs from ``lotto.tickets.coverage`` with the
+The fixed forms are coverage designs from ``lotto.tickets.coverage`` with the
 exact strong-number assignment from ``lotto.tickets.strong_assignment``. Their odds
 assume independent uniform fair draws; a consistent relabelling of the
 numbers leaves them unchanged.
@@ -90,6 +90,11 @@ class Result:
     double_winners: tuple[int, ...]
     double_prizes: tuple[int, ...]
 
+    def __post_init__(self) -> None:
+        n = len(TIERS)
+        if any(len(t) != n for t in (self.winners, self.prizes, self.double_winners, self.double_prizes)):
+            raise ValueError(f"Expected {n} prize tiers for winners and prizes")
+
     @property
     def jackpot_won(self) -> bool:
         """True if any row, regular or Double, won the first prize."""
@@ -159,6 +164,8 @@ def plan(last: Result, *, announced_bonus: bool = False) -> Plan:
     """Choose the form for the draw after ``last``."""
     if last.first_prize > CAP or last.first_prize < RESET:
         raise ValueError(f"First prize {last.first_prize} is outside the 5M-40M range of this game")
+    if last.second_prize < SECOND_BASE:
+        raise ValueError(f"Second prize {last.second_prize} is below the {SECOND_BASE:,} base")
     rolled_cap = last.first_prize == CAP and not last.jackpot_won
     if rolled_cap:
         reason = f"Draw {last.draw_id} had a 40M first prize and nobody won it, so the next draw pays bonus prizes."

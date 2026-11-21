@@ -1,8 +1,8 @@
 name: Build & publish report
 
 on:
-  # Draw days in the archive since 2012: Tuesday (707) and Saturday (703),
-  # plus a Thursday run that appears intermittently (161). Draws are in the
+  # Draw days in the archive since 2012 (through Nov 2026): Tuesday (722) and
+  # Saturday (718), plus a Thursday run that appears intermittently (164). Draws are in the
   # evening, Asia/Jerusalem, so rebuild the *following* morning in UTC:
   # Sunday (after Sat), Wednesday (after Tue), Friday (after any Thu).
   schedule:

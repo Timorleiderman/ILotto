@@ -13,7 +13,7 @@ RUN uv sync --frozen --no-install-project
 COPY . .
 RUN uv sync --frozen
 
-# The default entry point is the benchmark report: it is the thing that is
-# tested, and it writes the published site. Override to run anything else, e.g.
+# The default entry point runs the quick benchmark report into results/report/.
+# Override to run anything else, e.g.
 #   docker run --rm ilotto uv run lotto list
 CMD ["uv", "run", "lotto", "report", "--quick"]

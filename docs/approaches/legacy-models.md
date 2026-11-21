@@ -50,20 +50,19 @@ decoder and encoder states.
 flowchart TB
   I["input (B, 10, 7)"] --> E["7 separate Embeddings<br/>one per ball position"]
   E --> SD["SpatialDropout1D ×7"]
-  SD --> CC["concat → (B, 10, 7·64)"]
-  CC --> EN["Bidirectional LSTM stack<br/>128 → 64 → 32"]
+  SD --> CC["concat → (B, 10, 7·30)"]
+  CC --> EN["Bidirectional LSTM stack<br/>64 → 32 (concat 128 → 64)"]
   EN --> ST["final states h, c"]
   ST --> RV["RepeatVector(7)"]
-  RV --> DE["LSTM decoder stack<br/>(seeded with encoder states)"]
-  EN --> AT["MultiHeadAttention<br/>8 heads"]
+  RV --> DE["LSTM decoder stack<br/>128 → 64 (seeded with encoder states)"]
+  EN --> AT["AdditiveAttention<br/>(Bahdanau)"]
   DE --> AT
   AT --> CAT["concat(attended, decoder)"]
-  CAT --> DN["Dense 128 → 64"]
-  DN --> O["Dense 37, softmax<br/>(B, 7, 37)"]
+  CAT --> O["Dense 37, softmax<br/>(B, 7, 37)"]
   O --> L["sparse categorical CE<br/>vs <b>sorted</b> balls"]
 
   class I,CC,ST data
-  class E,EN,DE,AT,DN,O learn
+  class E,EN,DE,AT,O learn
   class SD,RV,CAT op
   class L flaw
   classDef data fill:none,stroke:#8a8a85,stroke-width:1.5px
@@ -122,7 +121,7 @@ smaller. This is the architecture the old README recommended.
 
 ## 3. Transformer — self-attention over flattened draws
 
-Flattens the window into 70 tokens (10 draws × 7 balls) and runs standard pre-LN
+Flattens the window into 70 tokens (10 draws × 7 balls) and runs post-LN
 transformer blocks over them.
 
 ```mermaid
@@ -185,7 +184,7 @@ flowchart TB
 ```
 
 Same insight as [`lotto/approaches/neural.py`](set-prediction.md), reached independently. The differences
-are that `bench` adds recency features, base-rate bias initialisation, and — crucially — a
+are that `lotto` adds recency features, base-rate bias initialisation, and — crucially — a
 walk-forward harness that scores it against an exact null.
 
 ## DiversityLoss
@@ -228,11 +227,11 @@ model needs no diversity term at all.
 
 | Model | Encoder | Output | Target | Order-invariant |
 |---|---|---|---|---|
-| Original | BiLSTM 128/64/32 + MHA | `(7, 37)` softmax | sorted balls | **no** |
+| Original | BiLSTM 64/32 + Bahdanau attention | `(7, 37)` softmax | sorted balls | **no** |
 | Multi-output | LSTM 64 ×2 | 7 independent softmaxes | sorted balls | **no** |
 | Transformer | 2 × MHA blocks over 70 tokens | 7 independent softmaxes | sorted balls | **no** |
 | Set prediction | LSTM 128 | 37 sigmoids | multi-hot set | **yes** |
-| `bench` GRU / Transformer | GRU 96/64 or MHA | 37 sigmoids + 7 softmax | multi-hot set | **yes** |
+| `lotto` GRU / Transformer | GRU 96/64 or MHA | 37 sigmoids + 7 softmax | multi-hot set | **yes** |
 
 ---
 

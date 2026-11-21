@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import platform
 import tempfile
@@ -45,7 +46,8 @@ def summarize(matches, strong_hit, p_win):
 
 
 def main():
-    config = json.loads(PROTOCOL.read_text())
+    argparse.ArgumentParser(description=__doc__).parse_args()
+    config = json.loads(PROTOCOL.read_text(encoding='utf-8'))
     if (config.get('schema') != 1 or config['n_test'] != 1000 or config['block_draws'] != 250
             or config['selection_draws'] != 500):
         raise ValueError('Require the fixed 1000-draw protocol, four 250-draw blocks and a 500-draw selector')
@@ -86,8 +88,9 @@ def main():
     ten_p = template_odds['p_any_prize']
     models, single_tickets, portfolios, one_counts, ten_counts, one_strong, ten_strong = [], [], [], [], [], [], []
     for model, name in enumerate(names):
-        one = np.asarray([[*(metrics.top_k(p) + 1), int(np.argmax(s)) + 1]
-                          for p, s in zip(balls[model], strong[model])])[:, None, :]
+        top6 = np.sort(np.argsort(-balls[model], axis=1, kind='stable')[:, :6], axis=1) + 1
+        top_strong = np.argmax(strong[model], axis=1) + 1
+        one = np.concatenate([top6, top_strong[:, None]], axis=1)[:, None, :]
         ten = ranked_portfolios(template, balls[model], strong[model])
         c1, h1 = score_portfolios(one, actual, actual_strong)
         c10, h10 = score_portfolios(ten, actual, actual_strong)
@@ -128,11 +131,11 @@ def main():
     null = {budget: {'p_any_prize': p, 'expected_wins': n * p,
                      'central_95_percent_win_count_range': binom.ppf([0.025, 0.975], n, p).astype(int).tolist()}
             for budget, p in [('one_ticket', one_p), ('ten_tickets', ten_p)]}
-    paths = ['lotto/tickets/forecast_portfolios.py', 'lotto/forecasting/joint_mixture.py', 'lotto/forecasting/calibration.py',
-             'lotto/approaches/date_conditioned.py', 'lotto/core/metrics.py', 'lotto/experiments/joint_mixture.py',
-             'lotto/experiments/thousand_draws.py']
+    source_files = ['lotto/tickets/forecast_portfolios.py', 'lotto/forecasting/joint_mixture.py', 'lotto/forecasting/calibration.py',
+                    'lotto/approaches/date_conditioned.py', 'lotto/core/metrics.py', 'lotto/experiments/joint_mixture.py',
+                    'lotto/experiments/thousand_draws.py']
     result = {'schema': 1, 'status': 'complete', 'configuration': config, 'protocol_sha256': sha256_file(PROTOCOL),
-              'source_sha256': {p: sha256_file(ROOT / p) for p in paths},
+              'source_sha256': {p: sha256_file(ROOT / p) for p in source_files},
               'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                               'platform': platform.platform()},
               'training_draws_before_first_target': len(draws) - n, 'test_start': dates[0], 'test_end': dates[-1],
@@ -155,7 +158,7 @@ def main():
                             single_strong_hits=np.asarray(one_strong), portfolio_strong_hits=np.asarray(ten_strong),
                             joint_log_prob=log_prob)
         result['per_draw_artifact'] = {'path': out_arrays.name, 'sha256': sha256_file(staged_arrays)}
-        staged_json.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
+        staged_json.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n', encoding='utf-8')
         staged_arrays.replace(out_arrays)
         staged_json.replace(OUTPUT)
     for budget in ('one_ticket', 'ten_tickets'):

@@ -11,6 +11,7 @@ env/
 
 # Build outputs and caches: pure bloat in the image, and stale by definition.
 site/
+sites/
 dist/
 build/
 *.egg-info/

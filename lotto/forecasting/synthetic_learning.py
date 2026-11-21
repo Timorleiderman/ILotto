@@ -11,8 +11,9 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.special import logsumexp
 
-from lotto.approaches.date_conditioned import log_partition, marginals
+from lotto.approaches.date_conditioned import log_partition, log_partition_and_marginals
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
+from lotto.core.validation import is_integer
 from lotto.forecasting.calibration import frequency_forecasts
 from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES, event_log_ratio, validate_draws
 
@@ -27,10 +28,12 @@ def simulate_episode(n, rng, scenario, *, change_every=250, multipliers=(0.5, 1.
     those events. Bias directions and labels are redrawn at block boundaries.
     These are testable hypothetical mechanisms, not inferred real mechanisms.
     """
-    if (type(n) is not int or n < 2 or scenario not in SCENARIOS
-            or type(change_every) is not int or change_every < 1
-            or not len(multipliers) or any(not np.isfinite(m) or not 0 < m < N_NUMBERS / N_DRAWN
-                                           for m in multipliers)):
+    if (not is_integer(n) or n < 2 or scenario not in SCENARIOS
+            or not is_integer(change_every) or change_every < 1
+            or not len(multipliers)
+            or any(isinstance(m, (bool, np.bool_)) or not np.isscalar(m)
+                   or not np.isfinite(m) or not 0 < m < N_NUMBERS / N_DRAWN
+                   for m in multipliers)):
         raise ValueError('Require a known scenario, at least two draws, and valid inclusion multipliers')
     balls = np.empty((n, N_DRAWN), dtype=np.int64)
     strong = np.empty(n, dtype=np.int64)
@@ -70,19 +73,23 @@ def components(draws, *, windows=(50, 100, 300, None), strengths=(100, 500, 2000
     after t. Full-set probabilities are exactly normalized to six main balls.
     """
     validate_draws(draws)
-    if any(isinstance(s, (bool, np.bool_)) or not np.isfinite(s) or s <= 0 for s in strengths):
+    if any(isinstance(s, (bool, np.bool_)) or not np.isscalar(s) or not np.isfinite(s) or s <= 0
+           for s in strengths):
         raise ValueError('Cold-start forecasts require strictly positive prior strengths')
     names, _, bp, sp = frequency_forecasts(draws, min_history=1, windows=windows, strengths=strengths)
     bp = np.concatenate([np.full((len(names), 1, N_NUMBERS), N_DRAWN / N_NUMBERS), bp], axis=1)
     sp = np.concatenate([np.full((len(names), 1, N_STRONG), 1 / N_STRONG), sp], axis=1)
     actual = draws.multi_hot
     lp = np.empty((len(names), len(draws)))
+    strong_idx = draws.strong - 1
+    row_idx = np.arange(len(draws))
     for i in range(len(names) - 1):
         theta = np.log(bp[i]) - np.log1p(-bp[i])
-        lp[i] = ((theta * actual).sum(axis=1) - log_partition(theta)
-                 + np.log(sp[i, np.arange(len(draws)), draws.strong - 1]))
         if include_marginals:
-            bp[i] = marginals(theta)
+            log_z, bp[i] = log_partition_and_marginals(theta)
+        else:
+            log_z = log_partition(theta)
+        lp[i] = (theta * actual).sum(axis=1) - log_z + np.log(sp[i, row_idx, strong_idx])
     lp[-1] = -LOG_FULL_OUTCOMES
     # Avoid numerical label preferences on an exactly uniform cold start.
     lp[:, 0] = -LOG_FULL_OUTCOMES
@@ -102,7 +109,8 @@ def fit_mixture(log_prob, *, max_iterations=500, tolerance=1e-10):
     """
     lp = np.asarray(log_prob, dtype=float)
     if (lp.ndim != 2 or not lp.shape[0] or not lp.shape[1] or not np.isfinite(lp).all()
-            or np.any(lp > 1e-12) or type(max_iterations) is not int or max_iterations < 1
+            or np.any(lp > 1e-12) or not is_integer(max_iterations) or max_iterations < 1
+            or isinstance(tolerance, (bool, np.bool_)) or not np.isscalar(tolerance)
             or not np.isfinite(tolerance) or tolerance <= 0):
         raise ValueError('Require finite component log probabilities and positive optimizer settings')
     # Subtract a per-example constant: stable probabilities with the same optimum.
@@ -111,17 +119,18 @@ def fit_mixture(log_prob, *, max_iterations=500, tolerance=1e-10):
     initial = np.full(lp.shape[0], 1 / lp.shape[0])
 
     def objective(weights):
-        mixture = relative @ weights
-        return -np.log(mixture).mean(), -(relative.T @ (1 / mixture)) / len(mixture)
+        w = np.clip(weights, 0.0, None)
+        mixture = np.maximum(relative @ w, 1e-300)
+        return float(-np.log(mixture).mean()), -(relative.T @ (1.0 / mixture)) / len(mixture)
 
     fit = minimize(objective, initial, method='SLSQP', jac=True,
                    bounds=[(0, 1)] * len(initial),
                    constraints={'type': 'eq', 'fun': lambda w: w.sum() - 1,
                                 'jac': lambda w: np.ones_like(w)},
-                   options={'maxiter': max_iterations, 'ftol': tolerance})
-    if not fit.success or not np.isfinite(fit.x).all() or np.any(fit.x < 0):
+                   options={'maxiter': int(max_iterations), 'ftol': float(tolerance)})
+    if not fit.success or not np.isfinite(fit.x).all() or np.any(fit.x < -1e-7):
         raise RuntimeError(f'Synthetic mixture fit failed: {fit.message}')
-    weights = np.where(fit.x < 1e-8, 0, fit.x)
+    weights = np.where(fit.x < 1e-8, 0.0, fit.x)
     weights /= weights.sum()
     loss = float(objective(weights)[0] - offset.mean())
     initial_loss = float(objective(initial)[0] - offset.mean())

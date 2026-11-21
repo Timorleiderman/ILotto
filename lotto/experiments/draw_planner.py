@@ -44,11 +44,15 @@ def main():
     parser.add_argument("--result-html", type=Path, help="Read a saved result page instead of fetching")
     parser.add_argument("--timeout", type=float, default=20.0)
     args = parser.parse_args()
+    if args.draw_id is not None and args.draw_id < 1:
+        parser.error("--draw-id must be a positive integer")
+    if not (args.timeout > 0):
+        parser.error("--timeout must be positive")
     try:
         if args.result_html:
             page = args.result_html.read_text(encoding="utf-8", errors="replace")
         else:
-            draw_id = args.draw_id or latest_draw_id(_get(LOTTO_URL, args.timeout))
+            draw_id = latest_draw_id(_get(LOTTO_URL, args.timeout)) if args.draw_id is None else args.draw_id
             page = _get(RESULT_URL.format(draw_id=draw_id), args.timeout)
         last = parse_result(page)
     except (requests.RequestException, OSError, ParseError) as exc:

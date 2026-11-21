@@ -28,6 +28,7 @@ DEFAULT_BINARY = paths.REPO_ROOT / "native/seed-search/target/release/ilotto-see
 
 def native_batch(prefix, start, stop, workers, binary=DEFAULT_BINARY):
     """Search seeds ``[start, stop)`` with the Rust binary and validate its result."""
+    prefix_hash(prefix)
     request = {"generator": GENERATOR, "start": str(start), "stop": str(stop),
                "workers": workers, "prefix": [asdict(x) for x in prefix]}
     process = subprocess.Popen([str(binary)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -124,12 +125,13 @@ class RustSearch:
                 write_json(checkpoint, state)
                 self.new_tested += b - a
                 now = time.perf_counter()
+                elapsed = max(now - self.started, 1e-9)
                 progress = {"status": "running", "pid": os.getpid(), "engine": "rust",
                             "workers": self.workers, "started_at_utc": self.started_at,
                             "updated_at_utc": datetime.now(timezone.utc).isoformat(),
                             "new_seeds_tested": self.new_tested, "next_seed": b,
-                            "elapsed_seconds": now - self.started,
-                            "seeds_per_second": self.new_tested / (now - self.started),
+                            "elapsed_seconds": elapsed,
+                            "seeds_per_second": self.new_tested / elapsed,
                             "full_history_survivors": len(state["survivors"]),
                             "matched_prefix_counts": state["matched_prefix_counts"],
                             "checkpoint": str(checkpoint)}

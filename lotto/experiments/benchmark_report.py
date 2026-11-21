@@ -5,7 +5,8 @@
 
 Every run first checks pais.co.il for new draws and adds any it finds to the
 archive (validated; a failure falls back to the committed copy). `--offline`
-skips that check. `--quick` skips the neural models.
+skips that check. `--quick` skips the three trained models (date-conditioned
+and neural).
 Pages go to `results/report/` by default, so trying the command never touches
 the published site; pass `--out-dir docs` to rebuild the pages the site serves.
 """
@@ -32,11 +33,16 @@ def main() -> int:
     # Checking for new draws is now the default; the old flag is still accepted.
     ap.add_argument("--refresh", action="store_true", help=argparse.SUPPRESS)
     ap.add_argument("--n-test", type=int, default=300, help="walk-forward window length")
-    ap.add_argument("--quick", action="store_true", help="skip neural models")
+    ap.add_argument("--quick", action="store_true",
+                    help="skip the three trained models (date-conditioned and neural)")
     ap.add_argument("--out-dir", default=str(data.REPO_ROOT / "results/report"),
                     help="where to write the pages; use docs to update the published site")
     ap.add_argument("--null-trials", type=int, default=5000)
     args = ap.parse_args()
+    if args.n_test < 1:
+        ap.error("--n-test must be at least 1")
+    if args.null_trials < 1:
+        ap.error("--null-trials must be at least 1")
 
     draws = data.load(refresh=not args.offline)
 

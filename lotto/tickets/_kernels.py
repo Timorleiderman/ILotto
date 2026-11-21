@@ -49,6 +49,12 @@ def _popcount(value):
     return count
 
 
+@njit(cache=True, inline="always")
+def _at_least_3(value):
+    v1 = value & (value - np.uint64(1))
+    return (v1 & (v1 - np.uint64(1))) != np.uint64(0)
+
+
 @njit(cache=True)
 def match_histogram(draw_masks, ticket_masks):
     """How many draws have each best-row match count (0-6) for this portfolio."""
@@ -62,15 +68,47 @@ def match_histogram(draw_masks, ticket_masks):
 
 
 @njit(cache=True)
+def strong_group_coverage(draw_masks, ticket_masks, ticket_strongs, min_matches):
+    """Count main draws covered by each strong-number group (1..7) in one pass."""
+    counts = np.zeros(7, dtype=np.int64)
+    n_tickets = len(ticket_masks)
+    if min_matches == 3:
+        for draw in draw_masks:
+            hit_groups = 0
+            for i in range(n_tickets):
+                bit = 1 << ticket_strongs[i]
+                if not (hit_groups & bit) and _at_least_3(draw & ticket_masks[i]):
+                    hit_groups |= bit
+                    counts[ticket_strongs[i]] += 1
+    else:
+        for draw in draw_masks:
+            hit_groups = 0
+            for i in range(n_tickets):
+                bit = 1 << ticket_strongs[i]
+                if not (hit_groups & bit) and _popcount(draw & ticket_masks[i]) >= min_matches:
+                    hit_groups |= bit
+                    counts[ticket_strongs[i]] += 1
+    return counts
+
+
+@njit(cache=True)
 def coverage_signatures(draw_masks, ticket_masks, min_matches):
     """Count which ticket subsets cover each draw (callers cap at 14 rows)."""
     histogram = np.zeros(1 << len(ticket_masks), dtype=np.int64)
-    for draw in draw_masks:
-        signature = 0
-        for i, ticket in enumerate(ticket_masks):
-            if _popcount(draw & ticket) >= min_matches:
-                signature |= 1 << i
-        histogram[signature] += 1
+    if min_matches == 3:
+        for draw in draw_masks:
+            signature = 0
+            for i, ticket in enumerate(ticket_masks):
+                if _at_least_3(draw & ticket):
+                    signature |= 1 << i
+            histogram[signature] += 1
+    else:
+        for draw in draw_masks:
+            signature = 0
+            for i, ticket in enumerate(ticket_masks):
+                if _popcount(draw & ticket) >= min_matches:
+                    signature |= 1 << i
+            histogram[signature] += 1
     return histogram
 
 
@@ -83,45 +121,77 @@ def best_strong_partition(coverage, groups):
     lowest remaining row removes label permutations without removing a partition.
     """
     size = len(coverage)
+    n_rows = 0
+    tmp = size - 1
+    while tmp:
+        n_rows += 1
+        tmp >>= 1
     scores = np.full((groups + 1, size), -1, dtype=np.int64)
     choices = np.zeros((groups + 1, size), dtype=np.int64)
     scores[0, 0] = 0
-    for group in range(1, groups + 1):
-        for mask in range(1, size):
-            if _popcount(np.uint64(mask)) < group:
-                continue
-            if group == 1:
-                scores[group, mask] = coverage[mask]
-                choices[group, mask] = mask
+    for mask in range(1, size):
+        scores[1, mask] = coverage[mask]
+        choices[1, mask] = mask
+    for group in range(2, groups + 1):
+        max_pop = n_rows - (groups - group)
+        start_mask = size - 1 if group == groups else 1
+        for mask in range(start_mask, size):
+            pop = _popcount(np.uint64(mask))
+            if pop < group or pop > max_pop:
                 continue
             anchor = mask & -mask
-            subset = mask
-            while subset:
+            rem = mask ^ anchor
+            sub = rem
+            best_score = -1
+            best_sub = 0
+            while True:
+                subset = sub | anchor
                 rest = mask ^ subset
-                if subset & anchor and scores[group - 1, rest] >= 0:
-                    score = coverage[subset] + scores[group - 1, rest]
-                    if score > scores[group, mask]:
-                        scores[group, mask] = score
-                        choices[group, mask] = subset
-                subset = (subset - 1) & mask
+                prev = scores[group - 1, rest]
+                if prev >= 0:
+                    score = coverage[subset] + prev
+                    if score > best_score:
+                        best_score = score
+                        best_sub = subset
+                if sub == 0:
+                    break
+                sub = (sub - 1) & rem
+            scores[group, mask] = best_score
+            choices[group, mask] = best_sub
     return scores[groups, size - 1], choices
 
 
 @njit(cache=True)
+def _coverage_counts_into(draw_masks, ticket_masks, counts):
+    for i in range(len(draw_masks)):
+        draw = draw_masks[i]
+        c = 0
+        for ticket in ticket_masks:
+            if _at_least_3(draw & ticket):
+                c += 1
+        counts[i] = c
+    return counts
+
+
 def coverage_counts(draw_masks, ticket_masks):
     """For each draw, how many rows match it in three or more numbers."""
-    counts = np.zeros(len(draw_masks), dtype=np.int32)
-    for i, draw in enumerate(draw_masks):
-        for ticket in ticket_masks:
-            counts[i] += _popcount(draw & ticket) >= 3
-    return counts
+    dtype = np.uint8 if len(ticket_masks) <= 255 else np.int32
+    counts = np.zeros(len(draw_masks), dtype=dtype)
+    return _coverage_counts_into(draw_masks, ticket_masks, counts)
 
 
 @njit(cache=True)
 def update_coverage(draw_masks, counts, old, new):
     """Update ``counts`` in place after one row's mask changes from ``old`` to ``new``."""
-    for i, draw in enumerate(draw_masks):
-        counts[i] += int(_popcount(draw & new) >= 3) - int(_popcount(draw & old) >= 3)
+    diff = old ^ new
+    for i in range(len(draw_masks)):
+        draw = draw_masks[i]
+        changed = draw & diff
+        if changed == np.uint64(0) or changed == diff:
+            continue
+        delta = int(_at_least_3(draw & new)) - int(_at_least_3(draw & old))
+        if delta:
+            counts[i] += delta
 
 
 @njit(cache=True)
@@ -142,10 +212,24 @@ def best_exchange(draws, masks, counts, ticket, ticket_mask):
     joint_three = np.zeros((6, 37), dtype=np.int64)
     inside = np.empty(6, dtype=np.int64)
     outside = np.empty(6, dtype=np.int64)
-    for i, mask in enumerate(masks):
-        hits = _popcount(mask & ticket_mask)
-        if counts[i] - int(hits >= 3) or (hits != 2 and hits != 3):
+    for i in range(len(masks)):
+        c = counts[i]
+        if c > 1:
             continue
+        mask = masks[i]
+        overlap = mask & ticket_mask
+        o1 = overlap & (overlap - np.uint64(1))
+        if o1 == np.uint64(0):
+            continue
+        o2 = o1 & (o1 - np.uint64(1))
+        if c == 0:
+            if o2 != np.uint64(0):
+                continue
+            hits = 2
+        else:
+            if o2 == np.uint64(0) or (o2 & (o2 - np.uint64(1))) != np.uint64(0):
+                continue
+            hits = 3
         n_in = n_out = 0
         for ball in draws[i]:
             position = positions[ball]
