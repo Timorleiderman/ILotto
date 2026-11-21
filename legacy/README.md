@@ -22,8 +22,8 @@ Each defect is real, is still in the code on purpose, and is fixed in the main p
 | Defect | Where | Why it matters | Done properly in |
 |---|---|---|---|
 | Rows are filtered by ball value | `helpers.py:55` | Dropping every draw that contains a number above 37 deletes exactly the draws with high numbers, which biases the frequency table downward | `lotto/core/data.py` filters by date |
-| Time runs backwards | `helpers.py:121` | The archive is newest-first, so each training window predicts an older draw from newer ones | `lotto/core/data.py` sorts chronologically |
-| Test windows do not belong to their targets | `helpers.py:133` | Test inputs come from the end of the file, test targets from the start | `lotto/core/backtest.py` |
+| Time runs backwards | `helpers.py:102-116` | The archive is newest-first, so each training window predicts an older draw from newer ones | `lotto/core/data.py` sorts chronologically |
+| Test windows do not belong to their targets | `helpers.py:110,119-124` | Test inputs come from the end of the file, test targets from the start | `lotto/core/backtest.py` |
 | The test set selects the model | `train.py:230` | Checkpointing and early stopping watch the "test" loss, so no untouched data remains | walk-forward refits on history only |
 | Targets are sorted balls | `train.py` | Ball 1 is the smallest of six, so per-position accuracy measures order statistics | `lotto/approaches/neural.py` predicts the set |
 | Attention context is concatenated twice | `ilotto.py:143,148` | Harmless, but not what the diagram says | not carried over |

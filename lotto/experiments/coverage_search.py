@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """Run the bounded discrete basin-hopping follow-up on five saved portfolios."""
 
+import argparse
 import hashlib
 import json
-import tempfile
 import time
-from pathlib import Path
 
 import numpy as np
 
 from lotto.core import paths
+from lotto.core.files import write_json
 from lotto.tickets.coverage import best_match_counts, portfolio_odds, search_coverage_tickets
 
 ROOT = paths.REPO_ROOT
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__).parse_args()
     path = ROOT/'experiments/coverage_search_protocol_2026_11_06.json'
     config = json.loads(path.read_text())
     previous_path = ROOT/'experiments'/config['initial_results']
@@ -49,11 +50,7 @@ def main():
               'initial_results_sha256': hashlib.sha256(previous_path.read_bytes()).hexdigest(), 'rows': rows}
     # New runs go to results/ (not tracked); experiments/ holds the frozen evidence.
     out = ROOT/'results/coverage-search/coverage_search.json'
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='coverage-research-', dir=out.parent) as staging:
-        staged = Path(staging)/out.name
-        staged.write_text(json.dumps(result, indent=2, allow_nan=False)+'\n')
-        staged.replace(out)
+    write_json(out, result)
     print(f'Wrote {out}', flush=True)
 
 

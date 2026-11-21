@@ -70,6 +70,11 @@ class Job:
                 else:
                     self.state, self.stage = "cancel_requested", "Cancellation requested; finishing the current stage"
 
+    def current_state(self) -> str:
+        """Read the job's state under its lock."""
+        with self._lock:
+            return self.state
+
     def view(self) -> dict:
         """The job as plain data for the page."""
         with self._lock:
@@ -82,7 +87,9 @@ class JobRunner:
     """A queue and the single thread that works through it."""
 
     def __init__(self):
-        self._queue: queue.Queue[Job | None] = queue.Queue(maxsize=MAX_QUEUED)
+        # Capacity is enforced on live queued jobs in submit() so cancelled
+        # placeholders waiting to be drained never block fresh requests.
+        self._queue: queue.Queue[Job | None] = queue.Queue()
         self._jobs: dict[str, Job] = {}
         self._lock = threading.Lock()
         self._closed = False
@@ -94,14 +101,20 @@ class JobRunner:
         with self._lock:
             if self._closed:
                 raise Busy
+            queued_count = 0
+            finished: list[Job] = []
             for job in self._jobs.values():
-                if job.key == key and job.state in ("queued", "running", "cancel_requested"):
+                state = job.current_state()
+                if job.key == key and state in ("queued", "running"):
                     return job
-            if self._queue.full():
+                if state == "queued":
+                    queued_count += 1
+                elif state in ("succeeded", "failed", "cancelled"):
+                    finished.append(job)
+            if queued_count >= MAX_QUEUED:
                 raise Busy
             job = Job(kind, key, work)
             self._jobs[job.id] = job
-            finished = [j for j in self._jobs.values() if j.state in ("succeeded", "failed", "cancelled")]
             for old in finished[:-KEEP_FINISHED]:
                 del self._jobs[old.id]
             self._queue.put_nowait(job)
@@ -139,8 +152,14 @@ class JobRunner:
     def active(self) -> Job | None:
         """The running job, or the first queued job while the worker is starting."""
         with self._lock:
-            running = next((j for j in self._jobs.values() if j.state in ("running", "cancel_requested")), None)
-            return running or next((j for j in self._jobs.values() if j.state == "queued"), None)
+            queued = None
+            for j in self._jobs.values():
+                state = j.current_state()
+                if state in ("running", "cancel_requested"):
+                    return j
+                if state == "queued" and queued is None:
+                    queued = j
+            return queued
 
     def _run(self) -> None:
         while True:

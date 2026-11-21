@@ -673,3 +673,51 @@ def test_next_draw_is_today_when_today_is_an_undrawn_draw_day():
     assert data.next_draw_date(d, today=np.datetime64("2026-11-04")) > np.datetime64("2026-11-04")
     # The day of the last recorded draw is never returned again.
     assert data.next_draw_date(d, today=np.datetime64("2026-11-03")) > np.datetime64("2026-11-03")
+
+
+def test_predict_next_handles_pairwise_markov_excluded_balls(draws):
+    from lotto.report import html as report
+
+    pred = report.predict_next(predictors.PairwiseMarkov(), draws)
+    assert len(pred["numbers"]) == 6
+    assert 1 <= pred["strong"] <= 7
+    assert pred["shortlist_kind"] == "ranking_score"
+    assert all(score is None or np.isfinite(score) for _, score in pred["shortlist"])
+
+
+def test_serial_independence_null_and_power(draws):
+    """The overlap null is the hypergeometric, and the test has teeth both ways."""
+    from scipy import stats
+
+    pmf = stats.hypergeom(data.N_NUMBERS, data.N_DRAWN, data.N_DRAWN).pmf(np.arange(data.N_DRAWN + 1))
+    assert metrics.match_sum_distribution(1) == pytest.approx(pmf, abs=1e-12)
+
+    n = 200
+    dates = np.arange("2020-01-01", n, dtype="datetime64[D]").astype("datetime64[ns]")
+    strong = np.ones(n, dtype=np.int64)
+    # "Hot" world: every draw repeats the previous one.
+    repeat = data.Draws(dates, np.tile(np.arange(1, 7), (n, 1)), strong)
+    hot = randomness.serial_independence(repeat)
+    assert hot["p_value"] < 1e-12 and "= 1.0000" in hot["detail"]
+    # "Due" world: consecutive draws never share a number.
+    alternate = np.where((np.arange(n) % 2)[:, None] == 0, np.arange(1, 7), np.arange(7, 13))
+    assert randomness.serial_independence(data.Draws(dates, alternate, strong))["p_value"] < 1e-12
+    # The real (snapshot) archive is a fair-looking history, not an extreme one.
+    assert 0.01 < randomness.serial_independence(draws)["p_value"] <= 1.0
+
+
+def test_perfect_fit_polynomial_is_exact_extrapolation(draws):
+    """Lagrange weights reproduce polyfit's extrapolation without its float noise.
+
+    The values are exact integers, so ties among numbers go to the lower number
+    (metrics.top_k) instead of to whichever coefficient rounding error was larger.
+    """
+    from lotto.approaches import perfect_fit as spacetime
+
+    history = draws.slice(0, 300)
+    scores, _ = spacetime.PerfectFitPolynomial().scores(history)
+    recent = history.multi_hot[-6:].astype(float)
+    t = np.arange(6, dtype=float)
+    reference = np.array([np.polyval(np.polyfit(t, recent[:, j], 5), 6.0) for j in range(data.N_NUMBERS)])
+    assert scores == pytest.approx(reference, abs=1e-8)
+    assert np.array_equal(scores, np.round(scores))

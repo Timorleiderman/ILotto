@@ -56,14 +56,23 @@ def main(argv: list[str] | None = None) -> int:
 
         return ui_main(rest)
     if command == "list":
-        print(catalog_markdown() if rest == ["--markdown"] else catalog_text())
-        return 0
+        if rest in ([], ["--markdown"]):
+            print(catalog_markdown() if rest == ["--markdown"] else catalog_text())
+            return 0
+        if rest in (["-h"], ["--help"]):
+            print("usage: lotto list [--markdown]\n\nList every experiment in the catalog.")
+            return 0
+        print(f"Unknown arguments for lotto list: {' '.join(rest)}", file=sys.stderr)
+        return 2
     if command in SHORTCUTS:
         experiment_id = command
     elif command == "run" and rest:
+        if rest[0] in ("-h", "--help"):
+            print("usage: lotto run <experiment> [args...]\n\nRun `lotto list` to see experiment ids.")
+            return 0
         experiment_id, rest = rest[0], rest[1:]
     else:
-        print(__doc__)
+        print(__doc__, file=sys.stderr)
         return 2
     try:
         experiment = find(experiment_id)
@@ -72,8 +81,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     module = importlib.import_module(f"lotto.experiments.{experiment.module}")
     # Experiments parse their own options, so hand them a clean argument list.
-    sys.argv = [f"lotto run {experiment.id}", *rest]
-    return module.main() or 0
+    prog = f"lotto {command}" if command in SHORTCUTS else f"lotto run {experiment.id}"
+    saved_argv = sys.argv
+    try:
+        sys.argv = [prog, *rest]
+        return module.main() or 0
+    finally:
+        sys.argv = saved_argv
 
 
 if __name__ == "__main__":

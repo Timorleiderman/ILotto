@@ -78,7 +78,7 @@ that ordering is an artefact of presentation, not of the machine.
     37 independent sigmoids, trained with binary cross-entropy against a multi-hot target.
 
     \[
-    \mathcal{L} = -\sum_{b=1}^{37} y_b \log \hat p_b + (1 - y_b)\log(1 - \hat p_b)
+    \mathcal{L} = -\frac{1}{37}\sum_{b=1}^{37} \bigl[y_b \log \hat p_b + (1 - y_b)\log(1 - \hat p_b)\bigr]
     \]
 
     Output \(\hat p_b\) is "probability number \(b\) is in the next draw". Permuting the
@@ -202,8 +202,8 @@ The rewrite was not only about the target. Four bugs in the original training se
 !!! bug "`recurrent_dropout` forced the slow path"
 
     Combined with `return_state`, it takes Keras off the fused kernel — one to two orders of
-    magnitude slower, for no measured benefit. The whole 13-strategy report now builds in
-    ~80 seconds.
+    magnitude slower, for no measured benefit. The whole 19-strategy report now builds in
+    about two minutes.
 
 !!! bug "Gaussian noise on categorical IDs"
 

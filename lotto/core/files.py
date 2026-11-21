@@ -24,7 +24,7 @@ def write_json(path: Path | str, value) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile("w", dir=path.parent, prefix=path.name + ".", suffix=".tmp",
-                                     delete=False) as stream:
+                                     encoding="utf-8", delete=False) as stream:
         staging = Path(stream.name)
         try:
             json.dump(value, stream, indent=2, allow_nan=False)

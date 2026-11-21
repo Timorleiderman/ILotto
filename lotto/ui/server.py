@@ -104,7 +104,7 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
                 raise Refused(HTTPStatus.FORBIDDEN, "Reload the dashboard page and try again.")
 
         def _body(self) -> dict:
-            if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
+            if self.headers.get("Content-Type", "").split(";")[0].strip().lower() != "application/json":
                 raise Refused(HTTPStatus.UNSUPPORTED_MEDIA_TYPE, "JSON is required.")
             try:
                 length = int(self.headers.get("Content-Length", ""))
@@ -132,7 +132,7 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
             except Busy:
                 self._json({"error": {"message": "Too many jobs are waiting. Let one finish first.", "fields": {}}},
                            HTTPStatus.CONFLICT)
-            except BrokenPipeError:
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 pass
             except Exception:
                 logger.exception("Request failed: %s %s", self.command, self.path)
@@ -153,7 +153,7 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
             url = urlsplit(self.path)
             path = url.path
             if path == "/":
-                page = (STATIC / "index.html").read_text().replace("{{TOKEN}}", app.token)
+                page = (STATIC / "index.html").read_text(encoding="utf-8").replace("{{TOKEN}}", app.token)
                 return self._send(HTTPStatus.OK, "text/html; charset=utf-8", page.encode())
             if path.startswith("/static/") and path[8:] in STATIC_FILES:  # a fixed list, never a path
                 return self._send(HTTPStatus.OK, STATIC_FILES[path[8:]], (STATIC / path[8:]).read_bytes())
@@ -187,7 +187,8 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
             if work is not None:
                 kind = path.rsplit("/", 1)[1]
                 service.validate_request(kind, body)
-                key = path + json.dumps(body, sort_keys=True) + service.archive["sha256"]
+                _, archive = service.snapshot()
+                key = path + json.dumps(body, sort_keys=True) + archive["sha256"]
                 job = app.jobs.submit(kind, key, lambda j: work(body, j))
                 return self._json(job.view(), HTTPStatus.ACCEPTED)
             if path == "/api/refresh":
@@ -195,6 +196,9 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
                     raise Refused(HTTPStatus.CONFLICT, "The dashboard was started with --offline.")
                 return self._json(app.jobs.submit("refresh", "refresh", service.refresh).view(), HTTPStatus.ACCEPTED)
             if path == "/api/log":
+                unknown = set(body) - {"result_id"}
+                if unknown:
+                    raise Invalid({k: "unknown request field" for k in unknown})
                 return self._json(service.save_to_log(body.get("result_id")))
             raise Refused(HTTPStatus.NOT_FOUND, "Not found.")
 
@@ -214,8 +218,8 @@ def create_server(service: Service, port: int = DEFAULT_PORT) -> tuple[Threading
     app = App(service)
     class DashboardServer(ThreadingHTTPServer):
         def server_close(self):
-            app.jobs.close(wait=True)
             super().server_close()
+            app.jobs.close(wait=True)
 
     try:
         server = DashboardServer(("127.0.0.1", port), make_handler(app))

@@ -13,7 +13,7 @@ from math import comb, log
 import numpy as np
 from scipy.special import logsumexp
 
-from lotto.approaches.date_conditioned import log_partition, marginals
+from lotto.approaches.date_conditioned import log_partition, log_partition_and_marginals
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 from lotto.forecasting.calibration import frequency_forecasts
 
@@ -112,11 +112,14 @@ def build_experts(draws: Draws, *, min_history=200, sparse_prior=100,
         names.append(f"dense {name}")
         families.append("dense")
         theta = np.log(p) - np.log1p(-p)
-        lp.append((theta * hot[targets]).sum(axis=1) - log_partition(theta)
-                  + np.log(strong[np.arange(n), draws.strong[targets] - 1]))
         if include_marginals:
-            bp.append(marginals(theta))
+            log_z, marg = log_partition_and_marginals(theta)
+            bp.append(marg)
             sp.append(strong)
+        else:
+            log_z = log_partition(theta)
+        lp.append((theta * hot[targets]).sum(axis=1) - log_z
+                  + np.log(strong[np.arange(n), draws.strong[targets] - 1]))
     prior = np.array([FAMILY_PRIOR[f] / families.count(f) for f in families])
     return JointExperts(names, families, targets, prior, np.asarray(lp),
                         np.asarray(bp) if include_marginals else None,

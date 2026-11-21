@@ -345,3 +345,30 @@ def test_reference_is_dated_without_claiming_verified_settings(service):
 def test_unknown_top_level_fields_are_not_silently_ignored(service, kind, payload):
     with pytest.raises(Invalid):
         service.validate_request(kind, payload)
+
+
+def test_cancelled_refresh_still_reloads_the_updated_archive(tmp_path, monkeypatch):
+    """The download commits the file before the job can publish, so memory must follow."""
+    import shutil
+
+    from lotto.ui.jobs import Cancelled
+
+    raw = tmp_path / "archive.csv"
+    shutil.copyfile(SNAPSHOT, raw)
+    with open(raw, "rb") as fh:
+        full = fh.read().splitlines(keepends=True)
+    raw.write_bytes(full[0] + b"".join(full[2:]))  # newest-first: drop the newest draw
+    svc = Service(Storage(tmp_path / "ui"), raw_csv=str(raw), offline=False)
+    before = svc.snapshot()[1]["draws"]
+    refresh = Job("refresh", "refresh", svc.refresh)
+
+    def download(path):  # the user cancels while the new file is being written
+        shutil.copyfile(SNAPSHOT, path)
+        refresh.cancel()
+        return "updated"
+
+    monkeypatch.setattr(data, "check_for_new_draws", download)
+    with pytest.raises(Cancelled):
+        svc.refresh(refresh)
+    assert svc.snapshot()[1]["draws"] == before + 1
+    assert svc.refresh_status["state"] == "updated"

@@ -239,5 +239,5 @@ class NeuralPredictor(Predictor):
             self.fit(history)
         feats = _features(history.multi_hot)[-self.window :]
         x = feats[None].astype(np.float32)
-        balls, strong = self.model.predict(x, verbose=0)
-        return balls[0].astype(np.float64), strong[0].astype(np.float64)
+        balls, strong = self.model(x, training=False)
+        return balls.numpy()[0].astype(np.float64), strong.numpy()[0].astype(np.float64)

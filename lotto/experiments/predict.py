@@ -24,6 +24,7 @@ from pathlib import Path
 
 from lotto.approaches import full_suite, quick_suite
 from lotto.core import backtest, data, paths
+from lotto.core.files import write_json
 from lotto.tickets.coverage import portfolio_odds
 from lotto.tickets.draw_plan import FORMS
 from lotto.tickets.model_forms import best_ticket, model_form
@@ -123,11 +124,12 @@ def main() -> int:
 
     markdown = to_markdown(results, draws, args.rows)
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    (args.out_dir / f"next_draw_{args.rows}_rows.md").write_text(markdown)
-    (args.out_dir / f"next_draw_{args.rows}_rows.json").write_text(json.dumps(
+    (args.out_dir / f"next_draw_{args.rows}_rows.md").write_text(markdown, encoding="utf-8")
+    write_json(
+        args.out_dir / f"next_draw_{args.rows}_rows.json",
         {"draws": len(draws), "last_draw": str(draws.dates[-1].astype("datetime64[D]")),
          "next_draw": str(data.next_draw_date(draws)), "rows": args.rows, "models": results},
-        indent=2) + "\n")
+    )
     print("\n" + markdown)
     print(f"Saved {args.out_dir / f'next_draw_{args.rows}_rows.md'} and the .json beside it.")
     return 0
