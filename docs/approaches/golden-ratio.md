@@ -1,5 +1,10 @@
 # The golden ratio
 
+!!! info "Historical examples"
+
+    The numerical examples on this page describe the July 2026 analysis (1,629 draws). They
+    are not the current scoreboard. See [Results](../results.md) for the latest generated values.
+
 !!! abstract "The concept, in a minute"
 
     **The idea.** φ ≈ 1.618 genuinely organises sunflowers, pinecones and galaxies —

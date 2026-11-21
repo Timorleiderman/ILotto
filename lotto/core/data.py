@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 import os
+import tempfile
 from dataclasses import dataclass
 
 import numpy as np
@@ -105,15 +106,18 @@ def check_for_new_draws(raw_csv: str = RAW_CSV, timeout: float | tuple[float, fl
         logger.warning("Could not refresh archive (%s); using committed copy", exc)
         return "failed"
 
-    candidate = raw_csv + ".download"
-    with open(candidate, "wb") as fh:
+    parent = os.path.dirname(raw_csv) or "."
+    with tempfile.NamedTemporaryFile("wb", dir=parent, prefix=os.path.basename(raw_csv) + ".",
+                                     suffix=".download", delete=False) as fh:
+        candidate = fh.name
         fh.write(res.content)
     try:
         problem, added = _refresh_problem(candidate, raw_csv)
     except Exception as exc:  # an HTML error page, or a changed column layout
         problem, added = f"it could not be parsed ({exc})", None
     if problem or added is None or added.empty:
-        os.remove(candidate)
+        if os.path.exists(candidate):
+            os.remove(candidate)
         if problem:
             logger.warning("Downloaded archive rejected: %s; keeping local copy", problem)
             return "failed"
@@ -178,7 +182,7 @@ def load(
             "LOTTO_ROOT to the checkout's folder."
         )
 
-    df = _read_raw(raw_csv).sort_values("date").reset_index(drop=True)
+    df = _read_raw(raw_csv).sort_values(["date", "draw_id"], kind="stable").reset_index(drop=True)
 
     if era_start is not None:
         df = df[df["date"] >= pd.Timestamp(era_start)].reset_index(drop=True)
@@ -218,8 +222,20 @@ def load(
         out = pd.DataFrame(balls, columns=BALL_COLS)
         out.insert(0, "Date", df["date"].dt.strftime("%d/%m/%Y").to_numpy())
         out["Ball_Bonus"] = strong
-        os.makedirs(os.path.dirname(clean_csv) or ".", exist_ok=True)
-        out.to_csv(clean_csv, index=False)
+        parent = os.path.dirname(clean_csv) or "."
+        os.makedirs(parent, exist_ok=True)
+        with tempfile.NamedTemporaryFile("w", dir=parent, prefix=os.path.basename(clean_csv) + ".",
+                                         suffix=".tmp", encoding="utf-8", delete=False) as fh:
+            staging = fh.name
+            try:
+                out.to_csv(fh, index=False)
+                fh.flush()
+            except BaseException:
+                fh.close()
+                if os.path.exists(staging):
+                    os.remove(staging)
+                raise
+        os.replace(staging, clean_csv)
 
     return draws
 

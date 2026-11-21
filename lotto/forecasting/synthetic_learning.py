@@ -11,7 +11,7 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.special import logsumexp
 
-from lotto.approaches.date_conditioned import log_partition, marginals
+from lotto.approaches.date_conditioned import log_partition, log_partition_and_marginals
 from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
 from lotto.forecasting.calibration import frequency_forecasts
 from lotto.forecasting.joint_mixture import LOG_FULL_OUTCOMES, event_log_ratio, validate_draws
@@ -79,10 +79,12 @@ def components(draws, *, windows=(50, 100, 300, None), strengths=(100, 500, 2000
     lp = np.empty((len(names), len(draws)))
     for i in range(len(names) - 1):
         theta = np.log(bp[i]) - np.log1p(-bp[i])
-        lp[i] = ((theta * actual).sum(axis=1) - log_partition(theta)
-                 + np.log(sp[i, np.arange(len(draws)), draws.strong - 1]))
         if include_marginals:
-            bp[i] = marginals(theta)
+            log_z, bp[i] = log_partition_and_marginals(theta)
+        else:
+            log_z = log_partition(theta)
+        lp[i] = ((theta * actual).sum(axis=1) - log_z
+                 + np.log(sp[i, np.arange(len(draws)), draws.strong - 1]))
     lp[-1] = -LOG_FULL_OUTCOMES
     # Avoid numerical label preferences on an exactly uniform cold start.
     lp[:, 0] = -LOG_FULL_OUTCOMES

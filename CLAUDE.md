@@ -25,7 +25,7 @@ node --test tests/test_ui_frontend.cjs  # built-in Node test runner; no npm depe
 
 # Everything runs through one command.
 uv run lotto list                                   # the experiment catalog
-uv run lotto report --quick                         # checks for new draws, report into results/report/, no neural models
+uv run lotto report --quick                         # checks for new draws, report into results/report/, skips date-conditioned + neural models
 uv run lotto report --out-dir docs                  # checks for new draws, full run (~2 min), rebuilds the site pages
 uv run lotto report --offline --quick               # same, without contacting pais.co.il
 uv run lotto run coverage --count 10 --seed 0 --out results/coverage.json

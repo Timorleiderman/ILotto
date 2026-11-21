@@ -85,6 +85,7 @@ class Service:
         self.refresh_status = {"state": "not_checked", "at": None}
         self._lock = threading.Lock()
         self._odds: dict[int, dict] = {}
+        self._reference_cache: tuple[int, dict] | None = None
         self.algorithm = algorithm_fingerprint()
         self._load()
         attempts = self.storage.notebook()
@@ -127,18 +128,29 @@ class Service:
         if self.offline:
             raise Invalid({"refresh": "The dashboard was started with --offline."})
         job.step("Contacting pais.co.il")
-        before = self.archive["draws"]
+        _, before_archive = self.snapshot()
+        before = before_archive["draws"]
         state = data.check_for_new_draws(self.raw_csv)
+        # The download has already replaced the file on disk, so the loaded
+        # archive must follow it even if this job is cancelled before publishing:
+        # a retry would report "unchanged" and never reload.
         if state == "updated":
             self._load()
-        self.refresh_status = {"state": state, "at": _now_utc()}
-        return {"state": state, "added": self.archive["draws"] - before, "archive": self.archive}
+        with self._lock:
+            self.refresh_status = {"state": state, "at": _now_utc()}
+
+        def publish() -> dict:
+            _, archive = self.snapshot()
+            return {"state": state, "added": archive["draws"] - before, "archive": archive}
+
+        return job.finish(publish)
 
     def state(self) -> dict:
         """Everything the page needs to draw itself."""
-        draws, archive = self.snapshot()
+        with self._lock:
+            draws, archive, refresh_status = self.draws, self.archive, dict(self.refresh_status)
         return {"schema": SCHEMA, "archive": archive, "next_draw": self.next_draw(draws),
-                "today": _day(today_in_israel()), "refresh": {**self.refresh_status, "offline": self.offline},
+                "today": _day(today_in_israel()), "refresh": {**refresh_status, "offline": self.offline},
                 "rows": list(ROW_CHOICES), "row_price": ROW_PRICE, "baseline_matches": metrics.BASELINE_MATCHES,
                 **registry.describe(), "preset_names": self.preset_names()}
 
@@ -149,31 +161,43 @@ class Service:
         They depend only on how the rows overlap, so every model's relabelled
         form shares them, and a single row has the same odds whatever its numbers.
         """
-        if rows not in self._odds:
-            design = [list(r) for r in FORMS[rows]] if rows in FORMS else [[1, 2, 3, 4, 5, 6, 1]]
-            odds, strong = portfolio_odds(design), strong_prize_odds(design)
-            self._odds[rows] = {
-                "rows": rows, "p_any_prize": odds["p_any_prize"],
-                "p_at_least": {k: odds["p_at_least_matches"][k] for k in ("3", "4", "5", "6")},
-                "p_three_plus_and_strong": strong["p_at_least_matches_and_strong"],
-                "first_prize_ways": odds["jackpot_covered_outcomes"], "total_outcomes": odds["total_full_outcomes"],
-                "p_first_prize": odds["p_jackpot"], "cost": ROW_PRICE * rows,
-            }
-        return self._odds[rows]
+        with self._lock:
+            cached = self._odds.get(rows)
+        if cached is not None:
+            return cached
+        design = [list(r) for r in FORMS[rows]] if rows in FORMS else [[1, 2, 3, 4, 5, 6, 1]]
+        odds, strong = portfolio_odds(design), strong_prize_odds(design)
+        computed = {
+            "rows": rows, "p_any_prize": odds["p_any_prize"],
+            "p_at_least": {k: odds["p_at_least_matches"][k] for k in ("3", "4", "5", "6")},
+            "p_three_plus_and_strong": strong["p_at_least_matches_and_strong"],
+            "first_prize_ways": odds["jackpot_covered_outcomes"], "total_outcomes": odds["total_full_outcomes"],
+            "p_first_prize": odds["p_jackpot"], "cost": ROW_PRICE * rows,
+        }
+        with self._lock:
+            self._odds[rows] = computed
+        return computed
 
     # ---------------------------------------------------------------- reference
     def preset_names(self) -> dict[str, str]:
         """Scoreboard name of every preset, e.g. ``hot_100`` → "Hot numbers (last 100 draws)"."""
-        if not hasattr(self, "_preset_names"):
-            self._preset_names = {p.id: registry.build_preset(p.id).name for p in registry.PRESETS}
-        return self._preset_names
+        with self._lock:
+            if not hasattr(self, "_preset_names"):
+                self._preset_names = {p.id: registry.build_preset(p.id).name for p in registry.PRESETS}
+            return self._preset_names
 
     def reference(self, preset_id: str | None) -> dict | None:
         """The published scoreboard record of a preset: a dated reference, not a live result."""
         path = paths.REPO_ROOT / "docs/benchmark/results.json"
         if preset_id is None or not path.is_file():
             return None
-        report = json.loads(path.read_text())
+        mtime = path.stat().st_mtime_ns
+        with self._lock:
+            if self._reference_cache is not None and self._reference_cache[0] == mtime:
+                report = self._reference_cache[1]
+            else:
+                report = json.loads(path.read_text(encoding="utf-8"))
+                self._reference_cache = (mtime, report)
         name = self.preset_names()[preset_id]
         row = next((r for r in report["strategies"] if r["name"] == name), None)
         if row is None:
@@ -207,6 +231,8 @@ class Service:
                 raise Invalid({"rows": f"choose one of {', '.join(map(str, ROW_CHOICES))}"})
             self._target(spec, request.get("date"), self.snapshot()[0])
         else:
+            if not spec.benchmark:
+                raise Invalid({"model": "Toy generators outside the benchmark cannot be backtested in the Lab."})
             if spec.id == "date_cb" and params["ticket"] == "sampled":
                 raise Invalid({"ticket": "The Lab evaluates top-six tickets. Choose 'top six' before backtesting."})
             n_test = request.get("n_test", 300)
@@ -371,29 +397,34 @@ class Service:
                     registry.build(spec, params, seed), draws, n_test=n_test,
                     on_step=lambda done, total: job.step(f"Replaying draw {done + 1} of {total}", done, total))
             except Cancelled:
-                attempt["state"] = "cancelled"
+                attempt.update(state="cancelled", finished_utc=_now_utc())
                 self.storage.save_notebook(attempts)
                 raise
             except Exception:
-                attempt.update(state="failed", message="Run failed; see the server terminal.")
+                attempt.update(state="failed", message="Run failed; see the server terminal.",
+                               finished_utc=_now_utc())
                 self.storage.save_notebook(attempts)
                 raise
             summary = run.summary
             hist = np.bincount(run.match_counts, minlength=data.N_DRAWN + 1).tolist()
             pmf = stats.hypergeom(data.N_NUMBERS, data.N_DRAWN, data.N_DRAWN).pmf(np.arange(data.N_DRAWN + 1))
-            attempt.update(
-                state="complete", draws=len(window), first_date=_day(draws.dates[window.start]),
-                last_date=_day(draws.dates[window.stop - 1]), mean_matches=summary["mean_matches"],
-                p_value=summary["p_value"], histogram=hist, chance=[float(v) for v in pmf * len(window)],
-                seconds=round(run.seconds, 2), finished_utc=_now_utc())
+            completed_fields = {
+                "state": "complete", "draws": len(window), "first_date": _day(draws.dates[window.start]),
+                "last_date": _day(draws.dates[window.stop - 1]), "mean_matches": summary["mean_matches"],
+                "p_value": summary["p_value"], "histogram": hist,
+                "chance": [float(v) for v in pmf * len(window)],
+                "seconds": round(run.seconds, 2), "finished_utc": _now_utc(),
+            }
+
             def publish():
+                attempt.update(completed_fields)
                 self.storage.save_notebook(attempts)
                 return {"attempt_id": attempt_id, "notebook": self.notebook()}
 
             try:
                 return job.finish(publish)
             except Cancelled:
-                attempt["state"] = "cancelled"
+                attempt.update(state="cancelled", finished_utc=_now_utc())
                 self.storage.save_notebook(attempts)
                 raise
         return job.finish(lambda: {"attempt_id": cached["id"], "notebook": self.notebook()})
@@ -452,7 +483,7 @@ class Service:
     def log(self) -> dict:
         """Saved predictions, each scored against the archive if its draw is in it."""
         draws, _ = self.snapshot()
-        days = draws.dates.astype("datetime64[D]")
+        day_index = {str(d): i for i, d in enumerate(draws.dates.astype("datetime64[D]"))}
         entries = []
         for entry in reversed(self.storage.log_entries()):
             result = entry["result"]
@@ -461,9 +492,9 @@ class Service:
                     "params": result["params"], "seed": result["seed"], "rows": result["rows"],
                     "ticket": result["ticket"], "form": result["form"], "p_any_prize": result["odds"]["p_any_prize"],
                     "state": "waiting"}
-            hit = np.flatnonzero(days == np.datetime64(result["target_date"]))
-            if len(hit):
-                balls, strong = set(draws.balls[hit[0]].tolist()), int(draws.strong[hit[0]])
+            idx = day_index.get(result["target_date"])
+            if idx is not None:
+                balls, strong = set(draws.balls[idx].tolist()), int(draws.strong[idx])
                 scored = [{"matches": len(balls & set(row[:6])), "strong": row[6] == strong} for row in result["form"]]
                 for s in scored:
                     s["tier"] = metrics.prize_tier(s["matches"], s["strong"])

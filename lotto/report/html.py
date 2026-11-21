@@ -101,8 +101,10 @@ def _pill(significant: bool) -> str:
 def predict_next(predictor: Predictor, draws: Draws, top_n: int = 12) -> dict:
     """Ticket the given predictor would play for the next, undrawn result."""
     target_date, ball_scores, strong_scores = backtest.next_draw_scores(predictor, draws)
-    if not np.isfinite(ball_scores).all():
-        raise ValueError("Predictors must emit finite vectors with 37 ball and 7 strong scores")
+    if np.isnan(ball_scores).any() or np.isposinf(ball_scores).any() or not np.isfinite(strong_scores).all():
+        raise ValueError("Predictors must emit 37 ball and 7 strong scores without NaN or +inf")
+    if predictor.emits_probabilities and not np.isfinite(ball_scores).all():
+        raise ValueError("Probability-emitting predictors must emit finite ball scores")
     # Reuse the backtest's top-six tie policy. A separate argsort here used to
     # publish different tickets from those measured when frequencies were tied.
     selected = metrics.top_k(ball_scores)
@@ -124,7 +126,9 @@ def predict_next(predictor: Predictor, draws: Draws, top_n: int = 12) -> dict:
         "numbers": picks,
         "strong": int(np.argmax(strong_scores) + 1),
         "shortlist_kind": kind,
-        "shortlist": [(int(i + 1), float(values[i])) for i in order[:top_n]],
+        "shortlist": [
+            (int(i + 1), float(values[i]) if np.isfinite(values[i]) else None) for i in order[:top_n]
+        ],
     }
 
 
@@ -253,7 +257,10 @@ def build(
         balls = "".join(f'<div class="ball">{n}</div>' for n in p["numbers"])
         balls += f'<div class="ball strong">{p["strong"]}</div>'
         if p.get("shortlist_kind") == "ranking_score":
-            short = ", ".join(f"{n} (score {score:.3g})" for n, score in p["shortlist"])
+            short = ", ".join(
+                f"{n} (excluded)" if score is None else f"{n} (score {score:.3g})"
+                for n, score in p["shortlist"]
+            )
             explanation = "Ranking scores only; they are not probabilities."
         else:
             short = ", ".join(f"{n} ({pr * 100:.1f}%)" for n, pr in p["shortlist"])
@@ -318,8 +325,8 @@ with strong 1&ndash;{N_STRONG} only from 2012. Pooling those eras models a machi
 dropping any draw containing a number above {N_NUMBERS}. That is not a format filter, it is a
 selection on the outcome &mdash; it deletes precisely the draws that contained high numbers and
 keeps the low ones, manufacturing a downward bias in the surviving frequency table.
-In the pre-2004 years it discarded {int(era[era.year < 2004]["dropped_by_legacy_filter"].sum()):,} of
-{int(era[era.year < 2004]["draws"].sum()):,} draws that way. This report filters by <strong>date</strong>
+In the 1968&ndash;2004 years it discarded {int(era[era.year <= 2004]["dropped_by_legacy_filter"].sum()):,} of
+{int(era[era.year <= 2004]["draws"].sum()):,} draws that way. This report filters by <strong>date</strong>
 instead, which is unbiased, and uses the {len(draws):,} draws from 2012 onward.</p>
 {_table(["Game format", "Draws", "Max ball", "Max strong", "Kept by legacy filter"], era_rows, numeric_from=1)}
 <details><summary style="cursor:pointer;color:var(--muted);font-size:.85rem;margin-top:12px">

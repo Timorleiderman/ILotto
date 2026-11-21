@@ -32,7 +32,7 @@ import logging
 import numpy as np
 
 from lotto.approaches.statistical import Predictor
-from lotto.core.data import N_DRAWN, N_NUMBERS, N_STRONG, Draws
+from lotto.core.data import N_DRAWN, N_STRONG, Draws
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ class PerfectFitDFT(Predictor):
 
 
 class PerfectFitSpline(Predictor):
-    """A natural cubic spline through every past draw, extrapolated one step.
+    """A cubic spline (not-a-knot) through every past draw, extrapolated one step.
 
     Also an exact fit — zero error at every knot. Its extrapolation follows the
     final cubic segment, which promptly leaves [0, 1]: on the real archive the
@@ -81,7 +81,7 @@ class PerfectFitSpline(Predictor):
 
     name = "Perfect-fit function (spline)"
     description = (
-        "Natural cubic spline through every past draw, evaluated one step past the end. "
+        "Cubic spline (not-a-knot) through every past draw, evaluated one step past the end. "
         "Fits the history exactly; extrapolates values far outside [0, 1]. A control."
     )
 
@@ -90,9 +90,7 @@ class PerfectFitSpline(Predictor):
 
         n = len(history)
         t = np.arange(n, dtype=np.float64)
-        vals = np.array(
-            [CubicSpline(t, history.multi_hot[:, j])(float(n)) for j in range(N_NUMBERS)]
-        )
+        vals = np.asarray(CubicSpline(t, history.multi_hot, axis=0)(float(n)), dtype=np.float64)
         return vals, np.full(N_STRONG, _UNIFORM_STRONG)
 
 
@@ -114,13 +112,14 @@ class PerfectFitPolynomial(Predictor):
     window = N_DRAWN  # 6 points -> degree 5, exact
 
     def scores(self, history: Draws) -> tuple[np.ndarray, np.ndarray]:
+        from math import comb
+
         w = self.window
-        tw = np.arange(w, dtype=np.float64)
-        recent = history.multi_hot[-w:]
-        vals = np.array(
-            [np.polyval(np.polyfit(tw, recent[:, j], w - 1), float(w)) for j in range(N_NUMBERS)]
-        )
-        return vals, np.full(N_STRONG, _UNIFORM_STRONG)
+        # Exact Lagrange extrapolation at t = w from nodes 0..w-1:
+        # y(w) = sum_{j=0}^{w-1} (-1)^(w-1-j) * C(w, j) * y_j.
+        weights = np.array([((-1) ** (w - 1 - j)) * comb(w, j) for j in range(w)], dtype=np.float64)
+        recent = history.multi_hot[-w:].astype(np.float64)
+        return weights @ recent, np.full(N_STRONG, _UNIFORM_STRONG)
 
 
 def spacetime_suite() -> list[Predictor]:

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from lotto.tickets.coverage import portfolio_odds
 from lotto.tickets.draw_plan import FORMS, TEN_ROW_FORM
@@ -47,3 +48,18 @@ def test_negative_and_infinite_scores_are_handled():
 
 def test_flat_forecast_returns_the_design():
     assert model_form(np.ones(37), np.ones(7), TEN_ROW_FORM) == [list(r) for r in TEN_ROW_FORM]
+
+
+def test_nan_and_posinf_scores_are_rejected():
+    bad_balls = np.full(37, -3.6)
+    bad_balls[5] = np.nan
+    with pytest.raises(ValueError, match="NaN"):
+        best_ticket(bad_balls, np.ones(7))
+    with pytest.raises(ValueError, match="NaN"):
+        model_form(bad_balls, np.ones(7), TEN_ROW_FORM)
+
+    bad_strong = np.array([0.1, 0.2, np.nan, 0.1, 0.1, 0.1, 0.1])
+    with pytest.raises(ValueError, match="finite"):
+        best_ticket(np.ones(37), bad_strong)
+    with pytest.raises(ValueError, match="finite"):
+        model_form(np.ones(37), bad_strong, TEN_ROW_FORM)

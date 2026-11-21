@@ -3,17 +3,16 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import platform
-import tempfile
 import time
 from math import comb
-from pathlib import Path
 
 import numpy as np
 
 from lotto.core import paths
-from lotto.core.files import sha256_file
+from lotto.core.files import sha256_file, write_json
 from lotto.tickets.coverage import best_match_counts, portfolio_odds, search_coverage_tickets
 from lotto.tickets.strong_assignment import optimize_strong_numbers, strong_prize_odds
 
@@ -37,7 +36,8 @@ def verify_strong(tickets, expected):
 
 
 def main():
-    config = json.loads(PROTOCOL.read_text())
+    argparse.ArgumentParser(description=__doc__).parse_args()
+    config = json.loads(PROTOCOL.read_text(encoding='utf-8'))
     source = ROOT / 'experiments' / config['initial_results']
     if config.get('schema') != 1 or sha256_file(source) != config['initial_results_sha256']:
         raise ValueError('Protocol must match schema 1 and the saved input checksum')
@@ -116,21 +116,17 @@ def main():
                        'ten_ticket_union_bound': min(1.0, 10 * sum(comb(6, j) * comb(31, 6-j)
                                                                   for j in range(k, 7)) / total)}
               for k in (3, 4, 5, 6)}
-    paths = ['lotto/tickets/_kernels.py', 'lotto/tickets/coverage.py', 'lotto/tickets/strong_assignment.py',
-             'lotto/experiments/strong_numbers.py']
+    source_files = ['lotto/tickets/_kernels.py', 'lotto/tickets/coverage.py', 'lotto/tickets/strong_assignment.py',
+                    'lotto/experiments/strong_numbers.py']
     output = {'schema': 1, 'status': 'complete', 'configuration': config,
-              'protocol_sha256': sha256_file(PROTOCOL), 'source_sha256': {p: sha256_file(ROOT / p) for p in paths},
+              'protocol_sha256': sha256_file(PROTOCOL), 'source_sha256': {p: sha256_file(ROOT / p) for p in source_files},
               'environment': {'python': platform.python_version(), 'numpy': np.__version__,
                               'platform': platform.platform()},
               'timing_scope': 'Search only, after baseline warmup; verification and strong assignment excluded',
               'baseline': baseline, 'rows': results, 'summary': summaries, 'upper_bounds': bounds,
               'selected_result_index': selected_index, 'selected_reference_verified': True,
               'selected_portfolio': selected['portfolio']}
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='ticket-chances-', dir=OUTPUT.parent) as staging:
-        staged = Path(staging) / OUTPUT.name
-        staged.write_text(json.dumps(output, indent=2, allow_nan=False) + '\n')
-        staged.replace(OUTPUT)
+    write_json(OUTPUT, output)
     print(f'Wrote {OUTPUT}', flush=True)
 
 

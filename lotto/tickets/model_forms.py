@@ -16,13 +16,26 @@ import numpy as np
 from scipy.stats import rankdata
 
 from lotto.core import metrics
+from lotto.core.data import N_NUMBERS, N_STRONG
 from lotto.tickets.forecast_portfolios import ranked_portfolios
+
+
+def _validate_scores(ball_scores: np.ndarray, strong_scores: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    balls = np.asarray(ball_scores, dtype=float)
+    strong = np.asarray(strong_scores, dtype=float)
+    if balls.shape != (N_NUMBERS,) or strong.shape != (N_STRONG,):
+        raise ValueError(f"Expected ({N_NUMBERS},) ball scores and ({N_STRONG},) strong scores")
+    if np.isnan(balls).any() or np.isposinf(balls).any() or not np.isfinite(strong).all():
+        raise ValueError("Ball scores must not contain NaN or +inf; strong scores must be finite")
+    return balls, strong
 
 
 def _ranks(scores: np.ndarray) -> np.ndarray:
     """Scores as nonnegative ranks: same order, ties share a rank, -inf ranks last."""
-    finite = np.nan_to_num(np.asarray(scores, dtype=float), neginf=-1e300, posinf=1e300)
-    return rankdata(finite)
+    arr = np.asarray(scores, dtype=float)
+    if np.isnan(arr).any() or np.isposinf(arr).any():
+        raise ValueError("Scores must not contain NaN or +inf")
+    return rankdata(arr)
 
 
 def best_ticket(ball_scores: np.ndarray, strong_scores: np.ndarray) -> list[int]:
@@ -31,8 +44,8 @@ def best_ticket(ball_scores: np.ndarray, strong_scores: np.ndarray) -> list[int]
     Ties go to the lower number, as in the backtest, so this is exactly the
     ticket the scoreboard scored the model on.
     """
-    return [*(metrics.top_k(np.nan_to_num(ball_scores, neginf=-1e300)) + 1).tolist(),
-            int(np.argmax(strong_scores)) + 1]
+    balls, strong = _validate_scores(ball_scores, strong_scores)
+    return [*(metrics.top_k(balls) + 1).tolist(), int(np.argmax(strong)) + 1]
 
 
 def model_form(ball_scores: np.ndarray, strong_scores: np.ndarray, design) -> list[list[int]]:
@@ -40,5 +53,6 @@ def model_form(ball_scores: np.ndarray, strong_scores: np.ndarray, design) -> li
 
     Each row is six ascending main numbers followed by a strong number.
     """
-    rows = ranked_portfolios(design, _ranks(ball_scores)[None], _ranks(strong_scores)[None])[0]
+    balls, strong = _validate_scores(ball_scores, strong_scores)
+    rows = ranked_portfolios(design, _ranks(balls)[None], _ranks(strong)[None])[0]
     return rows.tolist()

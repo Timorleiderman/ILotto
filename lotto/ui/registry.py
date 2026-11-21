@@ -63,9 +63,7 @@ class Param:
             return None
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise ValueError("a number is required")
-        if not self.low <= value <= self.high:
-            raise ValueError(f"must be between {self.low:g} and {self.high:g}")
-        if not math.isfinite(value):
+        if isinstance(value, float) and not math.isfinite(value):
             raise ValueError("a finite number is required")
         if self.kind in ("int", "int_or_all"):
             if value != int(value):
@@ -276,7 +274,7 @@ def resolve(model_id: str, raw_params, raw_seed) -> tuple[Model, dict, int | Non
         except ValueError as exc:
             errors[p.name] = str(exc)
     seed = None
-    if not errors and spec.seeded(params):
+    if spec.seeded(params):
         try:
             seed = parse_seed(spec.seed_default if raw_seed is None else raw_seed, spec.seed_max)
         except ValueError as exc:
