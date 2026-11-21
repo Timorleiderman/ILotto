@@ -48,6 +48,8 @@ CATALOG: tuple[Experiment, ...] = (
                "coverage_search", "algorithm-research.md"),
     Experiment("strong-numbers", "3. Algorithms", "Which strong number should each row carry?",
                "strong_numbers", "ticket-chances.md"),
+    Experiment("value", "3. Algorithms", "Is a ticket ever worth its price after prize sharing and tax?",
+               "ticket_value", "levers/ticket-value.md", quick="--offline"),
     Experiment("plan", "3. Algorithms", "Which form should I play on the next draw?",
                "draw_planner", "levers/draw-planner.md", needs="network access to pais.co.il"),
     Experiment("seed-search", "4. Side quest", "If draws came from a seeded generator, could the seed be found?",

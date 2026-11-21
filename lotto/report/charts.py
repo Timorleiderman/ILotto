@@ -345,3 +345,73 @@ def histogram_with_markers(
         )
     out.append("</svg>")
     return "".join(out)
+
+
+def timeline(
+    dates: list[str],
+    series: list[tuple[str, list[float]]],
+    *,
+    reference: float | None = None,
+    reference_label: str = "",
+    y_title: str = "",
+    title: str = "",
+) -> str:
+    """Values over calendar time (ISO dates), one line per series, with an optional reference line.
+
+    The y axis always reaches the reference, so a series that never gets
+    there is visibly below it rather than rescaled to look close.
+    """
+    box = Box(w=760, h=330, left=58, right=18, top=18, bottom=70)
+    days = [int(d[:4]) * 372 + int(d[5:7]) * 31 + int(d[8:10]) for d in dates]  # monotone, not exact
+    lo_x, hi_x = min(days), max(days)
+    hi_x = hi_x if hi_x > lo_x else lo_x + 1
+    values = [v for _, vals in series for v in vals]
+    hi = max(values + ([reference] if reference is not None else [])) * 1.08
+    colors = ["var(--series-1)", "var(--series-2)", "var(--series-7)"]
+    out = _open(box, title or "timeline")
+
+    def x(v: float) -> float:
+        return box.left + (v - lo_x) / (hi_x - lo_x) * box.pw
+
+    def y(v: float) -> float:
+        return box.top + box.ph - (v / hi) * box.ph
+
+    for t in _nice_ticks(0, hi):
+        out.append(
+            f'<line x1="{box.left}" y1="{y(t):.1f}" x2="{box.left + box.pw}" y2="{y(t):.1f}" '
+            f'stroke="{GRID}" stroke-width="1"/>'
+            f'<text x="{box.left - 8}" y="{y(t) + 4:.1f}" fill="{MUTED}" font-size="11" '
+            f'text-anchor="end">{t:g}</text>'
+        )
+    for year in range(int(dates[0][:4]) + 1, int(dates[-1][:4]) + 1):
+        px = x(year * 372 + 31 + 1)
+        out.append(
+            f'<line x1="{px:.1f}" y1="{box.top}" x2="{px:.1f}" y2="{box.top + box.ph}" stroke="{GRID}" '
+            f'stroke-width="1"/><text x="{px:.1f}" y="{box.top + box.ph + 18}" fill="{MUTED}" font-size="11" '
+            f'text-anchor="middle">{year}</text>'
+        )
+    for i, (name, vals) in enumerate(series):
+        points = " ".join(f"{x(d):.1f},{y(v):.1f}" for d, v in zip(days, vals))
+        out.append(f'<polyline points="{points}" fill="none" stroke="{colors[i % len(colors)]}" '
+                   f'stroke-width="1.4" stroke-linejoin="round"><title>{_esc(name)}</title></polyline>')
+    if reference is not None:
+        py = y(reference)
+        out.append(
+            f'<line x1="{box.left}" y1="{py:.1f}" x2="{box.left + box.pw}" y2="{py:.1f}" '
+            f'stroke="var(--series-8)" stroke-width="2" stroke-dasharray="5 4"/>'
+            f'<text x="{box.left + box.pw - 4}" y="{py - 6:.1f}" fill="var(--series-8)" font-size="12" '
+            f'text-anchor="end">{_esc(reference_label)}</text>'
+        )
+    lx = box.left
+    for i, (name, _) in enumerate(series):
+        out.append(f'<rect x="{lx}" y="{box.h - 20}" width="11" height="11" rx="3" '
+                   f'fill="{colors[i % len(colors)]}"/>'
+                   f'<text x="{lx + 16}" y="{box.h - 10}" fill="{INK2}" font-size="12">{_esc(name)}</text>')
+        lx += 26 + 7.2 * len(name)
+    if y_title:
+        out.append(
+            f'<text transform="translate(14,{box.top + box.ph / 2:.1f}) rotate(-90)" fill="{INK2}" '
+            f'font-size="12" text-anchor="middle">{_esc(y_title)}</text>'
+        )
+    out.append("</svg>")
+    return "".join(out)

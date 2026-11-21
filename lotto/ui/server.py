@@ -164,6 +164,9 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
                 return self._json(app.service.notebook())
             if path == "/api/log":
                 return self._json(app.service.log())
+            if path == "/api/value":
+                query = {k: v[-1] for k, v in parse_qs(url.query, keep_blank_values=True).items()}
+                return self._json(app.service.value(query))
             if path.startswith("/api/jobs/"):
                 job = app.jobs.get(path[10:])
                 if job is None:

@@ -21,9 +21,11 @@ from scipy import stats
 
 from lotto.core import backtest, data, metrics, paths
 from lotto.core.files import sha256_file
+from lotto.economics import archive as prize_archive
+from lotto.economics import value as ticket_value
 from lotto.report import charts
 from lotto.tickets.coverage import portfolio_odds
-from lotto.tickets.draw_plan import FORMS, ROW_PRICE
+from lotto.tickets.draw_plan import CAP, FORMS, ROW_PRICE
 from lotto.tickets.model_forms import best_ticket, model_form
 from lotto.tickets.strong_assignment import strong_prize_odds
 from lotto.ui import registry
@@ -80,8 +82,12 @@ def _ticket_row(numbers, strong) -> list[int]:
 class Service:
     """The dashboard's state (the loaded archive, saved results) and its actions."""
 
-    def __init__(self, storage: Storage, raw_csv: str = data.RAW_CSV, offline: bool = False):
+    def __init__(self, storage: Storage, raw_csv: str = data.RAW_CSV, offline: bool = False,
+                 prizes_csv: str = prize_archive.PRIZES_CSV):
         self.storage, self.raw_csv, self.offline = storage, raw_csv, offline
+        self.prizes_csv = prizes_csv
+        self.announcement: prize_archive.Announcement | None = None
+        self._value_cache: dict = {}
         self.refresh_status = {"state": "not_checked", "at": None}
         self._lock = threading.Lock()
         self._odds: dict[int, dict] = {}
@@ -138,6 +144,14 @@ class Service:
             self._load()
         with self._lock:
             self.refresh_status = {"state": state, "at": _now_utc()}
+        # Prize tables and the advertised jackpot feed the Value screen. Best effort:
+        # a failure here keeps the committed tables and never fails the draw check.
+        job.step("Reading prize tables")
+        prize_archive.refresh(self.prizes_csv)
+        announcement = prize_archive.fetch_announcement()
+        if announcement is not None:
+            with self._lock:
+                self.announcement = announcement
 
         def publish() -> dict:
             _, archive = self.snapshot()
@@ -459,6 +473,100 @@ class Service:
                     x_title="Numbers matched in one draw", y_title="Draws")
             view.append(row)
         return {"attempts": view, "completed": len(done), "baseline": metrics.BASELINE_MATCHES}
+
+    # -------------------------------------------------------------------- Value
+    def _prize_history(self, taxed: bool) -> tuple[list, list[dict], dict]:
+        """The prize tables and their valued history, recomputed only when the file changes."""
+        path = Path(self.prizes_csv)
+        stamp = path.stat().st_mtime_ns if path.is_file() else None
+        with self._lock:
+            cached = self._value_cache.get(taxed)
+        if cached is not None and cached[0] == stamp:
+            return cached[1], cached[2], cached[3]
+        results = prize_archive.load(self.prizes_csv)
+        if len(results) < 20:
+            raise Invalid({"value": "No prize tables yet. Press 'Check for new draws' while online."})
+        rows = ticket_value.history(results, taxed)
+        summary = ticket_value.summarise(rows)
+        with self._lock:
+            self._value_cache[taxed] = (stamp, results, rows, summary)
+        return results, rows, summary
+
+    def announced_prizes(self, results: list) -> dict:
+        """The next draw's prizes: as advertised if read this session, else inferred from the last result."""
+        last = results[-1]
+        with self._lock:
+            announcement = self.announcement
+        if announcement is not None and announcement.draw_id > last.draw_id:
+            return {"source": "announced", "draw_id": announcement.draw_id, "sales_close": announcement.sales_close,
+                    "first_prize": announcement.first_prize, "second_prize": announcement.second_prize}
+        first, second, bonus_likely = prize_archive.inferred_next_prizes(results)
+        return {"source": "inferred", "draw_id": last.draw_id + 1, "sales_close": None,
+                "first_prize": first, "second_prize": second, "after_draw": last.draw_id,
+                "bonus_likely": bonus_likely}
+
+    def value(self, query: dict) -> dict:
+        """What rows in the next draw cost and return, and what a row was worth in every past draw."""
+        allowed = {"first", "second", "rows", "kind", "bonus", "tax"}
+        unknown = set(query) - allowed
+        if unknown:
+            raise Invalid({key: "unknown request field" for key in unknown})
+
+        def whole(name, low, high, default):
+            raw = query.get(name)
+            if raw in (None, ""):
+                return default
+            try:
+                number = int(raw)
+            except (TypeError, ValueError):
+                number = None
+            if number is None or str(number) != str(raw).strip() or not low <= number <= high:
+                raise Invalid({name: f"a whole number from {low:,} to {high:,}"})
+            return number
+
+        def flag(name, default):
+            raw = query.get(name)
+            if raw in (None, ""):
+                return default
+            if raw not in ("0", "1", 0, 1, True, False):
+                raise Invalid({name: "0 or 1"})
+            return raw in ("1", 1, True)
+
+        taxed = flag("tax", True)
+        results, rows, summary = self._prize_history(taxed)
+        announced = self.announced_prizes(results)
+        first = whole("first", 100_000, 1_000_000_000, announced["first_prize"])
+        second = whole("second", 10_000, 100_000_000, announced["second_prize"])
+        n_rows = whole("rows", 1, ticket_value.FULL_COVERAGE_ROWS, 10)
+        kind = query.get("kind") or "regular"
+        if kind not in ticket_value.KINDS:
+            raise Invalid({"kind": "regular or double"})
+        bonus = flag("bonus", bool(announced.get("bonus_likely")))
+        plan = ticket_value.next_draw(results, first, second, bonus=bonus, rows=n_rows, kind=kind, taxed=taxed)
+        dates = [r["date"] for r in rows]
+        chart = charts.timeline(
+            # A Double row's return is within a cent of a regular row's, so one line carries both.
+            dates, [("Return per NIS, regular row", [r["regular"]["return_per_shekel"] for r in rows])],
+            reference=1.0, reference_label="break-even: 1 NIS back per NIS spent",
+            y_title="Expected return per NIS", title="Expected return per shekel, every draw since 2018")
+        best = sorted(rows, key=lambda r: -r["regular"]["return_per_shekel"])[:10]
+        untaxed_rows = self._prize_history(False)[1] if taxed else rows
+        before, after = (ticket_value.summarise(untaxed_rows), summary) if taxed else (summary,
+                                                                                       self._prize_history(True)[2])
+        at_cap = sum(r["positive"] and r["first_prize"] >= CAP for r in untaxed_rows)
+        return {"announced": announced, "plan": plan, "summary": summary, "chart": chart,
+                "positive_before_tax": before["positive_draws"], "positive_after_tax": after["positive_draws"],
+                "positive_before_tax_at_cap": at_cap,
+                "best": [{k: r[k] for k in ("draw_id", "date", "first_prize", "second_prize", "bonus", "first_won",
+                                            "rows_sold", "positive")}
+                         | {"regular": r["regular"]["return_per_shekel"], "double": r["double"]["return_per_shekel"]}
+                         for r in best],
+                "latest": [{"draw_id": r["draw_id"], "date": r["date"], "first_prize": r["first_prize"],
+                            "bonus": r["bonus"], "first_won": r["first_won"], "rows_sold": r["rows_sold"],
+                            "regular": r["regular"]["return_per_shekel"]} for r in rows[-12:][::-1]],
+                "prize_tables": {"draws": len(results), "first_draw": results[0].draw_id,
+                                 "last_draw": results[-1].draw_id, "last_date": results[-1].date},
+                "tax_year": ticket_value.TAX_TABLE_YEAR, "prices": ticket_value.PRICES, "offline": self.offline}
 
     # ---------------------------------------------------------------------- Log
     def save_to_log(self, result_id) -> dict:

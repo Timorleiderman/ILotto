@@ -16,6 +16,7 @@ import requests
 
 from lotto.tickets.coverage import portfolio_odds
 from lotto.tickets.draw_plan import (
+    HEADERS,
     LOTTO_URL,
     RESULT_URL,
     ParseError,
@@ -24,10 +25,6 @@ from lotto.tickets.draw_plan import (
     plan,
 )
 from lotto.tickets.strong_assignment import strong_prize_odds
-
-#: pais.co.il serves the result pages to browsers only.
-HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-                         "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"}
 
 
 def _get(url, timeout):

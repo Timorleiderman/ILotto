@@ -13,14 +13,15 @@ from lotto.ui.jobs import Job
 from lotto.ui.registry import Invalid
 from lotto.ui.service import Service
 from lotto.ui.storage import Storage
-from tests import SNAPSHOT
+from tests import PRIZES_SNAPSHOT, SNAPSHOT
 
 QUICK = [p for p in registry.PRESETS if p.model not in ("date_cb", "gru", "transformer")]
 
 
 @pytest.fixture(scope="module")
 def service(tmp_path_factory):
-    return Service(Storage(tmp_path_factory.mktemp("ui")), raw_csv=SNAPSHOT, offline=True)
+    return Service(Storage(tmp_path_factory.mktemp("ui")), raw_csv=SNAPSHOT, offline=True,
+                   prizes_csv=PRIZES_SNAPSHOT)
 
 
 def job():
@@ -372,3 +373,43 @@ def test_cancelled_refresh_still_reloads_the_updated_archive(tmp_path, monkeypat
         svc.refresh(refresh)
     assert svc.snapshot()[1]["draws"] == before + 1
     assert svc.refresh_status["state"] == "updated"
+
+
+# --- Value -------------------------------------------------------------------
+
+
+def test_value_defaults_to_the_inferred_next_draw_and_tells_the_truth(service):
+    value = service.value({})
+    assert value["announced"]["source"] == "inferred" and value["announced"]["first_prize"] == 12_000_000
+    plan = value["plan"]
+    assert plan["rows"] == 10 and plan["cost"] == 30 and plan["kind"] == "regular" and plan["taxed"]
+    assert not plan["positive"] and value["summary"]["positive_draws"] == 0
+    assert value["positive_before_tax"] == 31 and value["positive_after_tax"] == 0
+    assert value["chart"].startswith("<svg") and len(value["best"]) == 10
+    json.dumps(value, allow_nan=False)
+
+
+def test_value_reads_the_settings_and_refuses_bad_ones(service):
+    plan = service.value({"first": "40000000", "second": "1500000", "rows": "14", "kind": "double", "bonus": "1",
+                          "tax": "0"})["plan"]
+    assert (plan["first_prize"], plan["rows"], plan["cost"], plan["bonus"], plan["taxed"]) == (40_000_000, 14, 84,
+                                                                                              True, False)
+    for query, field in [({"rows": "0"}, "rows"), ({"rows": "2.5"}, "rows"), ({"first": "lots"}, "first"),
+                         ({"kind": "triple"}, "kind"), ({"bonus": "yes"}, "bonus"), ({"draw": "1"}, "draw")]:
+        with pytest.raises(Invalid) as error:
+            service.value(query)
+        assert field in error.value.fields
+
+
+def test_value_uses_the_announcement_once_one_is_read(tmp_path, monkeypatch):
+    from lotto.economics import archive
+
+    svc = Service(Storage(tmp_path / "ui"), raw_csv=SNAPSHOT, offline=False, prizes_csv=PRIZES_SNAPSHOT)
+    monkeypatch.setattr(data, "check_for_new_draws", lambda path: "unchanged")
+    monkeypatch.setattr(archive, "refresh", lambda path: ("unchanged", 0))
+    monkeypatch.setattr(archive, "fetch_announcement",
+                        lambda: archive.Announcement(3987, "2026-11-21T22:45", 15_000_000, 1_500_000))
+    svc.refresh(Job("refresh", "refresh", svc.refresh))
+    announced = svc.value({})["announced"]
+    assert (announced["source"], announced["first_prize"], announced["second_prize"]) == ("announced", 15_000_000,
+                                                                                         1_500_000)

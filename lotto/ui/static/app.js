@@ -21,6 +21,7 @@ let shown = null;          // the prediction on screen
 let comparison = null;     // the comparison on screen
 let lastAttempt = null;    // id of the Lab attempt to show first
 let predicting = false, testing = false;
+let valueShown = false;    // the Value screen has drawn at least once
 
 // ---------------------------------------------------------------- formatting
 const percent = (p, digits = 2) => (100 * p).toFixed(p < 0.001 ? 5 : digits) + "%";
@@ -98,6 +99,7 @@ function showTab(name) {
   $$(".screen").forEach(s => { s.classList.toggle("on", s.id === name); s.hidden = s.id !== name; });
   if (name === "lab") renderLabConfig();
   if (name === "log") loadLog();
+  if (name === "value" && !valueShown) loadValue(true);
 }
 $("#tabs").addEventListener("click", e => e.target.dataset.tab && showTab(e.target.dataset.tab));
 $("#tabs").addEventListener("keydown", e => {
@@ -128,6 +130,7 @@ $("#refresh").addEventListener("click", async () => {
     await runJob("/api/refresh", {}, () => {});
     STATE = await api("GET", "/api/state");
     renderTopBar(); renderControls(); markStale();
+    if (valueShown) loadValue(true);
   } catch (error) { showBanner(error.message); $("#refreshstate").textContent = "Check interrupted; using the saved archive."; }
   finally { button.disabled = STATE.refresh.offline; }
 });
@@ -556,6 +559,101 @@ async function loadLog() {
       <p class="hint" style="margin-top:10px">Several forms saved for the same draw are scored against the same result, so they rise and fall together. A time recorded on this machine is a personal record, not independent proof.</p>`
       : '<div class="empty" style="border:0">Nothing saved yet. Generate a prediction and press <b>Save to log</b> before the draw.</div>'}</div>`;
 }
+
+// --------------------------------------------------------------------- Value
+const shekels = n => Math.round(n).toLocaleString("en") + " NIS";
+const bigShekels = n => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + "M NIS" : shekels(n);
+const agorot = n => n.toFixed(2) + " NIS";
+function valueQuery(fromForm) {
+  const query = new URLSearchParams();
+  if (fromForm) {
+    for (const [name, id] of [["first", "#vfirst"], ["second", "#vsecond"], ["rows", "#vrows"]]) {
+      const value = $(id).value.trim();
+      if (value) query.set(name, value);
+    }
+    query.set("bonus", $("#vbonus").checked ? "1" : "0");
+    query.set("kind", $("#vkind button[aria-pressed=true]").dataset.kind);
+  }
+  query.set("tax", $("#vtax").checked ? "1" : "0");
+  return query;
+}
+async function loadValue(initial = false) {
+  const out = $("#valueout");
+  $$("#valuecontrols .fielderror").forEach(e => { e.textContent = ""; });
+  let v;
+  try { v = await api("GET", "/api/value?" + valueQuery(!initial)); }
+  catch (error) {
+    showFieldErrors($("#valuecontrols"), error);
+    if (!Object.keys(error.fields || {}).length || error.fields.value) out.innerHTML = `<p class="note error">${esc(error.fields?.value || error.message)}</p>`;
+    return;
+  }
+  valueShown = true;
+  if (initial) {
+    $("#vfirst").value = v.plan.first_prize; $("#vsecond").value = v.plan.second_prize; $("#vbonus").checked = v.plan.bonus;
+  }
+  const a = v.announced;
+  $("#valuesource").textContent = a.source === "announced"
+    ? `As advertised by pais.co.il for draw ${a.draw_id}${a.sales_close ? `, sales close ${a.sales_close.replace("T", " at ")}` : ""}.`
+    : `Inferred from the result of draw ${a.after_draw}; press "Check for new draws" to read the advertised prizes, or type them in.`;
+  renderValue(v);
+}
+function renderValue(v) {
+  const p = v.plan, s = v.summary, row = p.per_row, be = p.break_even, fc = p.full_coverage;
+  const lossPerHundred = 100 * (1 - p.return_per_shekel);
+  const verdict = p.positive
+    ? '<span class="pill good">expected return above the price</span>'
+    : '<span class="pill warn">expected loss</span>';
+  const breakEven = be.sales_grow === null ? "no first prize gets there"
+    : `${bigShekels(be.sales_grow)}${be.sales_grow > be.cap ? `, above the ${bigShekels(be.cap)} cap: no ordinary draw can reach it` : ""}`;
+  $("#valueout").innerHTML = `
+    <div class="tiles" style="margin-top:0">
+      <div class="tile hero"><div class="k">NIS back per 1 NIS spent</div><div class="v">${p.return_per_shekel.toFixed(2)}</div><div class="n">${verdict}</div></div>
+      <div class="tile"><div class="k">${p.rows.toLocaleString("en")} ${p.kind} row${p.rows === 1 ? "" : "s"} cost</div><div class="v">${shekels(p.cost)}</div><div class="n">${p.kind === "double" ? 6 : 3} NIS a row</div></div>
+      <div class="tile"><div class="k">Expected back${p.taxed ? ", after tax" : ""}</div><div class="v">${p.expected_return < 100 ? agorot(p.expected_return) : shekels(p.expected_return)}</div><div class="n">an average over many draws, not a forecast</div></div>
+      <div class="tile"><div class="k">Expected result</div><div class="v">${p.expected_net < 0 ? "−" : "+"}${p.expected_net > -100 && p.expected_net < 100 ? agorot(Math.abs(p.expected_net)) : shekels(Math.abs(p.expected_net))}</div><div class="n">about ${lossPerHundred.toFixed(0)} NIS lost per 100 NIS played</div></div>
+    </div>
+    <div class="card"><h2>Where a ${p.kind} row's value comes from</h2>
+      <p class="sub">Expected value of one row in a draw with a ${bigShekels(p.first_prize)} first prize and ${bigShekels(p.second_prize)} second prize${p.bonus ? ", bonus prizes" : ""}, with about ${compact(p.rows_sold)} rows expected to share the big prizes.</p>
+      <div class="scroll"><table><tbody>
+        <tr><td>First prize, 6 + strong (1 in ${(16273488).toLocaleString("en")})</td><td class="num">${agorot(row.first_prize)}</td></tr>
+        <tr><td>Second prize, 6 numbers</td><td class="num">${agorot(row.second_prize)}</td></tr>
+        <tr><td>Smaller prizes, 3 to 5 numbers</td><td class="num">${agorot(row.lower_tiers)}</td></tr>
+        <tr><th>Total, against a price of ${row.price} NIS</th><th class="num">${agorot(row.total)}</th></tr>
+      </tbody></table></div>
+      <p class="hint" style="margin-top:8px">Break-even first prize for this draw: <b>${breakEven}</b>${be.sales_grow !== null ? ` (sales rise with the jackpot, so more rows share it; with sales held where they are it would be ${bigShekels(be.sales_fixed)})` : ""}.
+        Chance that ${p.rows === 1 ? "this row wins" : `one of these ${p.rows.toLocaleString("en")} rows wins`} the first prize: ${percent(p.p_first_prize)}.</p></div>
+    <div class="card"><h2>Buying every possible row</h2>
+      <p class="sub">All ${fc.rows.toLocaleString("en")} rows guarantee the first prize and every other tier. Shown for reference, never as a plan.</p>
+      <div class="tiles">
+        <div class="tile"><div class="k">Cost</div><div class="v">${bigShekels(fc.cost)}</div></div>
+        <div class="tile"><div class="k">Expected back${p.taxed ? ", after tax" : ""}</div><div class="v">${bigShekels(fc.expected_return)}</div></div>
+        <div class="tile"><div class="k">Expected result</div><div class="v">−${bigShekels(-fc.expected_net)}</div></div>
+      </div>
+      <p class="hint">Smaller prizes are valued at today's amounts. In reality 16 million extra rows would multiply the winners in those shared tiers and cut each payment, so the true loss would be larger.</p></div>
+    <div class="card"><h2>Every draw since ${s.first_date.slice(0, 4)}, in hindsight</h2>
+      <p class="sub">${s.positive_draws === 0
+        ? `In none of the ${s.draws.toLocaleString("en")} draws from ${day(s.first_date)} to ${day(s.last_date)} was a row worth its price.`
+        : `A row was worth its price in ${s.positive_draws} of ${s.draws.toLocaleString("en")} draws.`}
+        The best was draw ${s.best.draw_id} on ${day(s.best.date)}, a ${bigShekels(s.best.first_prize)} first prize${s.best.bonus ? " with bonus prizes" : ""}: ${agorot(s.best.return_per_shekel)} back per shekel. A typical draw returned ${agorot(s.median_return)}.
+        ${v.positive_before_tax > v.positive_after_tax ? `Before tax, ${v.positive_before_tax} draws would have paid back more than their price (${v.positive_before_tax_at_cap} of them with the first prize at the ${bigShekels(be.cap)} cap); after tax, ${v.positive_after_tax === 0 ? "none did" : `${v.positive_after_tax} did`}. The tax on a jackpot is what tips them into a loss.` : ""}</p>
+      <div class="chart">${v.chart}</div>
+      <p class="hint">Each draw is valued with the rows sold and small-prize amounts from its own published table, today's prices and the ${v.tax_year} tax schedule. Prize tables cover draws ${v.prize_tables.first_draw} to ${v.prize_tables.last_draw}.</p>
+      <details><summary>The ten best draws</summary><div class="scroll"><table><thead><tr><th>Draw</th><th>Date</th><th class="num">First prize</th><th class="num">Rows sold</th><th class="num">Regular</th><th class="num">Double</th></tr></thead><tbody>
+        ${v.best.map(r => `<tr><td>${r.draw_id}${r.bonus ? ' <span class="pill">bonus</span>' : ""}</td><td class="nowrap">${day(r.date)}</td><td class="num">${bigShekels(r.first_prize)}</td><td class="num">${compact(r.rows_sold)}</td><td class="num">${agorot(r.regular)}</td><td class="num">${agorot(r.double)}</td></tr>`).join("")}
+      </tbody></table></div></details>
+      <details><summary>The latest draws</summary><div class="scroll"><table><thead><tr><th>Draw</th><th>Date</th><th class="num">First prize</th><th class="num">Rows sold</th><th class="num">Back per NIS</th></tr></thead><tbody>
+        ${v.latest.map(r => `<tr><td>${r.draw_id}${r.first_won ? ' <span class="pill">won</span>' : ""}${r.bonus ? ' <span class="pill">bonus</span>' : ""}</td><td class="nowrap">${day(r.date)}</td><td class="num">${bigShekels(r.first_prize)}</td><td class="num">${compact(r.rows_sold)}</td><td class="num">${agorot(r.regular)}</td></tr>`).join("")}
+      </tbody></table></div></details></div>
+    <p class="note">In these tables Mifal HaPais paid out about ${Math.round(100 * s.mean_paid_share)}% of what it sold as prizes, before tax, and kept the rest. A row therefore loses on average unless a carried-over first prize is large enough to cover that margin${s.positive_draws === 0 ? `, and under the ${bigShekels(be.cap)} cap none on record was` : ""}. Picking numbers other people avoid can only shrink how many people you would share a jackpot with; it never changes the chance of winning, and this project does not model it.</p>`;
+}
+$("#valuecontrols").addEventListener("submit", e => { e.preventDefault(); loadValue(); });
+$("#vtax").addEventListener("change", () => loadValue());
+$("#vkind").addEventListener("click", e => {
+  const kind = e.target.dataset.kind;
+  if (!kind) return;
+  $$("#vkind button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.kind === kind)));
+  loadValue();
+});
 
 // ---------------------------------------------------------------------- boot
 (async function boot() {

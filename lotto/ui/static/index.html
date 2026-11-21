@@ -18,6 +18,7 @@
         <button id="tab-compare" role="tab" data-tab="compare" aria-controls="compare" aria-selected="false" tabindex="-1">Compare</button>
         <button id="tab-lab" role="tab" data-tab="lab" aria-controls="lab" aria-selected="false" tabindex="-1">Lab</button>
         <button id="tab-log" role="tab" data-tab="log" aria-controls="log" aria-selected="false" tabindex="-1">Log</button>
+        <button id="tab-value" role="tab" data-tab="value" aria-controls="value" aria-selected="false" tabindex="-1">Value</button>
       </nav>
       <div class="spacer"></div>
       <button class="btn" id="theme" type="button">Dark theme</button>
@@ -100,6 +101,37 @@
     <div class="head"><h1>Prediction log</h1>
       <p>Predictions saved before a draw, scored once its result is in the archive. Entries cannot be changed or deleted here.</p></div>
     <div id="logout"></div>
+  </section>
+
+  <section class="screen" id="value" role="tabpanel" aria-labelledby="tab-value" tabindex="0" hidden>
+    <div class="head"><h1>Is a ticket worth its price?</h1>
+      <p>What rows cost, what they return on average after prize sharing and tax, and whether any past draw paid back its price.
+        The numbers you pick do not change any of it.</p></div>
+    <div class="two">
+      <form class="card" id="valuecontrols" autocomplete="off" novalidate>
+        <h3>Next draw</h3>
+        <p class="hint" id="valuesource"></p>
+        <label for="vfirst">First prize (NIS)</label>
+        <input id="vfirst" type="number" min="100000" step="1000000" inputmode="numeric">
+        <p class="fielderror" data-error="first"></p>
+        <label for="vsecond">Second prize (NIS)</label>
+        <input id="vsecond" type="number" min="10000" step="750000" inputmode="numeric">
+        <p class="fielderror" data-error="second"></p>
+        <label class="check"><input id="vbonus" type="checkbox"> Bonus draw (small prizes 1.5x)</label>
+        <h3>What you buy</h3>
+        <label for="vrows">Rows</label>
+        <input id="vrows" type="number" min="1" step="1" value="10" inputmode="numeric">
+        <p class="fielderror" data-error="rows"></p>
+        <span class="label" id="vkindlabel">Form</span>
+        <div class="seg" id="vkind" role="group" aria-labelledby="vkindlabel">
+          <button type="button" data-kind="regular" aria-pressed="true">Regular, 3 NIS a row</button>
+          <button type="button" data-kind="double" aria-pressed="false">Double, 6 NIS a row</button>
+        </div>
+        <label class="check"><input id="vtax" type="checkbox" checked> Deduct Israeli tax on prizes</label>
+        <div class="actions"><button class="btn primary" id="vcalc" type="submit">Calculate</button></div>
+      </form>
+      <div id="valueout" aria-live="polite"><div class="empty">Loading the prize tables…</div></div>
+    </div>
   </section>
 </main>
 <script src="/static/app.js"></script>
