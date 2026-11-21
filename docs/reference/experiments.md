@@ -18,6 +18,9 @@ Every experiment runs through one command. Arguments after the id go to the expe
 | 3. Algorithms | `strong-numbers` | Which strong number should each row carry? | `uv run lotto run strong-numbers` | [ticket-chances.md](../ticket-chances.md) |
 | 3. Algorithms | `plan` | Which form should I play on the next draw? | `uv run lotto run plan` | [levers/draw-planner.md](../levers/draw-planner.md) |
 | 4. Side quest | `seed-search` | If draws came from a seeded generator, could the seed be found? | `uv run lotto run seed-search --mode toy` | [side-quests/seed-search.md](../side-quests/seed-search.md) |
+| 4. Side quest | `seed-family` | Does a generator that fits two draws also predict the third? | `uv run lotto run seed-family` | [side-quests/seed-search.md](../side-quests/seed-search.md) |
+| 4. Side quest | `seed-chain` | Can correcting a generator after each draw improve later predictions? | `uv run lotto run seed-chain` | [side-quests/seed-search.md](../side-quests/seed-search.md) |
+| 4. Side quest | `seed-recurrence` | Can a fixed rule reproduce successive draws from the first ticket? | `uv run lotto run seed-recurrence` | [side-quests/seed-search.md](../side-quests/seed-search.md) |
 | 4. Side quest | `seed-search-job` | How many seeds can one machine test in a fixed time? | `uv run lotto run seed-search-job` | [side-quests/seed-search.md](../side-quests/seed-search.md) |
 | 4. Side quest | `seed-search-remote` | How is a search shared with a remote GPU without overlap? | `uv run lotto run seed-search-remote` | [side-quests/seed-search.md](../side-quests/seed-search.md) |
 | 4. Side quest | `seed-search-cuda-benchmark` | How fast is the CUDA engine, and is it correct? | `uv run lotto run seed-search-cuda-benchmark` | [side-quests/seed-search.md](../side-quests/seed-search.md) |
