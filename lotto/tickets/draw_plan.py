@@ -28,6 +28,9 @@ TIERS = ("6+strong", "6", "5+strong", "5", "4+strong", "4", "3+strong", "3")
 
 LOTTO_URL = "https://www.pais.co.il/lotto/"
 RESULT_URL = "https://www.pais.co.il/lotto/currentlotto.aspx?lotteryId={draw_id}"
+#: pais.co.il serves the result pages to browsers only.
+HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                         "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"}
 
 #: 8.33% of fair draws win a prize; the smallest prize (10 NIS) exceeds the 6 NIS cost.
 ORDINARY_FORM = (

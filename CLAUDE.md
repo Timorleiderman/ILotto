@@ -81,7 +81,7 @@ download fatal: the site must still rebuild when the source is down.
 
 | Kind of thing | Lives in | Rule |
 |---|---|---|
-| Code that computes | `lotto/` (`core`, `approaches`, `forecasting`, `tickets`, `seedsearch`, `report`) | importable and tested; no side effects on import |
+| Code that computes | `lotto/` (`core`, `approaches`, `forecasting`, `tickets`, `economics`, `seedsearch`, `report`) | importable and tested; no side effects on import |
 | An experiment | `lotto/experiments/<name>.py` + frozen evidence in `experiments/` | one catalog entry in `lotto/experiments/__init__.py`; exposes `main()`; writes to `results/` (untracked), never to `experiments/` — except the seed-search ledger, below |
 | Words | `docs/` | dated reports go under `docs/reference/research-log/` and are not rewritten |
 
@@ -142,6 +142,16 @@ Removed deliberately. Do not add ticket scoring based on what other players pick
 being unreachable) and writes `input/lotto_IL_modern.csv`. The check for new draws (`data.download`, run by every
 `lotto report` unless `--offline`) replaces the archive only
 if the download parses and still contains every draw already on record.
+
+### Prize tables and ticket value
+
+`input/lotto_prizes.csv` (committed, append-only) holds the published prize tables from draw
+2982 (Jan 2018, the first page pais.co.il still serves). `lotto.economics.archive` reads and
+refreshes it; `lotto.economics.value` turns it into an expected return per row after prize
+sharing and the published 2026 tax schedule. It is refreshed by the dashboard's "Check for new
+draws" and by `lotto run value`, not by `lotto report`. The measured verdict is that no draw
+since 2018 returned its price after tax; if a change makes one look profitable, suspect the change.
+Tests read `tests.PRIZES_SNAPSHOT`, never the live file.
 
 ## Invariants that make the results valid
 

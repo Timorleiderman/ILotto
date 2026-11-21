@@ -16,6 +16,7 @@ Every experiment runs through one command. Arguments after the id go to the expe
 | 3. Algorithms | `coverage-benchmark` | How much does exact refinement add, and how fast is it? | `uv run lotto run coverage-benchmark --seeds 3 --out results/coverage-benchmark.json` | [approaches/ticket-generators.md](../approaches/ticket-generators.md) |
 | 3. Algorithms | `coverage-search` | Can basin hopping escape a local optimum of the coverage design? | `uv run lotto run coverage-search` | [algorithm-research.md](../algorithm-research.md) |
 | 3. Algorithms | `strong-numbers` | Which strong number should each row carry? | `uv run lotto run strong-numbers` | [ticket-chances.md](../ticket-chances.md) |
+| 3. Algorithms | `value` | Is a ticket ever worth its price after prize sharing and tax? | `uv run lotto run value --offline` | [levers/ticket-value.md](../levers/ticket-value.md) |
 | 3. Algorithms | `plan` | Which form should I play on the next draw? | `uv run lotto run plan` | [levers/draw-planner.md](../levers/draw-planner.md) |
 | 4. Side quest | `seed-search` | If draws came from a seeded generator, could the seed be found? | `uv run lotto run seed-search --mode toy` | [side-quests/seed-search.md](../side-quests/seed-search.md) |
 | 4. Side quest | `seed-search-job` | How many seeds can one machine test in a fixed time? | `uv run lotto run seed-search-job` | [side-quests/seed-search.md](../side-quests/seed-search.md) |

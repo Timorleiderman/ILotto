@@ -11,13 +11,14 @@ import pytest
 from lotto.ui.server import STATIC, STATIC_FILES, create_server
 from lotto.ui.service import Service
 from lotto.ui.storage import Storage
-from tests import SNAPSHOT
+from tests import PRIZES_SNAPSHOT, SNAPSHOT
 
 
 @pytest.fixture(scope="module")
 def dashboard(tmp_path_factory):
     root = tmp_path_factory.mktemp("ui")
-    server, app = create_server(Service(Storage(root), raw_csv=SNAPSHOT, offline=True), port=0)
+    server, app = create_server(Service(Storage(root), raw_csv=SNAPSHOT, offline=True,
+                                         prizes_csv=PRIZES_SNAPSHOT), port=0)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     yield app, root
     server.shutdown()
@@ -153,3 +154,12 @@ def test_a_queued_job_can_be_cancelled(dashboard):
 ])
 def test_malformed_requests_are_rejected_before_queueing(dashboard, path, body, status):
     assert call(dashboard[0], "POST", path, body)[0] == status
+
+
+def test_value_is_a_read_with_validated_query(dashboard):
+    app, _ = dashboard
+    status, value = call(app, "GET", "/api/value?rows=3&kind=double&tax=1")
+    assert status == 200 and value["plan"]["cost"] == 18 and not value["plan"]["positive"]
+    status, error = call(app, "GET", "/api/value?rows=-1")
+    assert status == 400 and "rows" in error["error"]["fields"]
+    assert call(app, "GET", "/api/value", host="evil.example:80")[0] == 403
